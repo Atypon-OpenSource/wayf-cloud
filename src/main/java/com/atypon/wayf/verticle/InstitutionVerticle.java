@@ -4,6 +4,7 @@ import com.atypon.wayf.data.Institution;
 import com.atypon.wayf.facade.InstitutionFacade;
 import com.atypon.wayf.facade.impl.InstitutionFacadeImpl;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -40,8 +41,8 @@ public class InstitutionVerticle implements RoutingProvider {
     public void createInstitution(RoutingContext routingContext) {
         LOG.debug("Received create institution request");
 
-        Observable.just(routingContext)
-                .flatMap((rc) -> BaseVerticle.readRequestBodyObservable(rc, Institution.class))
+        Single.just(routingContext)
+                .flatMap((rc) -> BaseVerticle.readRequestBody(rc, Institution.class))
                 .flatMap((requestInstitution) -> institutionFacade.create(requestInstitution))
                 .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
                 .subscribe(
@@ -53,7 +54,7 @@ public class InstitutionVerticle implements RoutingProvider {
     public void readInstitution(RoutingContext routingContext) {
         LOG.debug("Received read institution request");
 
-        Observable.just(routingContext)
+        Single.just(routingContext)
                 .flatMap((rc) -> BaseVerticle.readPathArugment(rc, INSTITUTION_ID_PARAM_NAME))
                 .flatMap((institutionId) -> institutionFacade.read(institutionId))
                 .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
@@ -66,8 +67,8 @@ public class InstitutionVerticle implements RoutingProvider {
     public void updateInstitution(RoutingContext routingContext) {
         LOG.debug("Received update institution request");
 
-        Observable.just(routingContext)
-                .flatMap((rc) -> BaseVerticle.readRequestBodyObservable(rc, Institution.class))
+        Single.just(routingContext)
+                .flatMap((rc) -> BaseVerticle.readRequestBody(rc, Institution.class))
                 .flatMap((requestInstitution) -> institutionFacade.update(requestInstitution))
                 .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
                 .subscribe(
@@ -79,12 +80,12 @@ public class InstitutionVerticle implements RoutingProvider {
     public void deleteInstitution(RoutingContext routingContext) {
         LOG.debug("Received delete institution request");
 
-        Observable.just(routingContext)
+        Single.just(routingContext)
                 .flatMap((rc) -> BaseVerticle.readPathArugment(rc, INSTITUTION_ID_PARAM_NAME))
-                .flatMap((institutionId) -> institutionFacade.delete(institutionId))
+                .flatMapCompletable((institutionId) -> institutionFacade.delete(institutionId))
                 .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
                 .subscribe(
-                        (voidResponse) -> BaseVerticle.buildSuccess(routingContext, null),
+                        () -> BaseVerticle.buildSuccess(routingContext, null),
                         (e) -> BaseVerticle.buildFailure(routingContext, e)
                 );
     }

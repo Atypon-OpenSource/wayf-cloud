@@ -6,7 +6,9 @@ import com.atypon.wayf.data.Institution;
 import com.atypon.wayf.facade.InstitutionFacade;
 import io.netty.util.concurrent.CompleteFuture;
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
@@ -25,34 +27,34 @@ public class InstitutionFacadeImpl implements InstitutionFacade {
     }
 
     @Override
-    public Observable<Institution> create(Institution institution) {
+    public Single<Institution> create(Institution institution) {
         LOG.debug("Creating institution [{}]", institution);
 
         if (institution.getName().equals("error")) {
             throw new RuntimeException("Nice try");
         }
 
-        return Observable.just(institution).observeOn(Schedulers.io()).map((o_institution) -> dao.create(o_institution));
+        return Single.just(institution).observeOn(Schedulers.io()).map((o_institution) -> dao.create(o_institution));
     }
 
     @Override
-    public Observable<Institution> read(String id) {
+    public Single<Institution> read(String id) {
         LOG.debug("Reading institution with id [{}]", id);
 
-        return Observable.just(id).observeOn(Schedulers.io()).map((o_id) -> dao.read(o_id));
+        return Single.just(id).observeOn(Schedulers.io()).map((o_id) -> dao.read(o_id));
     }
 
     @Override
-    public Observable<Institution> update(Institution institution) {
+    public Single<Institution> update(Institution institution) {
         LOG.debug("Updating institution [{}]", institution);
 
-        return Observable.just(institution).observeOn(Schedulers.io()).map((o_institution) -> dao.update(o_institution));
+        return Single.just(institution).observeOn(Schedulers.io()).map((o_institution) -> dao.update(o_institution));
     }
 
     @Override
-    public Observable<Optional<Void>> delete(String id) {
+    public Completable delete(String id) {
         LOG.debug("Reading institution with id [{}]", id);
 
-        return Observable.just(id).observeOn(Schedulers.io()).map((o_id) -> {dao.delete(o_id); return Optional.empty();});
+        return Single.just(id).observeOn(Schedulers.io()).flatMapCompletable((o_id) -> Completable.fromAction(() -> dao.delete(o_id)));
     }
 }

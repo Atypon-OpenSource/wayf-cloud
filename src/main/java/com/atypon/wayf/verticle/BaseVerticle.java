@@ -20,9 +20,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-/**
- * Created by mmason on 3/21/17.
- */
 public class BaseVerticle extends AbstractVerticle {
     private static final Logger LOG = LoggerFactory.getLogger(BaseVerticle.class);
 
@@ -93,17 +90,17 @@ public class BaseVerticle extends AbstractVerticle {
     }
 
 
-    public static <B> B readRequestBody(RoutingContext routingContext, Class<B> bodyClass) {
+    private static <B> B _readRequestBody(RoutingContext routingContext, Class<B> bodyClass) {
         LOG.debug("Reading request body of type [{}] from request", bodyClass);
 
         return Json.decodeValue(routingContext.getBodyAsString(), bodyClass);
     }
 
-    public static <B> Observable<B> readRequestBodyObservable(RoutingContext routingContext, Class<B> bodyClass) {
-        return Observable.just(routingContext).observeOn(Schedulers.computation()).map((rc) -> readRequestBody(rc, bodyClass));
+    public static <B> Single<B> readRequestBody(RoutingContext routingContext, Class<B> bodyClass) {
+        return Single.just(routingContext).observeOn(Schedulers.computation()).map((rc) -> _readRequestBody(rc, bodyClass));
     }
 
-    public static Observable<String> readPathArugment(RoutingContext routingContext, String argumentName) {
-        return Observable.just(routingContext).observeOn(Schedulers.computation()).map((rc) -> rc.request().getParam(argumentName));
+    public static Single<String> readPathArugment(RoutingContext routingContext, String argumentName) {
+        return Single.just(routingContext).observeOn(Schedulers.computation()).map((rc) -> rc.request().getParam(argumentName));
     }
 }
