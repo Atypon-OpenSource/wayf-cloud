@@ -8,9 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-/**
- * Created by mmason on 3/24/17.
- */
 public class InstitutionDaoNeo4JImpl implements InstitutionDao {
     private static final Logger LOG = LoggerFactory.getLogger(InstitutionDaoNeo4JImpl.class);
 

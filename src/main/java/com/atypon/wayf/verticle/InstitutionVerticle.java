@@ -12,6 +12,8 @@ import io.vertx.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.TimeUnit;
+
 public class InstitutionVerticle implements RoutingProvider {
     private static final Logger LOG = LoggerFactory.getLogger(InstitutionVerticle.class);
 
@@ -39,16 +41,16 @@ public class InstitutionVerticle implements RoutingProvider {
     }
 
     public void createInstitution(RoutingContext routingContext) {
-        LOG.debug("Received create institution request");
+            LOG.debug("Received create institution request");
 
-        Single.just(routingContext)
-                .flatMap((rc) -> BaseVerticle.readRequestBody(rc, Institution.class))
-                .flatMap((requestInstitution) -> institutionFacade.create(requestInstitution))
-                .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
-                .subscribe(
-                        (createdInstitution) -> BaseVerticle.buildSuccess(routingContext, createdInstitution),
-                        (e) -> BaseVerticle.buildFailure(routingContext, e)
-                );
+            Single.just(routingContext)
+                    .flatMap((rc) -> BaseVerticle.readRequestBody(rc, Institution.class))
+                    .flatMap((requestInstitution) -> institutionFacade.create(requestInstitution))
+                    .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
+                    .subscribe(
+                            (createdInstitution) -> BaseVerticle.buildSuccess(routingContext, createdInstitution),
+                            (e) -> routingContext.fail(e)
+                    );
     }
 
     public void readInstitution(RoutingContext routingContext) {
@@ -60,7 +62,7 @@ public class InstitutionVerticle implements RoutingProvider {
                 .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
                 .subscribe(
                         (readInstitution) -> BaseVerticle.buildSuccess(routingContext, readInstitution),
-                        (e) -> BaseVerticle.buildFailure(routingContext, e)
+                        (e) -> routingContext.fail(e)
                 );
     }
 
@@ -73,7 +75,7 @@ public class InstitutionVerticle implements RoutingProvider {
                 .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
                 .subscribe(
                         (updatedInstitution) -> BaseVerticle.buildSuccess(routingContext, updatedInstitution),
-                        (e) -> BaseVerticle.buildFailure(routingContext, e)
+                        (e) -> routingContext.fail(e)
                 );
     }
 
@@ -86,7 +88,7 @@ public class InstitutionVerticle implements RoutingProvider {
                 .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
                 .subscribe(
                         () -> BaseVerticle.buildSuccess(routingContext, null),
-                        (e) -> BaseVerticle.buildFailure(routingContext, e)
+                        (e) -> routingContext.fail(e)
                 );
     }
 }

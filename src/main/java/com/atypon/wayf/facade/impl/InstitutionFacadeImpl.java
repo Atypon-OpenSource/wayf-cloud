@@ -4,18 +4,11 @@ import com.atypon.wayf.dao.InstitutionDao;
 import com.atypon.wayf.dao.impl.InstitutionDaoNeo4JImpl;
 import com.atypon.wayf.data.Institution;
 import com.atypon.wayf.facade.InstitutionFacade;
-import io.netty.util.concurrent.CompleteFuture;
 import io.reactivex.Completable;
-import io.reactivex.Maybe;
-import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Optional;
-
 
 public class InstitutionFacadeImpl implements InstitutionFacade {
     private static final Logger LOG = LoggerFactory.getLogger(InstitutionFacadeImpl.class);
