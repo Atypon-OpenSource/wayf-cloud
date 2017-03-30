@@ -11,8 +11,10 @@ import java.util.*;
 public class InstitutionDaoNeo4JImpl implements InstitutionDao {
     private static final Logger LOG = LoggerFactory.getLogger(InstitutionDaoNeo4JImpl.class);
 
+    private static Driver driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "test", "test" ) );
+
     // Eventually we'll want to source these from a properties file
-    private static final String CREATE_CYPHER = "CREATE (i:Institution {id:{id}, name:{name}, description:{description}}) RETURN i.id AS id, i.name AS name, i.description AS description;";
+    private static final String CREATE_CYPHER = "CREATE (i:Institution {id:{id}, name:{name}, description:{description}});";// RETURN i.id AS id, i.name AS name, i.description AS description;";
     private static final String READ_CYPHER = "MATCH (i:Institution) WHERE i.id = {id} RETURN i.id AS id, i.name AS name, i.description AS description;";
     private static final String UPDATE_CYPHER = "MATCH (i:Institution) WHERE i.id = {id} SET i.name = {name}, i.description = {description} RETURN i.id AS id, i.name AS name, i.description AS description;";
     private static final String DELETE_CYPHER = "MATCH (i:Institution) WHERE i.id = {id} DETACH DELETE i";
@@ -28,7 +30,9 @@ public class InstitutionDaoNeo4JImpl implements InstitutionDao {
         arguments.put("name", institution.getName());
         arguments.put("description", institution.getDescription());
 
-        return executeQuery(CREATE_CYPHER, arguments).get(0);
+        executeQuery(CREATE_CYPHER, arguments);
+
+        return institution;
     }
 
     @Override
@@ -64,7 +68,6 @@ public class InstitutionDaoNeo4JImpl implements InstitutionDao {
     }
 
     private List<Institution> executeQuery(String query, Map<String, Object> arguments) {
-        Driver driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "test", "test" ) );
         Session session = driver.session();
 
         StatementResult result = session.run( query, Values.value(arguments ) );
@@ -83,7 +86,6 @@ public class InstitutionDaoNeo4JImpl implements InstitutionDao {
         }
 
         session.close();
-        driver.close();
 
         return institutions;
     }

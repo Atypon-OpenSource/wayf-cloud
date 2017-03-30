@@ -1,7 +1,10 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.InstitutionDao;
+import com.atypon.wayf.dao.impl.InstitutionDaoMapImpl;
+import com.atypon.wayf.dao.impl.InstitutionDaoMySqlImpl;
 import com.atypon.wayf.dao.impl.InstitutionDaoNeo4JImpl;
+import com.atypon.wayf.dao.impl.InstitutionDaoRedisImpl;
 import com.atypon.wayf.data.Institution;
 import com.atypon.wayf.facade.InstitutionFacade;
 import io.reactivex.Completable;

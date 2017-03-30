@@ -36,7 +36,7 @@ public class BaseVerticle extends AbstractVerticle {
        Completable.fromAction(
                 () ->
                     routingContext.response()
-                            .setStatusCode(201)
+                            .setStatusCode(200)
                             .putHeader("content-type", "application/json; charset=utf-8")
                             .end(body != null ? Json.encodePrettily(body) : "")
                 )
@@ -49,7 +49,7 @@ public class BaseVerticle extends AbstractVerticle {
 
     protected static void buildFailure(RoutingContext routingContext) {
         Throwable t = routingContext.failure();
-        
+
         LOG.error("Error processing request", t);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -66,7 +66,7 @@ public class BaseVerticle extends AbstractVerticle {
         }
 
         Completable.fromAction(
-                () -> routingContext.response()
+                    () -> routingContext.response()
                             .setStatusCode(500)
                             .putHeader("content-type", "application/json; charset=utf-8")
                             .end(Json.encodePrettily(errorResponse))
