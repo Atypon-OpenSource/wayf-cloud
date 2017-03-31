@@ -8,10 +8,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import sun.instrument.InstrumentationImpl;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class InstitutionDaoRedisImpl implements InstitutionDao {

@@ -11,7 +11,7 @@ import java.util.*;
 public class InstitutionDaoNeo4JImpl implements InstitutionDao {
     private static final Logger LOG = LoggerFactory.getLogger(InstitutionDaoNeo4JImpl.class);
 
-    private static Driver driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "test", "test" ) );
+    public static Driver driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "test", "test" ) );
 
     // Eventually we'll want to source these from a properties file
     private static final String CREATE_CYPHER = "CREATE (i:Institution {id:{id}, name:{name}, description:{description}});";// RETURN i.id AS id, i.name AS name, i.description AS description;";
@@ -25,12 +25,14 @@ public class InstitutionDaoNeo4JImpl implements InstitutionDao {
     public Institution create(Institution institution) {
         LOG.debug("Creating institution [{}] in Neo4J", institution);
 
+        institution.setId(UUID.randomUUID().toString());
+
         Map<String, Object> arguments = new HashMap<>();
-        arguments.put("id", UUID.randomUUID().toString());
+        arguments.put("id", institution.getId());
         arguments.put("name", institution.getName());
         arguments.put("description", institution.getDescription());
 
-        executeQuery(CREATE_CYPHER, arguments);
+        Neo4JBatchWriter.INSTANCE.queue(CREATE_CYPHER, arguments);
 
         return institution;
     }
@@ -70,6 +72,7 @@ public class InstitutionDaoNeo4JImpl implements InstitutionDao {
     private List<Institution> executeQuery(String query, Map<String, Object> arguments) {
         Session session = driver.session();
 
+        LOG.debug("Got session");
         StatementResult result = session.run( query, Values.value(arguments ) );
 
         List<Institution> institutions = new LinkedList<>();
