@@ -1,6 +1,8 @@
 package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.data.Institution;
+import com.atypon.wayf.data.RequestContext;
+import com.atypon.wayf.data.RequestContextAccessor;
 import com.atypon.wayf.facade.InstitutionFacade;
 import com.atypon.wayf.facade.impl.InstitutionFacadeImpl;
 import com.atypon.wayf.verticle.RequestReader;
@@ -55,6 +57,8 @@ public class InstitutionRouting implements RoutingProvider {
     public void readInstitution(RoutingContext routingContext) {
         LOG.debug("Received read institution request");
 
+        RequestContextAccessor.set(new RequestContext().setRequestUrl(routingContext.request().uri()));
+        
         Single.just(routingContext)
                 .flatMap((rc) -> RequestReader.readPathArgument(rc, INSTITUTION_ID_PARAM_NAME))
                 .flatMap((institutionId) -> institutionFacade.read(institutionId))

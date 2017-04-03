@@ -1,11 +1,16 @@
 package com.atypon.wayf.verticle;
 
 import com.atypon.wayf.data.ErrorResponse;
+import com.atypon.wayf.data.RequestContextAccessor;
+import com.atypon.wayf.reactive.WayfReactiveConfig;
+import com.atypon.wayf.reactive.WayfRunnable;
 import com.atypon.wayf.verticle.routing.InstitutionRouting;
 import com.atypon.wayf.verticle.routing.RoutingProvider;
 import com.google.common.collect.Lists;
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
@@ -34,6 +39,7 @@ public class WayfVerticle extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> fut) {
+        LOG.info("Starting wayf-cloud server");
         startWebApp((http) -> completeStartup(http, fut));
     }
 
@@ -41,16 +47,16 @@ public class WayfVerticle extends AbstractVerticle {
         // Create a router object.
         Router router = Router.router(vertx);
 
-        // Let the services of requests define the endpoints that they service
-        for (RoutingProvider routingProvider : routingProviders) {
-            routingProvider.addRoutings(router);
-        }
+        LOG.debug("Adding routes");
+        routingProviders.forEach((routingProvider) -> routingProvider.addRoutings(router));
 
-        // Enforce that every route (endpoint) handles failures the same way
+
+        LOG.debug("Adding default error handler to routes");
         for (Route route : router.getRoutes()) {
             route.failureHandler((rc) -> ResponseWriter.buildFailure(rc));
         }
 
+        LOG.debug("Starting HTTP server");
         // Create the HTTP server and pass the "accept" method to the request handler.
         vertx
                 .createHttpServer()
@@ -65,9 +71,19 @@ public class WayfVerticle extends AbstractVerticle {
 
     private void completeStartup(AsyncResult<HttpServer> http, Future<Void> fut) {
         if (http.succeeded()) {
+            initConfigs();
+
+            LOG.info("SUCCESS: wayf-cloud successfully initialized");
             fut.complete();
         } else {
+            LOG.debug("FAILURE: Could not start wayf-cloud due to exception", http.cause());
             fut.fail(http.cause());
         }
+    }
+
+    private void initConfigs() {
+        LOG.info("Initializing server configs");
+
+        WayfReactiveConfig.initializePlugins();
     }
 }

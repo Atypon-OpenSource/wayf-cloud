@@ -1,6 +1,7 @@
-package com.atypon.wayf.verticle;
+package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.data.Institution;
+import com.atypon.wayf.verticle.WayfVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;

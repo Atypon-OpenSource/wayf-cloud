@@ -1,5 +1,6 @@
 package com.atypon.wayf.verticle;
 
+import com.atypon.wayf.data.RequestContextAccessor;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.json.Json;
@@ -21,6 +22,7 @@ public class RequestReader {
     }
 
     public static Single<String> readPathArgument(RoutingContext routingContext, String argumentName) {
+        LOG.info("Request URI [{}]", RequestContextAccessor.get().getRequestUrl());
         return Single.just(routingContext).observeOn(Schedulers.computation()).map((rc) -> rc.request().getParam(argumentName));
     }
 }

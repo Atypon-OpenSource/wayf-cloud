@@ -3,6 +3,7 @@ package com.atypon.wayf.facade.impl;
 import com.atypon.wayf.dao.InstitutionDao;
 import com.atypon.wayf.dao.impl.InstitutionDaoNeo4JImpl;
 import com.atypon.wayf.data.Institution;
+import com.atypon.wayf.data.RequestContextAccessor;
 import com.atypon.wayf.facade.InstitutionFacade;
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -35,6 +36,8 @@ public class InstitutionFacadeImpl implements InstitutionFacade {
 
     @Override
     public Single<Institution> read(String id) {
+        LOG.info("Request URI [{}]", RequestContextAccessor.get().getRequestUrl());
+
         LOG.debug("Reading institution with id [{}]", id);
 
         return Single.just(id)
