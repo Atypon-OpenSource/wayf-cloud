@@ -1,4 +1,4 @@
-package com.atypon.wayf.verticle;
+package com.atypon.wayf.verticle.routing;
 
 import io.vertx.ext.web.Router;
 

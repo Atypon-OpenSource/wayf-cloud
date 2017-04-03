@@ -2,39 +2,36 @@ package com.atypon.wayf.data;
 
 public class Institution {
 
-  private String id;
+    private String id;
+    private String name;
+    private String description;
 
-  private String name;
+    public Institution() {
+    }
 
-  private String description;
+    public String getName() {
+        return name;
+    }
 
-  public Institution() {
-  }
+    public Institution setName(String name) {
+        this.name = name;
+        return this;
+    }
+    public String getDescription() {
+        return description;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public Institution setDescription(String description) {
+        this.description = description;
+        return this;
+    }
 
-  public String getDescription() {
-    return description;
-  }
+    public String getId() {
+        return id;
+    }
 
-  public String getId() {
-    return id;
-  }
-
-  public Institution setName(String name) {
-    this.name = name;
-    return this;
-  }
-
-  public Institution setDescription(String description) {
-    this.description = description;
-    return this;
-  }
-
-  public Institution setId(String id) {
-    this.id = id;
-    return this;
-  }
+    public Institution setId(String id) {
+        this.id = id;
+        return this;
+    }
 }
