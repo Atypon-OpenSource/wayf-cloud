@@ -47,6 +47,7 @@ public abstract class WayfRequestHandler implements Handler<RoutingContext> {
             RequestContextAccessor.set(RequestContext.fromRoutingContext(event));
 
             Single.just(event)
+                    .observeOn(Schedulers.io())
                     .flatMap((s_event) -> singleDelegate.apply(s_event))
                     .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
                     .subscribe(
@@ -70,6 +71,7 @@ public abstract class WayfRequestHandler implements Handler<RoutingContext> {
             RequestContextAccessor.set(RequestContext.fromRoutingContext(event));
 
             Single.just(event)
+                    .observeOn(Schedulers.io())
                     .flatMapObservable((s_event) -> observableDelegate.apply(s_event))
                     .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
                     .subscribe(
@@ -93,6 +95,7 @@ public abstract class WayfRequestHandler implements Handler<RoutingContext> {
             RequestContextAccessor.set(RequestContext.fromRoutingContext(event));
 
             Single.just(event)
+                    .observeOn(Schedulers.io())
                     .flatMapCompletable((s_event) -> completableDelgate.apply(s_event))
                     .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
                     .subscribe(
