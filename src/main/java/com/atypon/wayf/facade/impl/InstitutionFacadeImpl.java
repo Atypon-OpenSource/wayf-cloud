@@ -36,8 +36,6 @@ public class InstitutionFacadeImpl implements InstitutionFacade {
 
     @Override
     public Single<Institution> read(String id) {
-        LOG.info("Request URI [{}]", RequestContextAccessor.get().getRequestUrl());
-
         LOG.debug("Reading institution with id [{}]", id);
 
         return Single.just(id)
