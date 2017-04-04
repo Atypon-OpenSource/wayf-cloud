@@ -12,6 +12,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 
+/**
+ * A utility class to write responses to VertX
+ */
 public class ResponseWriter {
     private static final Logger LOG = LoggerFactory.getLogger(ResponseWriter.class);
 
@@ -32,17 +35,19 @@ public class ResponseWriter {
     }
 
     public static void buildFailure(RoutingContext routingContext) {
-        Throwable t = routingContext.failure();
+        Throwable failure = routingContext.failure();
 
-        LOG.error("Error processing request", t);
+        LOG.error("Error processing request", failure);
 
+        // Write the stack trace to a stream
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(outputStream);
+        failure.printStackTrace(printStream);
 
-        t.printStackTrace(printStream);
-
+        // Build an error response message
         ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setMessage(t.getMessage());
+        errorResponse.setMessage(failure.getMessage());
+
         try {
             errorResponse.setStackTrace(outputStream.toString("utf-8"));
         } catch (UnsupportedEncodingException e) {
