@@ -1,14 +1,12 @@
 package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.data.Institution;
-import com.atypon.wayf.data.RequestContext;
-import com.atypon.wayf.data.RequestContextAccessor;
 import com.atypon.wayf.facade.InstitutionFacade;
 import com.atypon.wayf.facade.impl.InstitutionFacadeImpl;
 import com.atypon.wayf.verticle.RequestReader;
-import com.atypon.wayf.verticle.ResponseWriter;
+import com.atypon.wayf.verticle.WayfRequestHandler;
+import io.reactivex.Completable;
 import io.reactivex.Single;
-import io.reactivex.schedulers.Schedulers;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -35,63 +33,41 @@ public class InstitutionRouting implements RoutingProvider {
 
     public void addRoutings(Router router) {
         router.route(INSTITUTION_BASE_URL + "*").handler(BodyHandler.create());
-        router.post(CREATE_INSTITUTION).handler(this::createInstitution);
-        router.get(READ_INSTITUTION).handler(this::readInstitution);
-        router.put(UPDATE_INSTITUTION).handler(this::updateInstitution);
-        router.delete(DELETE_INSTITUTION).handler(this::deleteInstitution);
+        router.post(CREATE_INSTITUTION).handler(WayfRequestHandler.single((rc) -> createInstitution(rc)));
+        router.get(READ_INSTITUTION).handler(WayfRequestHandler.single((rc) -> readInstitution(rc)));
+        router.put(UPDATE_INSTITUTION).handler(WayfRequestHandler.single((rc) -> updateInstitution(rc)));
+        router.delete(DELETE_INSTITUTION).handler(WayfRequestHandler.completable((rc) -> deleteInstitution(rc)));
     }
 
-    public void createInstitution(RoutingContext routingContext) {
-            LOG.debug("Received create institution request");
+    public Single<Institution> createInstitution(RoutingContext routingContext) {
+        LOG.debug("Received create institution request");
 
-            Single.just(routingContext)
-                    .flatMap((rc) -> RequestReader.readRequestBody(rc, Institution.class))
-                    .flatMap((requestInstitution) -> institutionFacade.create(requestInstitution))
-                    .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
-                    .subscribe(
-                            (createdInstitution) -> ResponseWriter.buildSuccess(routingContext, createdInstitution),
-                            (e) -> routingContext.fail(e)
-                    );
+        return Single.just(routingContext)
+                .flatMap((rc) -> RequestReader.readRequestBody(rc, Institution.class))
+                .flatMap((requestInstitution) -> institutionFacade.create(requestInstitution));
     }
 
-    public void readInstitution(RoutingContext routingContext) {
+    public Single<Institution> readInstitution(RoutingContext routingContext) {
         LOG.debug("Received read institution request");
 
-        RequestContextAccessor.set(new RequestContext().setRequestUrl(routingContext.request().uri()));
-        
-        Single.just(routingContext)
+        return Single.just(routingContext)
                 .flatMap((rc) -> RequestReader.readPathArgument(rc, INSTITUTION_ID_PARAM_NAME))
-                .flatMap((institutionId) -> institutionFacade.read(institutionId))
-                .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
-                .subscribe(
-                        (readInstitution) -> ResponseWriter.buildSuccess(routingContext, readInstitution),
-                        (e) -> routingContext.fail(e)
-                );
+                .flatMap((institutionId) -> institutionFacade.read(institutionId));
     }
 
-    public void updateInstitution(RoutingContext routingContext) {
+    public Single<Institution> updateInstitution(RoutingContext routingContext) {
         LOG.debug("Received update institution request");
 
-        Single.just(routingContext)
+        return Single.just(routingContext)
                 .flatMap((rc) -> RequestReader.readRequestBody(rc, Institution.class))
-                .flatMap((requestInstitution) -> institutionFacade.update(requestInstitution))
-                .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
-                .subscribe(
-                        (updatedInstitution) -> ResponseWriter.buildSuccess(routingContext, updatedInstitution),
-                        (e) -> routingContext.fail(e)
-                );
+                .flatMap((requestInstitution) -> institutionFacade.update(requestInstitution));
     }
 
-    public void deleteInstitution(RoutingContext routingContext) {
+    public Completable deleteInstitution(RoutingContext routingContext) {
         LOG.debug("Received delete institution request");
 
-        Single.just(routingContext)
+        return Single.just(routingContext)
                 .flatMap((rc) -> RequestReader.readPathArgument(rc, INSTITUTION_ID_PARAM_NAME))
-                .flatMapCompletable((institutionId) -> institutionFacade.delete(institutionId))
-                .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
-                .subscribe(
-                        () -> ResponseWriter.buildSuccess(routingContext, null),
-                        (e) -> routingContext.fail(e)
-                );
+                .flatMapCompletable((institutionId) -> institutionFacade.delete(institutionId));
     }
 }
