@@ -69,7 +69,7 @@ public class InstitutionRoutingTest {
         final String institutionJson = Json.encodePrettily(new Institution().setName(institutionName).setDescription(institutionDescription));
         final String length = Integer.toString(institutionJson.length());
 
-        vertx.createHttpClient().post(port, "localhost", "/1/institution")
+        vertx.createHttpClient().post(port, "localhost", "/1/institution?forceSync=true")
                 .putHeader("content-type", "application/json")
                 .putHeader("content-length", length)
                 .handler(response -> {
@@ -94,7 +94,7 @@ public class InstitutionRoutingTest {
         final String institutionJson = Json.encodePrettily(new Institution().setName(institutionName).setDescription(institutionDescription));
         final String length = Integer.toString(institutionJson.length());
 
-        vertx.createHttpClient().post(port, "localhost", "/1/institution")
+        vertx.createHttpClient().post(port, "localhost", "/1/institution?forceSync=true")
                 .putHeader("content-type", "application/json")
                 .putHeader("content-length", length)
                 .handler(postResponse -> {
@@ -105,12 +105,6 @@ public class InstitutionRoutingTest {
                         context.assertEquals(postInstitution.getName(), institutionName);
                         context.assertEquals(postInstitution.getDescription(), institutionDescription);
                         context.assertNotNull(postInstitution.getId());
-
-                        try {
-                            Thread.sleep(2000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
 
                         vertx.createHttpClient().getNow(port, "localhost", "/1/institution/" + postInstitution.getId(), getResponse -> {
                             getResponse.handler(getBody -> {
@@ -135,7 +129,7 @@ public class InstitutionRoutingTest {
         final String institutionJson = Json.encodePrettily(new Institution().setName(institutionName).setDescription(institutionDescription));
         final String length = Integer.toString(institutionJson.length());
 
-        vertx.createHttpClient().post(port, "localhost", "/1/institution")
+        vertx.createHttpClient().post(port, "localhost", "/1/institution?forceSync=true")
                 .putHeader("content-type", "application/json")
                 .putHeader("content-length", length)
                 .handler(postResponse -> {
@@ -146,13 +140,6 @@ public class InstitutionRoutingTest {
                         context.assertEquals(postInstitution.getName(), institutionName);
                         context.assertEquals(postInstitution.getDescription(), institutionDescription);
                         context.assertNotNull(postInstitution.getId());
-
-
-                        try {
-                            Thread.sleep(2000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
 
                         final String updatedInstitutionDescription = institutionDescription + " UPDATED";
                         final String updatedJson = Json.encodePrettily(postInstitution.setDescription(updatedInstitutionDescription));

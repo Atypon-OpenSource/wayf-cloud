@@ -16,33 +16,21 @@
 
 package com.atypon.wayf.verticle;
 
-import com.atypon.wayf.data.ErrorResponse;
-import com.atypon.wayf.data.RequestContextAccessor;
 import com.atypon.wayf.reactive.WayfReactiveConfig;
-import com.atypon.wayf.reactive.WayfRunnable;
+import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.routing.InstitutionRouting;
 import com.atypon.wayf.verticle.routing.RoutingProvider;
 import com.google.common.collect.Lists;
-import io.reactivex.Completable;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.plugins.RxJavaPlugins;
-import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.json.Json;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 public class WayfVerticle extends AbstractVerticle {

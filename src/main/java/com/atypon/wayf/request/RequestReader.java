@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.verticle;
+package com.atypon.wayf.request;
 
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
@@ -43,5 +43,9 @@ public class RequestReader {
         LOG.debug("Reading param [{}] from request", argumentName);
 
         return Single.just(routingContext).observeOn(Schedulers.computation()).map((rc) -> rc.request().getParam(argumentName));
+    }
+
+    public static String getQueryValue(RoutingContext routingContext, String queryKey) {
+        return routingContext.request().getParam(queryKey);
     }
 }
