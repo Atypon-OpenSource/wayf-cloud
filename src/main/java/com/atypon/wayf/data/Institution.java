@@ -16,6 +16,9 @@
 
 package com.atypon.wayf.data;
 
+import org.neo4j.ogm.annotation.NodeEntity;
+
+@NodeEntity
 public class Institution {
 
     private String id;

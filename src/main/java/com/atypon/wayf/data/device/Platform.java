@@ -16,7 +16,50 @@
 
 package com.atypon.wayf.data.device;
 
+import org.neo4j.ogm.annotation.NodeEntity;
+
+import java.util.Date;
+
+@NodeEntity
 public class Platform {
     private String id;
     private String domain;
+
+    private Date createdDate;
+    private Date modifiedDate;
+
+    public Platform() {
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public Date getModifiedDate() {
+        return modifiedDate;
+    }
+
+    public void setModifiedDate(Date modifiedDate) {
+        this.modifiedDate = modifiedDate;
+    }
 }

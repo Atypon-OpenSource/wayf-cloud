@@ -14,31 +14,21 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data.device;
+package com.atypon.wayf.data;
 
-import com.atypon.wayf.data.user.User;
-import com.atypon.wayf.data.publisher.PublisherSession;
 import org.neo4j.ogm.annotation.NodeEntity;
-import org.neo4j.ogm.annotation.Relationship;
 
 import java.util.Date;
-import java.util.List;
 
 @NodeEntity
-public class Device {
+public class IdentityProvider {
     private String id;
-    private DeviceStatus status;
-
-    @Relationship(type="HAS_SESSIONS")
-    private List<PublisherSession> sessions;
-
-    @Relationship(type="OWNS", direction = Relationship.OUTGOING)
-    private User owner;
+    private String name;
 
     private Date createdDate;
     private Date modifiedDate;
 
-    public Device() {
+    public IdentityProvider() {
     }
 
     public String getId() {
@@ -49,28 +39,12 @@ public class Device {
         this.id = id;
     }
 
-    public DeviceStatus getStatus() {
-        return status;
+    public String getName() {
+        return name;
     }
 
-    public void setStatus(DeviceStatus status) {
-        this.status = status;
-    }
-
-    public List<PublisherSession> getSessions() {
-        return sessions;
-    }
-
-    public void setSessions(List<PublisherSession> sessions) {
-        this.sessions = sessions;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Date getCreatedDate() {

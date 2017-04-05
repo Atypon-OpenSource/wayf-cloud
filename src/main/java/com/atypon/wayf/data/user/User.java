@@ -18,10 +18,13 @@ package com.atypon.wayf.data.user;
 
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.publisher.Publisher;
+import org.neo4j.ogm.annotation.NodeEntity;
+import org.neo4j.ogm.annotation.Relationship;
 
 import java.util.Date;
 import java.util.List;
 
+@NodeEntity
 public class User {
     private String id;
 
@@ -29,8 +32,79 @@ public class User {
     private String lastName;
     private String email;
 
+    @Relationship(type="OWNS")
     private List<Device> devices;
+
+    @Relationship(type="ADMINISTERS")
+    private List<Publisher> publishers;
 
     private Date createdDate;
     private Date modifiedDate;
+
+    public User() {
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public List<Device> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(List<Device> devices) {
+        this.devices = devices;
+    }
+
+    public List<Publisher> getPublishers() {
+        return publishers;
+    }
+
+    public void setPublishers(List<Publisher> publishers) {
+        this.publishers = publishers;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public Date getModifiedDate() {
+        return modifiedDate;
+    }
+
+    public void setModifiedDate(Date modifiedDate) {
+        this.modifiedDate = modifiedDate;
+    }
 }
