@@ -18,6 +18,7 @@ package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.InstitutionDao;
 import com.atypon.wayf.data.Institution;
+import com.atypon.wayf.request.RequestContextAccessor;
 import org.neo4j.driver.v1.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,12 @@ public class InstitutionDaoNeo4JImpl implements InstitutionDao {
         arguments.put("name", institution.getName());
         arguments.put("description", institution.getDescription());
 
-        Neo4JBatchWriter.INSTANCE.queue(CREATE_CYPHER, arguments);
+        if (RequestContextAccessor.get().isForceSync()) {
+            LOG.debug("Running create in sync mode");
+            executeQuery(CREATE_CYPHER, arguments);
+        } else {
+            Neo4JBatchWriter.INSTANCE.queue(CREATE_CYPHER, arguments);
+        }
 
         return institution;
     }

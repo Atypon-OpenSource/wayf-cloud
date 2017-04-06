@@ -14,19 +14,24 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.request;
 
 import io.vertx.ext.web.RoutingContext;
 
 public class RequestContext {
     private String requestUrl;
+    private boolean forceSync;
 
-    public RequestContext() {
+    RequestContext() {
     }
 
     public static RequestContext fromRoutingContext(RoutingContext routingContext) {
         RequestContext requestContext = new RequestContext();
+
         requestContext.setRequestUrl(routingContext.request().uri());
+
+        String forceSyncQueryValue = RequestReader.getQueryValue(routingContext, "forceSync");
+        requestContext.setForceSync(Boolean.parseBoolean(forceSyncQueryValue));
 
         return requestContext;
     }
@@ -37,6 +42,15 @@ public class RequestContext {
 
     public RequestContext setRequestUrl(String requestUrl) {
         this.requestUrl = requestUrl;
+        return this;
+    }
+
+    public boolean isForceSync() {
+        return forceSync;
+    }
+
+    public RequestContext setForceSync(boolean forceSync) {
+        this.forceSync = forceSync;
         return this;
     }
 }

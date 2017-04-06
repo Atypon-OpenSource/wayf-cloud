@@ -16,8 +16,9 @@
 
 package com.atypon.wayf.verticle;
 
-import com.atypon.wayf.data.RequestContext;
-import com.atypon.wayf.data.RequestContextAccessor;
+import com.atypon.wayf.request.RequestContext;
+import com.atypon.wayf.request.RequestContextAccessor;
+import com.atypon.wayf.request.ResponseWriter;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
