@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.request;
 
 public class RequestContextAccessor {
     private static final ThreadLocal<RequestContext> THREAD_LOCAL = new ThreadLocal<>();

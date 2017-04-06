@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.verticle;
+package com.atypon.wayf.request;
 
 import com.atypon.wayf.data.ErrorResponse;
 import io.reactivex.Completable;
