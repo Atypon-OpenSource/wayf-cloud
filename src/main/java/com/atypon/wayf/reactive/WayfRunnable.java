@@ -17,8 +17,8 @@
 package com.atypon.wayf.reactive;
 
 
-import com.atypon.wayf.data.RequestContext;
-import com.atypon.wayf.data.RequestContextAccessor;
+import com.atypon.wayf.request.RequestContext;
+import com.atypon.wayf.request.RequestContextAccessor;
 import org.slf4j.MDC;
 
 import java.util.Map;

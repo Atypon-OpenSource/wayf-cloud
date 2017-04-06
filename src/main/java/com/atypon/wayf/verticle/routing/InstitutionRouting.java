@@ -19,7 +19,7 @@ package com.atypon.wayf.verticle.routing;
 import com.atypon.wayf.data.Institution;
 import com.atypon.wayf.facade.InstitutionFacade;
 import com.atypon.wayf.facade.impl.InstitutionFacadeImpl;
-import com.atypon.wayf.verticle.RequestReader;
+import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;
 import io.reactivex.Completable;
 import io.reactivex.Single;

@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.reactive;
+package com.atypon.wayf.request;
 
-import com.atypon.wayf.data.RequestContext;
-import com.atypon.wayf.data.RequestContextAccessor;
+import com.atypon.wayf.reactive.WayfReactiveConfig;
+import com.atypon.wayf.request.RequestContext;
+import com.atypon.wayf.request.RequestContextAccessor;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import org.junit.After;
