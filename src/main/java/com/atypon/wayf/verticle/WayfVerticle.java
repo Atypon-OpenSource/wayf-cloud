@@ -17,7 +17,7 @@
 package com.atypon.wayf.verticle;
 
 import com.atypon.wayf.guice.WayfGuiceModule;
-import com.atypon.wayf.reactive.WayfReactiveConfig;
+import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.routing.InstitutionRouting;
 import com.atypon.wayf.verticle.routing.PublisherSessionRouting;
@@ -99,6 +99,6 @@ public class WayfVerticle extends AbstractVerticle {
     private void initConfigs() {
         LOG.info("Initializing server configs");
 
-        WayfReactiveConfig.initializePlugins();
+        WayfReactivexConfig.initializePlugins();
     }
 }

@@ -14,24 +14,21 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao.impl;
+package com.atypon.wayf.reactivex;
 
-import java.util.Map;
+import io.reactivex.plugins.RxJavaPlugins;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-class Neo4JRequest {
-    private String cypher;
-    private Map<String, Object> args;
+/**
+ * A class to manage any configurations required for the ReactiveX library/.
+ */
+public class WayfReactivexConfig {
+    private static final Logger LOG = LoggerFactory.getLogger(WayfReactivexConfig.class);
 
-    public Neo4JRequest(String cypher, Map<String, Object> args) {
-        this.cypher = cypher;
-        this.args = args;
-    }
+    public static void initializePlugins() {
+        LOG.debug("Initializing reactivex plugins");
 
-    public String getCypher() {
-        return cypher;
-    }
-
-    public Map<String, Object> getArgs() {
-        return args;
+        RxJavaPlugins.setScheduleHandler((runnable) -> new WayfRunnable(runnable));
     }
 }

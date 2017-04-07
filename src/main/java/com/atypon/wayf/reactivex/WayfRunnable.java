@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.reactive;
+package com.atypon.wayf.reactivex;
 
 
 import com.atypon.wayf.request.RequestContext;

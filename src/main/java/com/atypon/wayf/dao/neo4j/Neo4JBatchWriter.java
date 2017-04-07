@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao.impl;
+package com.atypon.wayf.dao.neo4j;
 
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;

@@ -17,13 +17,13 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.InstitutionDao;
+import com.atypon.wayf.dao.neo4j.Neo4JBatchWriter;
 import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
 import com.atypon.wayf.data.Institution;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import org.neo4j.driver.v1.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

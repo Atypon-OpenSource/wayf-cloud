@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao.impl;
+package com.atypon.wayf.dao.neo4j;
 
-import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.Values;
 import org.quartz.JobExecutionContext;
