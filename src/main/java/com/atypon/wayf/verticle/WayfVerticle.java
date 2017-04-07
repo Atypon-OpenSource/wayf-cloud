@@ -43,7 +43,8 @@ public class WayfVerticle extends AbstractVerticle {
     @Inject
     private InstitutionRouting institutionRouting;
 
-    private PublisherSessionRouting publisherSessionRouting = new PublisherSessionRouting();
+    @Inject
+    private PublisherSessionRouting publisherSessionRouting;
 
     private List<RoutingProvider> routingProviders = Lists.newArrayList(institutionRouting, publisherSessionRouting);
 

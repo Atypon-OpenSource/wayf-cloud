@@ -21,6 +21,8 @@ import com.atypon.wayf.facade.PublisherSessionFacade;
 import com.atypon.wayf.facade.impl.PublisherSessionFacadeImpl;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.ext.web.Router;
@@ -29,6 +31,7 @@ import io.vertx.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class PublisherSessionRouting implements RoutingProvider {
     private static final Logger LOG = LoggerFactory.getLogger(PublisherSessionRouting.class);
 
@@ -43,8 +46,9 @@ public class PublisherSessionRouting implements RoutingProvider {
 
     private PublisherSessionFacade publisherSessionFacade;
 
-    public PublisherSessionRouting() {
-        publisherSessionFacade = new PublisherSessionFacadeImpl();
+    @Inject
+    public PublisherSessionRouting(PublisherSessionFacade publisherSessionFacade) {
+        this.publisherSessionFacade = publisherSessionFacade;
     }
 
     public void addRoutings(Router router) {

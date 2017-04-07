@@ -24,8 +24,10 @@ import com.atypon.wayf.dao.impl.DeviceDaoNeo4JImpl;
 import com.atypon.wayf.dao.impl.InstitutionDaoNeo4JImpl;
 import com.atypon.wayf.dao.impl.PublisherDaoNeo4JImpl;
 import com.atypon.wayf.dao.impl.PublisherSessionDaoNeo4JImpl;
+import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.InstitutionFacade;
 import com.atypon.wayf.facade.PublisherSessionFacade;
+import com.atypon.wayf.facade.impl.DeviceFacadeImpl;
 import com.atypon.wayf.facade.impl.InstitutionFacadeImpl;
 import com.atypon.wayf.facade.impl.PublisherSessionFacadeImpl;
 import com.google.inject.AbstractModule;
@@ -57,7 +59,9 @@ public class WayfGuiceModule extends AbstractModule {
             bind(PublisherSessionFacade.class).to(PublisherSessionFacadeImpl.class);
             bind(PublisherSessionDao.class).to(PublisherSessionDaoNeo4JImpl.class);
 
+            bind(DeviceFacade.class).to(DeviceFacadeImpl.class);
             bind(DeviceDao.class).to(DeviceDaoNeo4JImpl.class);
+
             bind(PublisherDao.class).to(PublisherDaoNeo4JImpl.class);
 
         } catch (Exception e) {
