@@ -18,21 +18,20 @@ package com.atypon.wayf.data.publisher;
 
 import com.atypon.wayf.data.IdentityProvider;
 import com.atypon.wayf.data.device.Device;
-import org.neo4j.ogm.annotation.NodeEntity;
-import org.neo4j.ogm.annotation.Relationship;
 
 import java.util.Date;
 
-@NodeEntity
 public class PublisherSession {
     private String id;
 
+    private String publisherId;
+
     private PublisherSessionStatus status;
 
-    @Relationship(type="AUTHENTICATED_BY")
+    private Device device;
+
     private IdentityProvider idp;
 
-    @Relationship(type="VALID_FOR")
     private Publisher publisher;
 
     private Date lastActiveDate;
@@ -51,12 +50,28 @@ public class PublisherSession {
         this.id = id;
     }
 
+    public String getPublisherId() {
+        return publisherId;
+    }
+
+    public void setPublisherId(String publisherId) {
+        this.publisherId = publisherId;
+    }
+
     public PublisherSessionStatus getStatus() {
         return status;
     }
 
     public void setStatus(PublisherSessionStatus status) {
         this.status = status;
+    }
+
+    public Device getDevice() {
+        return device;
+    }
+
+    public void setDevice(Device device) {
+        this.device = device;
     }
 
     public IdentityProvider getIdp() {

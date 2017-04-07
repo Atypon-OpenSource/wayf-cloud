@@ -16,12 +16,11 @@
 
 package com.atypon.wayf.data;
 
-import org.neo4j.ogm.annotation.NodeEntity;
-
 import java.util.Date;
 
-@NodeEntity
 public class IdentityProvider {
+    private Long graphId;
+
     private String id;
     private String name;
 
@@ -29,6 +28,14 @@ public class IdentityProvider {
     private Date modifiedDate;
 
     public IdentityProvider() {
+    }
+
+    public Long getGraphId() {
+        return graphId;
+    }
+
+    public void setGraphId(Long graphId) {
+        this.graphId = graphId;
     }
 
     public String getId() {

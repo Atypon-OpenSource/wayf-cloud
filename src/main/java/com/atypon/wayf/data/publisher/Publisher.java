@@ -19,26 +19,20 @@ package com.atypon.wayf.data.publisher;
 import com.atypon.wayf.data.IdentityProvider;
 import com.atypon.wayf.data.device.Platform;
 import com.atypon.wayf.data.user.User;
-import org.neo4j.ogm.annotation.NodeEntity;
-import org.neo4j.ogm.annotation.Relationship;
 
 import java.util.Date;
 import java.util.List;
 
-@NodeEntity
 public class Publisher {
     private String id;
     private PublisherStatus status;
 
     private String name;
 
-    @Relationship(type="OPERATES_ON")
     private Platform platform;
 
-    @Relationship(type="AUTHENTICATION_PROVIDED_BY")
     private List<IdentityProvider> identityProviders;
 
-    @Relationship(type="ADMINISTERS", direction = Relationship.INCOMING)
     private List<User> admins;
 
     private Date createdDate;

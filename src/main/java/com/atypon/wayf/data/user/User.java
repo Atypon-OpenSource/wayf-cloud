@@ -18,13 +18,10 @@ package com.atypon.wayf.data.user;
 
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.publisher.Publisher;
-import org.neo4j.ogm.annotation.NodeEntity;
-import org.neo4j.ogm.annotation.Relationship;
 
 import java.util.Date;
 import java.util.List;
 
-@NodeEntity
 public class User {
     private String id;
 
@@ -32,10 +29,8 @@ public class User {
     private String lastName;
     private String email;
 
-    @Relationship(type="OWNS")
     private List<Device> devices;
 
-    @Relationship(type="ADMINISTERS")
     private List<Publisher> publishers;
 
     private Date createdDate;

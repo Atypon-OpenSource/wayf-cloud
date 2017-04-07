@@ -20,19 +20,23 @@ import com.atypon.wayf.dao.InstitutionDao;
 import com.atypon.wayf.dao.impl.InstitutionDaoNeo4JImpl;
 import com.atypon.wayf.data.Institution;
 import com.atypon.wayf.facade.InstitutionFacade;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class InstitutionFacadeImpl implements InstitutionFacade {
     private static final Logger LOG = LoggerFactory.getLogger(InstitutionFacadeImpl.class);
 
     private InstitutionDao dao;
 
-    public InstitutionFacadeImpl() {
-        dao = new InstitutionDaoNeo4JImpl();
+    @Inject
+    public InstitutionFacadeImpl(InstitutionDao dao) {
+        this.dao = dao;
     }
 
     @Override

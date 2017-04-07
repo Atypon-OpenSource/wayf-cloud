@@ -17,26 +17,38 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.InstitutionDao;
+import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
 import com.atypon.wayf.data.Institution;
 import com.atypon.wayf.request.RequestContextAccessor;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import org.neo4j.driver.v1.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+@Singleton
 public class InstitutionDaoNeo4JImpl implements InstitutionDao {
     private static final Logger LOG = LoggerFactory.getLogger(InstitutionDaoNeo4JImpl.class);
 
-    public static Driver driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "test", "test" ) );
+    private String createCypher;
+    private String readCypher;
+    private String updateCypher;
+    private String deleteCypher;
 
-    // Eventually we'll want to source these from a properties file
-    private static final String CREATE_CYPHER = "CREATE (i:Institution {id:{id}, name:{name}, description:{description}});";// RETURN i.id AS id, i.name AS name, i.description AS description;";
-    private static final String READ_CYPHER = "MATCH (i:Institution) WHERE i.id = {id} RETURN i.id AS id, i.name AS name, i.description AS description;";
-    private static final String UPDATE_CYPHER = "MATCH (i:Institution) WHERE i.id = {id} SET i.name = {name}, i.description = {description} RETURN i.id AS id, i.name AS name, i.description AS description;";
-    private static final String DELETE_CYPHER = "MATCH (i:Institution) WHERE i.id = {id} DETACH DELETE i";
-
-    public InstitutionDaoNeo4JImpl() {}
+    @Inject
+    public InstitutionDaoNeo4JImpl(
+            @Named("institution.dao.neo4j.create") String createCypher,
+            @Named("institution.dao.neo4j.read") String readCypher,
+            @Named("institution.dao.neo4j.update")  String updateCypher,
+            @Named("institution.dao.neo4j.delete") String deleteCypher) {
+        this.createCypher = createCypher;
+        this.readCypher = readCypher;
+        this.updateCypher = updateCypher;
+        this.deleteCypher = deleteCypher;
+    }
 
     @Override
     public Institution create(Institution institution) {
@@ -51,9 +63,9 @@ public class InstitutionDaoNeo4JImpl implements InstitutionDao {
 
         if (RequestContextAccessor.get().isForceSync()) {
             LOG.debug("Running create in sync mode");
-            executeQuery(CREATE_CYPHER, arguments);
+            return Neo4JExecutor.executeQuery(createCypher, arguments, Institution.class).get(0);
         } else {
-            Neo4JBatchWriter.INSTANCE.queue(CREATE_CYPHER, arguments);
+            Neo4JBatchWriter.INSTANCE.queue(createCypher, arguments);
         }
 
         return institution;
@@ -66,7 +78,7 @@ public class InstitutionDaoNeo4JImpl implements InstitutionDao {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("id", id);
 
-        return executeQuery(READ_CYPHER, arguments).get(0);
+        return Neo4JExecutor.executeQuery(readCypher, arguments, Institution.class).get(0);
     }
 
     @Override
@@ -78,7 +90,7 @@ public class InstitutionDaoNeo4JImpl implements InstitutionDao {
         arguments.put("name", institution.getName());
         arguments.put("description", institution.getDescription());
 
-        return executeQuery(UPDATE_CYPHER, arguments).get(0);
+        return Neo4JExecutor.executeQuery(updateCypher, arguments, Institution.class).get(0);
     }
 
     @Override
@@ -88,31 +100,6 @@ public class InstitutionDaoNeo4JImpl implements InstitutionDao {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("id", id);
 
-        executeQuery(DELETE_CYPHER, arguments);
+        Neo4JExecutor.executeQuery(deleteCypher, arguments, null);
     }
-
-    private List<Institution> executeQuery(String query, Map<String, Object> arguments) {
-        Session session = driver.session();
-
-        LOG.debug("Got session");
-        StatementResult result = session.run( query, Values.value(arguments ) );
-
-        List<Institution> institutions = new LinkedList<>();
-
-        while (result.hasNext()) {
-            Record record = result.next();
-
-            Institution institution = new Institution();
-            institution.setId(record.get("id").asString());
-            institution.setName(record.get("name").asString());
-            institution.setDescription(record.get("description").asString());
-
-            institutions.add(institution);
-        }
-
-        session.close();
-
-        return institutions;
-    }
-
 }

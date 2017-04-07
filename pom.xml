@@ -71,7 +71,16 @@
       <artifactId>quartz-jobs</artifactId>
       <version>2.2.1</version>
     </dependency>
-
+      <dependency>
+          <groupId>com.google.inject</groupId>
+          <artifactId>guice</artifactId>
+          <version>4.1.0</version>
+      </dependency>
+      <dependency>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+          <version>1.9.2</version>
+      </dependency>
     <!-- For the tests -->
     <dependency>
       <groupId>junit</groupId>
@@ -95,18 +104,6 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
       <version>1.7.25</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-ogm-core</artifactId>
-      <version>2.1.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-ogm-bolt-driver</artifactId>
-      <version>2.1.2</version>
     </dependency>
   </dependencies>
 

@@ -16,11 +16,15 @@
 
 package com.atypon.wayf.verticle;
 
+import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactive.WayfReactiveConfig;
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.routing.InstitutionRouting;
+import com.atypon.wayf.verticle.routing.PublisherSessionRouting;
 import com.atypon.wayf.verticle.routing.RoutingProvider;
 import com.google.common.collect.Lists;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -36,7 +40,12 @@ import java.util.List;
 public class WayfVerticle extends AbstractVerticle {
     private static final Logger LOG = LoggerFactory.getLogger(WayfVerticle.class);
 
-    private List<RoutingProvider> routingProviders = Lists.newArrayList(new InstitutionRouting());
+    @Inject
+    private InstitutionRouting institutionRouting;
+
+    private PublisherSessionRouting publisherSessionRouting = new PublisherSessionRouting();
+
+    private List<RoutingProvider> routingProviders = Lists.newArrayList(institutionRouting, publisherSessionRouting);
 
     public WayfVerticle() {
     }
@@ -48,6 +57,8 @@ public class WayfVerticle extends AbstractVerticle {
     }
 
     private void startWebApp(Handler<AsyncResult<HttpServer>> next) {
+        Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
+        routingProviders = Lists.newArrayList(institutionRouting, publisherSessionRouting);
         // Create a router object.
         Router router = Router.router(vertx);
 

@@ -16,23 +16,18 @@
 
 package com.atypon.wayf.data.device;
 
-import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.data.publisher.PublisherSession;
-import org.neo4j.ogm.annotation.NodeEntity;
-import org.neo4j.ogm.annotation.Relationship;
+import com.atypon.wayf.data.user.User;
 
 import java.util.Date;
 import java.util.List;
 
-@NodeEntity
 public class Device {
     private String id;
     private DeviceStatus status;
 
-    @Relationship(type="HAS_SESSIONS")
     private List<PublisherSession> sessions;
 
-    @Relationship(type="OWNS", direction = Relationship.OUTGOING)
     private User owner;
 
     private Date createdDate;

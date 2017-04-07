@@ -16,11 +16,8 @@
 
 package com.atypon.wayf.data.device;
 
-import org.neo4j.ogm.annotation.NodeEntity;
-
 import java.util.Date;
 
-@NodeEntity
 public class Platform {
     private String id;
     private String domain;
