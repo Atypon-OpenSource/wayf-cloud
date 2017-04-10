@@ -18,6 +18,7 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.PublisherSessionDao;
 import com.atypon.wayf.data.device.Device;
+import com.atypon.wayf.data.device.DeviceStatus;
 import com.atypon.wayf.data.publisher.PublisherSession;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.PublisherSessionFacade;
@@ -29,20 +30,27 @@ import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.UUID;
 
 @Singleton
 public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     private static Logger LOG = LoggerFactory.getLogger(PublisherSessionFacadeImpl.class);
 
+    @Inject
     private DeviceFacade deviceFacade;
 
+    @Inject
     private PublisherSessionDao publisherSessionDao;
 
+    /*
     @Inject
     public PublisherSessionFacadeImpl(DeviceFacade deviceFacade, PublisherSessionDao publisherSessionDao) {
         this.deviceFacade = deviceFacade;
         this.publisherSessionDao = publisherSessionDao;
+    }*/
+
+    public PublisherSessionFacadeImpl() {
     }
 
     @Override
@@ -50,6 +58,7 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
         LOG.debug("Creating institution [{}]", publisherSession);
 
         publisherSession.setId(UUID.randomUUID().toString());
+        publisherSession.setLastActiveDate(new Date());
 
         return Single.just(publisherSession)
                 .flatMap((o_publisherSession) ->
@@ -62,6 +71,7 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
                                         throw new RuntimeException("Publisher ID must be unique");
                                     }
 
+                                    LOG.debug("Setting device {}", o_device.getId());
                                     o_publisherSession.setDevice(o_device);
                                     return o_publisherSession;
                                 }
@@ -87,10 +97,15 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     }
 
     private Single<Device> getOrCreateDevice(Device device) {
-        return device.getId() == null?
+        if (device == null) {
+            device = new Device();
+            device.setStatus(DeviceStatus.ACTIVE);
+        }
+
+        return device.getId() == null || device.getId().isEmpty()?
                 Single.just(device)
                         .observeOn(Schedulers.io())
-                        .flatMap((o_device) -> deviceFacade.create(device)) :
+                        .flatMap((o_device) -> deviceFacade.create(o_device)) :
                 Single.just(device);
     }
 

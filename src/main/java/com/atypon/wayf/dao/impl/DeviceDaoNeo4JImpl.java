@@ -63,10 +63,16 @@ public class DeviceDaoNeo4JImpl implements DeviceDao {
 
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("id", device.getId());
-        arguments.put("status", device.getStatus().toString());
-        arguments.put("createdDate", device.getCreatedDate().getTime());
-        arguments.put("modifiedDate", device.getModifiedDate().getTime());
 
+        if (device.getStatus() != null) {
+            arguments.put("status", device.getStatus().toString());
+        }
+        if (device.getCreatedDate() != null) {
+            arguments.put("createdDate", device.getCreatedDate().getTime());
+        }
+        if (device.getModifiedDate() != null) {
+            arguments.put("modifiedDate", device.getModifiedDate().getTime());
+        }
         return Neo4JExecutor.executeQuery(createCypher, arguments, Device.class).get(0);
     }
 

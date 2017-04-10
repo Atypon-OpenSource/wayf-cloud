@@ -16,26 +16,26 @@
 
 package com.atypon.wayf.dao.neo4j;
 
-import com.atypon.wayf.data.Institution;
-import org.apache.commons.beanutils.BeanUtils;
+import com.atypon.wayf.dao.ResultSetProcessor;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.neo4j.driver.v1.*;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 public class Neo4JExecutor {
-    public static Driver driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "test", "test" ) );
+    public static Driver driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("test", "test"));
+
+    private static final ResultSetProcessor processor = new ResultSetProcessor();
 
     private static BeanUtilsBean beanUtilsBean = new BeanUtilsBean(new ConvertUtilsBean() {
         @Override
         public Object convert(String value, Class clazz) {
-            if (clazz.isEnum()){
+            if (clazz.isEnum()) {
                 return Enum.valueOf(clazz, value);
-            }else{
+            } else {
                 return super.convert(value, clazz);
             }
         }
@@ -44,7 +44,7 @@ public class Neo4JExecutor {
     public static <T> List<T> executeQuery(String query, Map<String, Object> arguments, Class<T> returnType) {
         Session session = driver.session();
 
-        StatementResult result = session.run(query, Values.value(arguments ) );
+        StatementResult result = session.run(query, Values.value(arguments));
 
         List<T> returnValues = new LinkedList<>();
 
@@ -57,9 +57,7 @@ public class Neo4JExecutor {
             T returnValue = null;
 
             try {
-                returnValue = returnType.newInstance();
-
-                beanUtilsBean.populate(returnValue, record.asMap());
+                returnValue = processor.processRow(record.asMap(), returnType);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

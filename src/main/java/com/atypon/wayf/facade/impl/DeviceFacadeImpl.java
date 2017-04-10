@@ -19,13 +19,28 @@ package com.atypon.wayf.facade.impl;
 import com.atypon.wayf.dao.DeviceDao;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.facade.DeviceFacade;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 
+import java.util.UUID;
+
+@Singleton
 public class DeviceFacadeImpl implements DeviceFacade {
+
+    @Inject
     private DeviceDao deviceDao;
+
+    public DeviceFacadeImpl() {
+    }
 
     @Override
     public Single<Device> create(Device device) {
-        return null;
+        device.setId(UUID.randomUUID().toString());
+
+        return Single.just(device)
+                .observeOn(Schedulers.io())
+                .map((o_device) -> deviceDao.create(o_device));
     }
 }

@@ -105,7 +105,13 @@
       <artifactId>slf4j-log4j12</artifactId>
       <version>1.7.25</version>
     </dependency>
+      <dependency>
+          <groupId>net.sf.dozer</groupId>
+          <artifactId>dozer</artifactId>
+          <version>5.5.1</version>
+      </dependency>
   </dependencies>
+
 
   <build>
     <!-- Need to enable the filtering of the src/test/resources to inject the random port -->

@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @Singleton
 public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
@@ -55,7 +54,6 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
     public PublisherSession create(PublisherSession publisherSession) {
         LOG.debug("Creating publisher session [{}] in Neo4J", publisherSession);
 
-        publisherSession.setId(UUID.randomUUID().toString());
         publisherSession.setCreatedDate(new Date());
         publisherSession.setModifiedDate(new Date());
 
