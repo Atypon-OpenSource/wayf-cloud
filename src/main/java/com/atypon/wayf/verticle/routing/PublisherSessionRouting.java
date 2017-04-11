@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.verticle.routing;
 
+import com.atypon.wayf.data.IdentityProvider;
 import com.atypon.wayf.data.publisher.PublisherSession;
 import com.atypon.wayf.facade.PublisherSessionFacade;
 import com.atypon.wayf.facade.impl.PublisherSessionFacadeImpl;
@@ -38,9 +39,11 @@ public class PublisherSessionRouting implements RoutingProvider {
     private static final String PUBLISHER_SESSION_BASE_URL = "/1/publisherSession";
     private static final String PUBLISHER_SESSION_ID_PARAM_NAME = "id";
     private static final String PUBLISHER_SESSION_ID_PARAM = ":" + PUBLISHER_SESSION_ID_PARAM_NAME;
+    private static final String PUBLISHER_SESSION_PUBLISHER_ID_PARAM = ":" + PUBLISHER_SESSION_ID_PARAM_NAME;
 
     private static final String CREATE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL;
     private static final String READ_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
+    private static final String UPDATE_PUBLISHER_SESSION_BY_PUBLISHER_ID = PUBLISHER_SESSION_BASE_URL + "/publisherId/" +  PUBLISHER_SESSION_PUBLISHER_ID_PARAM;
     private static final String UPDATE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
     private static final String DELETE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
 
@@ -56,6 +59,8 @@ public class PublisherSessionRouting implements RoutingProvider {
         router.post(CREATE_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> createPublisherSession(rc)));
         router.get(READ_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> readPublisherSession(rc)));
         router.put(UPDATE_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> updatePublisherSession(rc)));
+        router.put(UPDATE_PUBLISHER_SESSION_BY_PUBLISHER_ID).handler(WayfRequestHandler.single((rc) -> addIdp(rc)));
+
         router.delete(DELETE_PUBLISHER_SESSION).handler(WayfRequestHandler.completable((rc) -> deletePublisherSession(rc)));
     }
 
@@ -81,6 +86,23 @@ public class PublisherSessionRouting implements RoutingProvider {
         return Single.just(routingContext)
                 .flatMap((rc) -> RequestReader.readRequestBody(rc, PublisherSession.class))
                 .flatMap((requestPublisherSession) -> publisherSessionFacade.update(requestPublisherSession));
+    }
+
+    public Single<PublisherSession> addIdp(RoutingContext routingContext) {
+        LOG.debug("Received update PublisherSession request");
+
+        return Single.zip(
+                RequestReader.readPathArgument(routingContext, PUBLISHER_SESSION_ID_PARAM_NAME),
+                RequestReader.readRequestBody(routingContext, IdentityProvider.class),
+
+                (publisherId, identityProvider) -> {
+                    PublisherSession publisherSession = new PublisherSession();
+                    publisherSession.setPublisherId(publisherId);
+                    publisherSession.setIdp(identityProvider);
+
+                    return publisherSession;
+                })
+                .flatMap((requestPublisherSession) -> publisherSessionFacade.addIdpRelationship(requestPublisherSession));
     }
 
     public Completable deletePublisherSession(RoutingContext routingContext) {

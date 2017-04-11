@@ -22,8 +22,10 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 
 public interface PublisherSessionFacade {
-    public Single<PublisherSession> create(PublisherSession publisherSession);
-    public Single<PublisherSession> read(String id);
-    public Single<PublisherSession> update(PublisherSession publisherSession);
-    public Completable delete(String id);
+    Single<PublisherSession> create(PublisherSession publisherSession);
+    Single<PublisherSession> read(String id);
+    Single<PublisherSession> update(PublisherSession publisherSession);
+    Completable delete(String id);
+
+    Single<PublisherSession> addIdpRelationship(PublisherSession publisherSession);
 }

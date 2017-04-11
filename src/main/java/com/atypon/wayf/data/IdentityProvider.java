@@ -19,8 +19,6 @@ package com.atypon.wayf.data;
 import java.util.Date;
 
 public class IdentityProvider {
-    private Long graphId;
-
     private String id;
     private String name;
 
@@ -28,14 +26,6 @@ public class IdentityProvider {
     private Date modifiedDate;
 
     public IdentityProvider() {
-    }
-
-    public Long getGraphId() {
-        return graphId;
-    }
-
-    public void setGraphId(Long graphId) {
-        this.graphId = graphId;
     }
 
     public String getId() {

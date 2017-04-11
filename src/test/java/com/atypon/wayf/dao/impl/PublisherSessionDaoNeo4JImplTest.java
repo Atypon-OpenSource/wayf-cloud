@@ -66,6 +66,7 @@ public class PublisherSessionDaoNeo4JImplTest {
         Assert.assertNotNull(createdPublisher.getId());
 
         PublisherSession publisherSession = new PublisherSession();
+        publisherSession.setId("123");
         publisherSession.setDevice(createdDevice);
         publisherSession.setPublisher(createdPublisher);
         publisherSession.setPublisherId("123abc");

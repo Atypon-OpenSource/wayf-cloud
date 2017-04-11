@@ -17,6 +17,7 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.PublisherSessionDao;
+import com.atypon.wayf.dao.PublisherSessionIdDao;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceStatus;
 import com.atypon.wayf.data.publisher.PublisherSession;
@@ -43,42 +44,40 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     @Inject
     private PublisherSessionDao publisherSessionDao;
 
-    /*
     @Inject
-    public PublisherSessionFacadeImpl(DeviceFacade deviceFacade, PublisherSessionDao publisherSessionDao) {
-        this.deviceFacade = deviceFacade;
-        this.publisherSessionDao = publisherSessionDao;
-    }*/
+    private PublisherSessionIdDao publisherSessionIdDao;
 
     public PublisherSessionFacadeImpl() {
     }
 
     @Override
     public Single<PublisherSession> create(PublisherSession publisherSession) {
-        LOG.debug("Creating institution [{}]", publisherSession);
+            LOG.debug("Creating institution [{}]", publisherSession);
 
-        publisherSession.setId(UUID.randomUUID().toString());
-        publisherSession.setLastActiveDate(new Date());
+            publisherSession.setId(UUID.randomUUID().toString());
 
-        return Single.just(publisherSession)
-                .flatMap((o_publisherSession) ->
-                        Single.zip(
-                                getOrCreateDevice(o_publisherSession.getDevice()).subscribeOn(Schedulers.newThread()),
-                                validatePublisherIdUniqueness(o_publisherSession).subscribeOn(Schedulers.newThread()),
+            publisherSession.setLastActiveDate(new Date());
 
-                                (o_device, o_unique) -> {
-                                    if (!o_unique) {
-                                        throw new RuntimeException("Publisher ID must be unique");
+            return Single.just(publisherSession)
+                    .flatMap((o_publisherSession) ->
+                            Single.zip(
+                                    getOrCreateDevice(o_publisherSession.getDevice()).subscribeOn(Schedulers.newThread()),
+                                    validatePublisherIdUniqueness(o_publisherSession).subscribeOn(Schedulers.newThread()),
+                                    publisherSessionIdDao.addWayfIdMapping(o_publisherSession.getPublisherId(), o_publisherSession.getId()).subscribeOn(Schedulers.newThread()).toSingleDefault(""),
+
+                                    (o_device, o_unique, o_ignore) -> {
+                                        if (!o_unique) {
+                                            throw new RuntimeException("Publisher ID must be unique");
+                                        }
+
+                                        LOG.debug("Setting device {}", o_device.getId());
+                                        o_publisherSession.setDevice(o_device);
+                                        return o_publisherSession;
                                     }
-
-                                    LOG.debug("Setting device {}", o_device.getId());
-                                    o_publisherSession.setDevice(o_device);
-                                    return o_publisherSession;
-                                }
-                        )
-                )
-                .observeOn(Schedulers.io())
-                .flatMap((o_publisherSession) -> Single.just(publisherSessionDao.create(o_publisherSession)));
+                            )
+                    )
+                    .observeOn(Schedulers.io())
+                    .flatMap((o_publisherSession) -> Single.just(publisherSessionDao.create(o_publisherSession)));
     }
 
     @Override
@@ -88,12 +87,36 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
 
     @Override
     public Single<PublisherSession> update(PublisherSession publisherSession) {
-        return null;
+        return Single.zip(
+                Single.just(publisherSession),
+                getPublisherId(publisherSession),
+
+                (o_publisherSession, o_publisherId) -> {
+                    o_publisherSession.setPublisherId(o_publisherId);
+                    return o_publisherSession;
+                }
+        );
     }
 
     @Override
     public Completable delete(String id) {
         return null;
+    }
+
+    @Override
+    public Single<PublisherSession> addIdpRelationship(PublisherSession publisherSession) {
+        LOG.debug("Adding relationship");
+
+        return
+                Single.zip(
+                        Single.just(publisherSession),
+                        getPublisherId(publisherSession),
+
+                        (o_publisherSession, o_publisherId) -> {
+                            o_publisherSession.setPublisherId(o_publisherId);
+                            return o_publisherSession;
+                        })
+                        .flatMap(publisherSessionToPersist -> publisherSessionDao.addIdpRelationship(publisherSessionToPersist));
     }
 
     private Single<Device> getOrCreateDevice(Device device) {
@@ -112,5 +135,17 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     private Single<Boolean> validatePublisherIdUniqueness(PublisherSession publisherSession) {
         // Some long running database job
         return Single.just(Boolean.TRUE);
+    }
+
+    private Single<String> getPublisherId(PublisherSession publisherSession) {
+        if (publisherSession.getId() == null) {
+            if (publisherSession.getPublisherId() == null) {
+                throw new RuntimeException("Either an id or publisherId is required to update a PublisherSession");
+            }
+
+            return publisherSessionIdDao.getWayfId(publisherSession.getPublisherId());
+        }
+
+        return Single.just(publisherSession.getId());
     }
 }

@@ -16,18 +16,14 @@
 
 package com.atypon.wayf.guice;
 
-import com.atypon.wayf.dao.DeviceDao;
-import com.atypon.wayf.dao.InstitutionDao;
-import com.atypon.wayf.dao.PublisherDao;
-import com.atypon.wayf.dao.PublisherSessionDao;
-import com.atypon.wayf.dao.impl.DeviceDaoNeo4JImpl;
-import com.atypon.wayf.dao.impl.InstitutionDaoNeo4JImpl;
-import com.atypon.wayf.dao.impl.PublisherDaoNeo4JImpl;
-import com.atypon.wayf.dao.impl.PublisherSessionDaoNeo4JImpl;
+import com.atypon.wayf.dao.*;
+import com.atypon.wayf.dao.impl.*;
 import com.atypon.wayf.facade.DeviceFacade;
+import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.atypon.wayf.facade.InstitutionFacade;
 import com.atypon.wayf.facade.PublisherSessionFacade;
 import com.atypon.wayf.facade.impl.DeviceFacadeImpl;
+import com.atypon.wayf.facade.impl.IdentityProviderFacadeImpl;
 import com.atypon.wayf.facade.impl.InstitutionFacadeImpl;
 import com.atypon.wayf.facade.impl.PublisherSessionFacadeImpl;
 import com.google.inject.AbstractModule;
@@ -50,6 +46,7 @@ public class WayfGuiceModule extends AbstractModule {
             properties.load(classLoader.getResourceAsStream("dao/publisher-session-dao-neo4j.properties"));
             properties.load(classLoader.getResourceAsStream("dao/publisher-dao-neo4j.properties"));
             properties.load(classLoader.getResourceAsStream("dao/device-dao-neo4j.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/identity-provider-dao-neo4j.properties"));
 
             Names.bindProperties(binder(), properties);
 
@@ -64,6 +61,11 @@ public class WayfGuiceModule extends AbstractModule {
 
             bind(PublisherDao.class).to(PublisherDaoNeo4JImpl.class);
 
+
+            bind(PublisherSessionIdDao.class).to(PublisherSessionIdDaoRedisImpl.class);
+
+            bind(IdentityProviderFacade.class).to(IdentityProviderFacadeImpl.class);
+            bind(IdentityProviderDao.class).to(IdentityProviderDaoNeo4JImpl.class);
         } catch (Exception e) {
             LOG.error("Error initializing Guice", e);
             throw new RuntimeException(e);

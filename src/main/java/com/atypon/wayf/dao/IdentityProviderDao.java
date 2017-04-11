@@ -16,14 +16,10 @@
 
 package com.atypon.wayf.dao;
 
-import com.atypon.wayf.data.publisher.PublisherSession;
+import com.atypon.wayf.data.IdentityProvider;
 import io.reactivex.Single;
 
-public interface PublisherSessionDao {
-    PublisherSession create(PublisherSession publisherSession);
-    PublisherSession read(String id);
-    PublisherSession update(PublisherSession publisherSession);
-    void delete(String id);
+public interface IdentityProviderDao {
 
-    Single<PublisherSession> addIdpRelationship(PublisherSession publisherSession);
+    Single<IdentityProvider> create(IdentityProvider identityProvider);
 }

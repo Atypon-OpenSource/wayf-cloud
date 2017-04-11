@@ -22,6 +22,8 @@ import com.atypon.wayf.data.publisher.PublisherSession;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,17 +39,20 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
     private String readCypher;
     private String updateCypher;
     private String deleteCypher;
+    private String addIdpRelationshipCypher;
 
     @Inject
     public PublisherSessionDaoNeo4JImpl(
             @Named("publisher-session.dao.neo4j.create") String createCypher,
             @Named("publisher-session.dao.neo4j.read") String readCypher,
             @Named("publisher-session.dao.neo4j.update")  String updateCypher,
-            @Named("publisher-session.dao.neo4j.delete") String deleteCypher) {
+            @Named("publisher-session.dao.neo4j.delete") String deleteCypher,
+            @Named("publisher-session.dao.neo4j.add-idp-relationship") String addIdpRelationshipCypher) {
         this.createCypher = createCypher;
         this.readCypher = readCypher;
         this.updateCypher = updateCypher;
         this.deleteCypher = deleteCypher;
+        this.addIdpRelationshipCypher = addIdpRelationshipCypher;
     }
 
     @Override
@@ -82,6 +87,21 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
 
     @Override
     public void delete(String id) {
+
+    }
+
+    @Override
+    public Single<PublisherSession> addIdpRelationship(PublisherSession publisherSession) {
+        LOG.debug("Adding IDP relationship");
+        return Single.just(publisherSession)
+                .observeOn(Schedulers.io())
+                .map((o_publisherSession) -> {
+                    Map<String, Object> arguments = new HashMap<>();
+                    arguments.put("publisherSessionId", "666e9a41-01ae-4d9b-9294-ce05597ddd69");
+                    arguments.put("idpId", o_publisherSession.getIdp().getId());
+
+                    return Neo4JExecutor.executeQuery(addIdpRelationshipCypher, arguments, PublisherSession.class).get(0);
+                });
 
     }
 }

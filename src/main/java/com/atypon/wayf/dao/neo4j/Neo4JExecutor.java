@@ -20,28 +20,23 @@ import com.atypon.wayf.dao.ResultSetProcessor;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.neo4j.driver.v1.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 public class Neo4JExecutor {
+    private static final Logger LOG = LoggerFactory.getLogger(Neo4JExecutor.class);
+
     public static Driver driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("test", "test"));
 
     private static final ResultSetProcessor processor = new ResultSetProcessor();
 
-    private static BeanUtilsBean beanUtilsBean = new BeanUtilsBean(new ConvertUtilsBean() {
-        @Override
-        public Object convert(String value, Class clazz) {
-            if (clazz.isEnum()) {
-                return Enum.valueOf(clazz, value);
-            } else {
-                return super.convert(value, clazz);
-            }
-        }
-    });
-
     public static <T> List<T> executeQuery(String query, Map<String, Object> arguments, Class<T> returnType) {
+        LOG.debug("Running statement[{}] with values[{}]", query, arguments);
+
         Session session = driver.session();
 
         StatementResult result = session.run(query, Values.value(arguments));

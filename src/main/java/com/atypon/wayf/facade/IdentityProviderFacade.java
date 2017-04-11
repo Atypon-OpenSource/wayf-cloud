@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.facade;
 
-import com.atypon.wayf.data.publisher.PublisherSession;
+import com.atypon.wayf.data.IdentityProvider;
 import io.reactivex.Single;
 
-public interface PublisherSessionDao {
-    PublisherSession create(PublisherSession publisherSession);
-    PublisherSession read(String id);
-    PublisherSession update(PublisherSession publisherSession);
-    void delete(String id);
-
-    Single<PublisherSession> addIdpRelationship(PublisherSession publisherSession);
+public interface IdentityProviderFacade {
+    Single<IdentityProvider> create(IdentityProvider identityProvider);
 }

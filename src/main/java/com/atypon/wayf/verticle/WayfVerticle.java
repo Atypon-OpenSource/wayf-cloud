@@ -16,9 +16,11 @@
 
 package com.atypon.wayf.verticle;
 
+import com.atypon.wayf.data.IdentityProvider;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.ResponseWriter;
+import com.atypon.wayf.verticle.routing.IdentityProviderRouting;
 import com.atypon.wayf.verticle.routing.InstitutionRouting;
 import com.atypon.wayf.verticle.routing.PublisherSessionRouting;
 import com.atypon.wayf.verticle.routing.RoutingProvider;
@@ -46,7 +48,10 @@ public class WayfVerticle extends AbstractVerticle {
     @Inject
     private PublisherSessionRouting publisherSessionRouting;
 
-    private List<RoutingProvider> routingProviders = Lists.newArrayList(institutionRouting, publisherSessionRouting);
+    @Inject
+    private IdentityProviderRouting identityProviderRouting;
+
+    private List<RoutingProvider> routingProviders = Lists.newArrayList(institutionRouting, publisherSessionRouting, identityProviderRouting);
 
     public WayfVerticle() {
     }
@@ -59,17 +64,17 @@ public class WayfVerticle extends AbstractVerticle {
 
     private void startWebApp(Handler<AsyncResult<HttpServer>> next) {
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
-        routingProviders = Lists.newArrayList(institutionRouting, publisherSessionRouting);
+        routingProviders = Lists.newArrayList(institutionRouting, publisherSessionRouting, identityProviderRouting);
         // Create a router object.
         Router router = Router.router(vertx);
 
         LOG.debug("Adding routes");
         routingProviders.forEach((routingProvider) -> routingProvider.addRoutings(router));
 
-
         LOG.debug("Adding default error handler to routes");
         for (Route route : router.getRoutes()) {
             route.failureHandler((rc) -> ResponseWriter.buildFailure(rc));
+            LOG.debug("Found path {}", route);
         }
 
         LOG.debug("Starting HTTP server");

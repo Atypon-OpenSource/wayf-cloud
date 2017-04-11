@@ -16,14 +16,11 @@
 
 package com.atypon.wayf.dao;
 
-import com.atypon.wayf.data.publisher.PublisherSession;
+import io.reactivex.Completable;
 import io.reactivex.Single;
 
-public interface PublisherSessionDao {
-    PublisherSession create(PublisherSession publisherSession);
-    PublisherSession read(String id);
-    PublisherSession update(PublisherSession publisherSession);
-    void delete(String id);
+public interface PublisherSessionIdDao {
 
-    Single<PublisherSession> addIdpRelationship(PublisherSession publisherSession);
+    Completable addWayfIdMapping(String publisherId, String wayfId);
+    Single<String> getWayfId(String publisherId);
 }
