@@ -22,6 +22,7 @@ import com.atypon.wayf.data.publisher.PublisherSession;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
@@ -91,7 +92,7 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
     }
 
     @Override
-    public Single<PublisherSession> addIdpRelationship(PublisherSession publisherSession) {
+    public Completable addIdpRelationship(PublisherSession publisherSession) {
         LOG.debug("Adding IDP relationship");
         return Single.just(publisherSession)
                 .observeOn(Schedulers.io())
@@ -100,8 +101,8 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
                     arguments.put("publisherSessionId", "666e9a41-01ae-4d9b-9294-ce05597ddd69");
                     arguments.put("idpId", o_publisherSession.getIdp().getId());
 
-                    return Neo4JExecutor.executeQuery(addIdpRelationshipCypher, arguments, PublisherSession.class).get(0);
-                });
+                    return Neo4JExecutor.executeQuery(addIdpRelationshipCypher, arguments, PublisherSession.class);
+                }).toCompletable();
 
     }
 }

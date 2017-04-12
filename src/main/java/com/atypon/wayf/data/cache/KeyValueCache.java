@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.data.cache;
 
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
-import io.reactivex.Single;
 
-public interface PublisherSessionIdDao {
-
-    Completable addWayfIdMapping(String publisherId, String wayfId);
-    Maybe<String> getWayfId(String publisherId);
+public interface KeyValueCache<K, V> {
+    Maybe<V> get(K key);
+    Completable put(K key, V value);
 }

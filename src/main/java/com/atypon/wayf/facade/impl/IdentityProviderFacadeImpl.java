@@ -18,10 +18,14 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.IdentityProviderDao;
 import com.atypon.wayf.data.IdentityProvider;
+import com.atypon.wayf.data.cache.CascadingCache;
 import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 
 import java.util.Date;
 import java.util.UUID;
@@ -31,6 +35,10 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
     @Inject
     private IdentityProviderDao identityProviderDao;
+
+    @Inject
+    @Named("identityProviderCache")
+    private CascadingCache<String, String> cache;
 
     public IdentityProviderFacadeImpl() {
     }
@@ -43,5 +51,17 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
         return Single.just(identityProvider)
                 .flatMap(o_identityProvider -> identityProviderDao.create(o_identityProvider));
+    }
+
+    @Override
+    public Single<IdentityProvider> resolve(IdentityProvider identityProvider) {
+        if (identityProvider.getId() != null && !identityProvider.getId().isEmpty()) {
+            return Single.just(identityProvider);
+        }
+
+        return Maybe.concat(
+                cache.get(identityProvider.getEntityId()).map((id) -> {IdentityProvider idp = new IdentityProvider(); idp.setId(id); return idp;}),
+                create(identityProvider).toMaybe()
+        ).firstOrError();
     }
 }

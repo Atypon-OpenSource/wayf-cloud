@@ -21,6 +21,8 @@ import java.util.Date;
 public class IdentityProvider {
     private String id;
     private String name;
+    private String entityId;
+    private String federationId;
 
     private Date createdDate;
     private Date modifiedDate;
@@ -42,6 +44,22 @@ public class IdentityProvider {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(String entityId) {
+        this.entityId = entityId;
+    }
+
+    public String getFederationId() {
+        return federationId;
+    }
+
+    public void setFederationId(String federationId) {
+        this.federationId = federationId;
     }
 
     public Date getCreatedDate() {

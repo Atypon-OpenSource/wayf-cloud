@@ -16,7 +16,6 @@
 
 package com.atypon.wayf.facade;
 
-import com.atypon.wayf.data.Institution;
 import com.atypon.wayf.data.publisher.PublisherSession;
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -27,5 +26,5 @@ public interface PublisherSessionFacade {
     Single<PublisherSession> update(PublisherSession publisherSession);
     Completable delete(String id);
 
-    Single<PublisherSession> addIdpRelationship(PublisherSession publisherSession);
+    Completable addIdpRelationship(PublisherSession publisherSession);
 }

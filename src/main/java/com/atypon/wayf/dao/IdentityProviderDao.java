@@ -22,4 +22,6 @@ import io.reactivex.Single;
 public interface IdentityProviderDao {
 
     Single<IdentityProvider> create(IdentityProvider identityProvider);
+
+
 }

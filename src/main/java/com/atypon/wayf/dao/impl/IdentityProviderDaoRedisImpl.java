@@ -16,13 +16,10 @@
 
 package com.atypon.wayf.dao.impl;
 
-import com.atypon.wayf.dao.PublisherSessionIdDao;
 import com.atypon.wayf.data.cache.KeyValueCache;
 import com.google.inject.Singleton;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
-import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +28,12 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 @Singleton
-public class PublisherSessionIdDaoRedisImpl implements KeyValueCache<String, String> {
-    private static final Logger LOG = LoggerFactory.getLogger(PublisherSessionIdDaoRedisImpl.class);
+public class IdentityProviderDaoRedisImpl implements KeyValueCache<String, String> {
+    private static final Logger LOG = LoggerFactory.getLogger(IdentityProviderDaoRedisImpl.class);
 
     private static JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost");
 
-    public PublisherSessionIdDaoRedisImpl() {
+    public IdentityProviderDaoRedisImpl() {
     }
 
     @Override

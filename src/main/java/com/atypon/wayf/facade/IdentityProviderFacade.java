@@ -21,4 +21,6 @@ import io.reactivex.Single;
 
 public interface IdentityProviderFacade {
     Single<IdentityProvider> create(IdentityProvider identityProvider);
+
+    Single<IdentityProvider> resolve(IdentityProvider identityProvider);
 }

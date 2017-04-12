@@ -18,6 +18,7 @@ package com.atypon.wayf.guice;
 
 import com.atypon.wayf.dao.*;
 import com.atypon.wayf.dao.impl.*;
+import com.atypon.wayf.data.cache.CascadingCache;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.atypon.wayf.facade.InstitutionFacade;
@@ -26,7 +27,7 @@ import com.atypon.wayf.facade.impl.DeviceFacadeImpl;
 import com.atypon.wayf.facade.impl.IdentityProviderFacadeImpl;
 import com.atypon.wayf.facade.impl.InstitutionFacadeImpl;
 import com.atypon.wayf.facade.impl.PublisherSessionFacadeImpl;
-import com.google.inject.AbstractModule;
+import com.google.inject.*;
 import com.google.inject.name.Names;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ public class WayfGuiceModule extends AbstractModule {
             properties.load(classLoader.getResourceAsStream("dao/publisher-dao-neo4j.properties"));
             properties.load(classLoader.getResourceAsStream("dao/device-dao-neo4j.properties"));
             properties.load(classLoader.getResourceAsStream("dao/identity-provider-dao-neo4j.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/publisher-session-id-dao-neo4j.properties"));
 
             Names.bindProperties(binder(), properties);
 
@@ -61,11 +63,40 @@ public class WayfGuiceModule extends AbstractModule {
 
             bind(PublisherDao.class).to(PublisherDaoNeo4JImpl.class);
 
-
-            bind(PublisherSessionIdDao.class).to(PublisherSessionIdDaoRedisImpl.class);
-
             bind(IdentityProviderFacade.class).to(IdentityProviderFacadeImpl.class);
             bind(IdentityProviderDao.class).to(IdentityProviderDaoNeo4JImpl.class);
+
+            bind(new TypeLiteral<CascadingCache<String, String>>(){})
+                    .annotatedWith(Names.named("publisherIdCache"))
+                    .toProvider(new Provider<CascadingCache<String, String>>() {
+                        @Inject
+                        private PublisherSessionIdDaoRedisImpl l1;
+
+                        @Inject
+                        private PublisherSessionIdDaoNeo4JImpl l2;
+
+                        @Override
+                        public CascadingCache<String, String> get() {
+                            Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
+                            return new CascadingCache(l1, l2);
+                        }
+                    });
+
+            bind(new TypeLiteral<CascadingCache<String, String>>(){})
+                    .annotatedWith(Names.named("identityProviderCache"))
+                    .toProvider(new Provider<CascadingCache<String, String>>() {
+                        @Inject
+                        private IdentityProviderDaoRedisImpl l1;
+
+                        @Inject
+                        private IdentityProviderDaoNeo4JImpl l2;
+
+                        @Override
+                        public CascadingCache<String, String> get() {
+                            Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
+                            return new CascadingCache(l1, l2);
+                        }
+                    });
         } catch (Exception e) {
             LOG.error("Error initializing Guice", e);
             throw new RuntimeException(e);

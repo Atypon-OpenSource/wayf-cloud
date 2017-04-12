@@ -17,14 +17,17 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.PublisherSessionDao;
-import com.atypon.wayf.dao.PublisherSessionIdDao;
+import com.atypon.wayf.data.cache.CascadingCache;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceStatus;
 import com.atypon.wayf.data.publisher.PublisherSession;
 import com.atypon.wayf.facade.DeviceFacade;
+import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.atypon.wayf.facade.PublisherSessionFacade;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import com.sun.javafx.geom.transform.Identity;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
@@ -45,7 +48,11 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     private PublisherSessionDao publisherSessionDao;
 
     @Inject
-    private PublisherSessionIdDao publisherSessionIdDao;
+    private IdentityProviderFacade identityProviderFacade;
+
+    @Inject
+    @Named("publisherIdCache")
+    private CascadingCache<String, String> idCache;
 
     public PublisherSessionFacadeImpl() {
     }
@@ -63,9 +70,9 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
                             Single.zip(
                                     getOrCreateDevice(o_publisherSession.getDevice()).subscribeOn(Schedulers.newThread()),
                                     validatePublisherIdUniqueness(o_publisherSession).subscribeOn(Schedulers.newThread()),
-                                    publisherSessionIdDao.addWayfIdMapping(o_publisherSession.getPublisherId(), o_publisherSession.getId()).subscribeOn(Schedulers.newThread()).toSingleDefault(""),
+                                    //id.addWayfIdMapping(o_publisherSession.getPublisherId(), o_publisherSession.getId()).subscribeOn(Schedulers.newThread()).toSingleDefault(""),
 
-                                    (o_device, o_unique, o_ignore) -> {
+                                    (o_device, o_unique) -> {
                                         if (!o_unique) {
                                             throw new RuntimeException("Publisher ID must be unique");
                                         }
@@ -104,19 +111,21 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     }
 
     @Override
-    public Single<PublisherSession> addIdpRelationship(PublisherSession publisherSession) {
+    public Completable addIdpRelationship(PublisherSession publisherSession) {
         LOG.debug("Adding relationship");
 
         return
                 Single.zip(
                         Single.just(publisherSession),
+                        identityProviderFacade.resolve(publisherSession.getIdp()),
                         getPublisherId(publisherSession),
 
-                        (o_publisherSession, o_publisherId) -> {
-                            o_publisherSession.setPublisherId(o_publisherId);
+                        (o_publisherSession, identityProvider, publisherId) -> {
+                            o_publisherSession.setIdp(identityProvider);
+                            o_publisherSession.setPublisherId(publisherId);
                             return o_publisherSession;
                         })
-                        .flatMap(publisherSessionToPersist -> publisherSessionDao.addIdpRelationship(publisherSessionToPersist));
+                        .flatMapCompletable(publisherSessionToPersist -> publisherSessionDao.addIdpRelationship(publisherSessionToPersist));
     }
 
     private Single<Device> getOrCreateDevice(Device device) {
@@ -143,7 +152,7 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
                 throw new RuntimeException("Either an id or publisherId is required to update a PublisherSession");
             }
 
-            return publisherSessionIdDao.getWayfId(publisherSession.getPublisherId());
+            return idCache.get(publisherSession.getPublisherId()).toSingle();
         }
 
         return Single.just(publisherSession.getId());
