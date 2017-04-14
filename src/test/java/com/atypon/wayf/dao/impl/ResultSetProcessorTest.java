@@ -40,4 +40,6 @@ public class ResultSetProcessorTest {
         Assert.assertEquals("testId", publisherSession.getId());
         Assert.assertEquals("testDeviceId", publisherSession.getDevice().getId());
     }
+
+
 }

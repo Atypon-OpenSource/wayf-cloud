@@ -18,6 +18,8 @@ package com.atypon.wayf.guice;
 
 import com.atypon.wayf.dao.*;
 import com.atypon.wayf.dao.impl.*;
+import com.atypon.wayf.dao.redis.RedisDao;
+import com.atypon.wayf.dao.redis.impl.RedisDaoDefaultImpl;
 import com.atypon.wayf.data.cache.CascadingCache;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.IdentityProviderFacade;
@@ -28,6 +30,7 @@ import com.atypon.wayf.facade.impl.IdentityProviderFacadeImpl;
 import com.atypon.wayf.facade.impl.InstitutionFacadeImpl;
 import com.atypon.wayf.facade.impl.PublisherSessionFacadeImpl;
 import com.google.inject.*;
+import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,11 +69,20 @@ public class WayfGuiceModule extends AbstractModule {
             bind(IdentityProviderFacade.class).to(IdentityProviderFacadeImpl.class);
             bind(IdentityProviderDao.class).to(IdentityProviderDaoNeo4JImpl.class);
 
+            bind(RedisDao.class)
+                    .annotatedWith(Names.named("publisherIdRedisDao"))
+                    .toProvider(() -> new RedisDaoDefaultImpl("PUBLISHER_ID"));
+
+            bind(RedisDao.class)
+                    .annotatedWith(Names.named("identityProviderRedisDao"))
+                    .toProvider(() -> new RedisDaoDefaultImpl("IDENTITY_PROVIDER"));
+
             bind(new TypeLiteral<CascadingCache<String, String>>(){})
                     .annotatedWith(Names.named("publisherIdCache"))
                     .toProvider(new Provider<CascadingCache<String, String>>() {
                         @Inject
-                        private PublisherSessionIdDaoRedisImpl l1;
+                        @Named("publisherIdRedisDao")
+                        private RedisDao l1;
 
                         @Inject
                         private PublisherSessionIdDaoNeo4JImpl l2;
@@ -86,7 +98,8 @@ public class WayfGuiceModule extends AbstractModule {
                     .annotatedWith(Names.named("identityProviderCache"))
                     .toProvider(new Provider<CascadingCache<String, String>>() {
                         @Inject
-                        private IdentityProviderDaoRedisImpl l1;
+                        @Named("identityProviderRedisDao")
+                        private RedisDao l1;
 
                         @Inject
                         private IdentityProviderDaoNeo4JImpl l2;

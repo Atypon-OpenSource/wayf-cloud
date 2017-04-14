@@ -55,13 +55,18 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
     @Override
     public Single<IdentityProvider> resolve(IdentityProvider identityProvider) {
-        if (identityProvider.getId() != null && !identityProvider.getId().isEmpty()) {
-            return Single.just(identityProvider);
-        }
-
         return Maybe.concat(
-                cache.get(identityProvider.getEntityId()).map((id) -> {IdentityProvider idp = new IdentityProvider(); idp.setId(id); return idp;}),
-                create(identityProvider).toMaybe()
-        ).firstOrError();
+                        identityProvider.getId() != null? Maybe.just(identityProvider) : Maybe.empty(),
+
+                        cache.get(identityProvider.getEntityId())
+                                .map((id) -> {
+                                        IdentityProvider idp = new IdentityProvider();
+                                        idp.setId(id);
+                                        return idp;
+                                }),
+
+                        create(identityProvider).toMaybe()
+                )
+                .firstOrError();
     }
 }

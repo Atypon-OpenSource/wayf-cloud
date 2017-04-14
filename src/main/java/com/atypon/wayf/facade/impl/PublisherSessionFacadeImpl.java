@@ -24,11 +24,13 @@ import com.atypon.wayf.data.publisher.PublisherSession;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.atypon.wayf.facade.PublisherSessionFacade;
+import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import com.sun.javafx.geom.transform.Identity;
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
@@ -62,26 +64,22 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
             LOG.debug("Creating institution [{}]", publisherSession);
 
             publisherSession.setId(UUID.randomUUID().toString());
-
             publisherSession.setLastActiveDate(new Date());
 
-            return Single.just(publisherSession)
-                    .flatMap((o_publisherSession) ->
-                            Single.zip(
-                                    getOrCreateDevice(o_publisherSession.getDevice()).subscribeOn(Schedulers.newThread()),
-                                    validatePublisherIdUniqueness(o_publisherSession).subscribeOn(Schedulers.newThread()),
-                                    //id.addWayfIdMapping(o_publisherSession.getPublisherId(), o_publisherSession.getId()).subscribeOn(Schedulers.newThread()).toSingleDefault(""),
+            return Single.zip(
+                            getOrCreateDevice(publisherSession.getDevice()).subscribeOn(Schedulers.io()),
+                            validatePublisherIdUniqueness(publisherSession).subscribeOn(Schedulers.io()),
 
-                                    (o_device, o_unique) -> {
-                                        if (!o_unique) {
-                                            throw new RuntimeException("Publisher ID must be unique");
-                                        }
+                            (device, isUnique) -> {
+                                if (!isUnique) {
+                                    throw new RuntimeException("Publisher ID must be unique");
+                                }
 
-                                        LOG.debug("Setting device {}", o_device.getId());
-                                        o_publisherSession.setDevice(o_device);
-                                        return o_publisherSession;
-                                    }
-                            )
+                                LOG.debug("Setting device {}", device.getId());
+                                publisherSession.setDevice(device);
+
+                                return publisherSession;
+                            }
                     )
                     .observeOn(Schedulers.io())
                     .flatMap((o_publisherSession) -> Single.just(publisherSessionDao.create(o_publisherSession)));
@@ -96,7 +94,7 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     public Single<PublisherSession> update(PublisherSession publisherSession) {
         return Single.zip(
                 Single.just(publisherSession),
-                getPublisherId(publisherSession),
+                resolveId(publisherSession),
 
                 (o_publisherSession, o_publisherId) -> {
                     o_publisherSession.setPublisherId(o_publisherId);
@@ -114,18 +112,18 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     public Completable addIdpRelationship(PublisherSession publisherSession) {
         LOG.debug("Adding relationship");
 
-        return
-                Single.zip(
-                        Single.just(publisherSession),
-                        identityProviderFacade.resolve(publisherSession.getIdp()),
-                        getPublisherId(publisherSession),
+        return Single.zip(
+                        identityProviderFacade.resolve(publisherSession.getIdp()).subscribeOn(Schedulers.io()),
+                        resolveId(publisherSession).subscribeOn(Schedulers.io()),
 
-                        (o_publisherSession, identityProvider, publisherId) -> {
-                            o_publisherSession.setIdp(identityProvider);
-                            o_publisherSession.setPublisherId(publisherId);
-                            return o_publisherSession;
-                        })
-                        .flatMapCompletable(publisherSessionToPersist -> publisherSessionDao.addIdpRelationship(publisherSessionToPersist));
+                        (identityProvider, publisherId) -> {
+                            publisherSession.setIdp(identityProvider);
+                            publisherSession.setPublisherId(publisherId);
+
+                            return publisherSession;
+                        }
+                )
+                .flatMapCompletable(publisherSessionToPersist -> publisherSessionDao.addIdpRelationship(publisherSessionToPersist));
     }
 
     private Single<Device> getOrCreateDevice(Device device) {
@@ -134,11 +132,17 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
             device.setStatus(DeviceStatus.ACTIVE);
         }
 
-        return device.getId() == null || device.getId().isEmpty()?
-                Single.just(device)
-                        .observeOn(Schedulers.io())
-                        .flatMap((o_device) -> deviceFacade.create(o_device)) :
-                Single.just(device);
+        return Maybe.concat(
+                        Observable.just(device)
+                                .filter(f_device -> f_device.getId() != null)
+                                .firstElement(),
+                        Single.just(device)
+                                .observeOn(Schedulers.io())
+                                .flatMap((o_device) -> deviceFacade.create(o_device))
+                                .toMaybe()
+                )
+                .firstOrError()
+                .doOnError((e) -> {throw new RuntimeException("Unable to get or create device");});
     }
 
     private Single<Boolean> validatePublisherIdUniqueness(PublisherSession publisherSession) {
@@ -146,15 +150,16 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
         return Single.just(Boolean.TRUE);
     }
 
-    private Single<String> getPublisherId(PublisherSession publisherSession) {
-        if (publisherSession.getId() == null) {
-            if (publisherSession.getPublisherId() == null) {
-                throw new RuntimeException("Either an id or publisherId is required to update a PublisherSession");
-            }
 
-            return idCache.get(publisherSession.getPublisherId()).toSingle();
-        }
+    private Single<String> resolveId(PublisherSession publisherSession) {
+        Preconditions.checkArgument(publisherSession.getId() != null || publisherSession.getPublisherId() != null, "PublisherSession requires an ID or Publisher ID");
 
-        return Single.just(publisherSession.getId());
+        return Maybe.concat(
+                        publisherSession.getId() == null ?
+                                Maybe.empty() :
+                                Maybe.just(publisherSession.getId()),
+                        idCache.get(publisherSession.getPublisherId())
+                )
+                .firstOrError();
     }
 }
