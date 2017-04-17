@@ -26,15 +26,15 @@ import java.util.Map;
 public class ResultSetProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(ResultSetProcessor.class);
 
-    private static final String DELIMETER = ".";
-    private static final String REGEX_DELIMETER = "\\.";
+    private static final String DELIMITER = ".";
+    private static final String REGEX_DELIMITER = "\\.";
 
     private static BeanUtilsBean beanUtilsBean = new BeanUtilsBean(new ConvertUtilsBean() {
         @Override
         public Object convert(String value, Class clazz) {
             if (clazz.isEnum()){
                 return Enum.valueOf(clazz, value);
-            }else{
+            } else {
                 return super.convert(value, clazz);
             }
         }
@@ -44,8 +44,8 @@ public class ResultSetProcessor {
         T bean = type.newInstance();
 
         for (String key : row.keySet()) {
-            if (key.contains(DELIMETER)) {
-                String[] pathFields = key.split(REGEX_DELIMETER);
+            if (key.contains(DELIMITER)) {
+                String[] pathFields = key.split(REGEX_DELIMITER);
 
                 handleNestedValue(bean, pathFields, 0, row.get(key));
             } else {

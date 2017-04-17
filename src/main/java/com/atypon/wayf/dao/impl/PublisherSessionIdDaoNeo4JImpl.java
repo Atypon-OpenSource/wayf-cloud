@@ -17,6 +17,7 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.PublisherSessionIdDao;
+import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
 import com.atypon.wayf.data.cache.KeyValueCache;
 import com.atypon.wayf.data.publisher.PublisherSession;
@@ -52,10 +53,12 @@ public class PublisherSessionIdDaoNeo4JImpl implements KeyValueCache<String, Str
         return Maybe.just(publisherId)
                 .observeOn(Schedulers.io())
                 .map((o_publisherId) -> {
-                        Map<String, Object> args = new HashMap<>();
-                        args.put("publisherId", o_publisherId);
+                        PublisherSession session = new PublisherSession();
+                        session.setPublisherId(publisherId);
 
-                        PublisherSession session = Neo4JExecutor.executeQuery(readInternalIdCypher, args, PublisherSession.class).get(0);
+                        Map<String, Object> args = QueryMapper.buildQueryArguments(readInternalIdCypher, session);
+
+                        session = Neo4JExecutor.executeQuery(readInternalIdCypher, args, PublisherSession.class).get(0);
                         return session.getId();
                 });
     }

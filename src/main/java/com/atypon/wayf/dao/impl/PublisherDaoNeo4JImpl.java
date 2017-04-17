@@ -17,6 +17,7 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.PublisherDao;
+import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.google.inject.Inject;
@@ -59,12 +60,7 @@ public class PublisherDaoNeo4JImpl implements PublisherDao {
         publisher.setCreatedDate(new Date());
         publisher.setModifiedDate(new Date());
 
-        Map<String, Object> arguments = new HashMap<>();
-        arguments.put("id", publisher.getId());
-        arguments.put("status", publisher.getStatus().toString());
-        arguments.put("name", publisher.getName());
-        arguments.put("createdDate", publisher.getCreatedDate().getTime());
-        arguments.put("modifiedDate", publisher.getModifiedDate().getTime());
+        Map<String, Object> arguments = QueryMapper.buildQueryArguments(createCypher, publisher);
 
         return Neo4JExecutor.executeQuery(createCypher, arguments, Publisher.class).get(0);
     }

@@ -17,6 +17,7 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.DeviceDao;
+import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
 import com.atypon.wayf.data.Institution;
 import com.atypon.wayf.data.device.Device;
@@ -61,18 +62,8 @@ public class DeviceDaoNeo4JImpl implements DeviceDao {
         device.setCreatedDate(new Date());
         device.setModifiedDate(new Date());
 
-        Map<String, Object> arguments = new HashMap<>();
-        arguments.put("id", device.getId());
+        Map<String, Object> arguments = QueryMapper.buildQueryArguments(createCypher, device);
 
-        if (device.getStatus() != null) {
-            arguments.put("status", device.getStatus().toString());
-        }
-        if (device.getCreatedDate() != null) {
-            arguments.put("createdDate", device.getCreatedDate().getTime());
-        }
-        if (device.getModifiedDate() != null) {
-            arguments.put("modifiedDate", device.getModifiedDate().getTime());
-        }
         return Neo4JExecutor.executeQuery(createCypher, arguments, Device.class).get(0);
     }
 

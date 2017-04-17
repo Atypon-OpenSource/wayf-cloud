@@ -17,6 +17,7 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.PublisherSessionDao;
+import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
 import com.atypon.wayf.data.publisher.PublisherSession;
 import com.google.inject.Inject;
@@ -63,15 +64,7 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
         publisherSession.setCreatedDate(new Date());
         publisherSession.setModifiedDate(new Date());
 
-        Map<String, Object> arguments = new HashMap<>();
-        arguments.put("id", publisherSession.getId());
-        arguments.put("publisherId", publisherSession.getPublisherId());
-        arguments.put("status", publisherSession.getStatus().toString());
-        arguments.put("lastActiveDate", publisherSession.getLastActiveDate().getTime());
-        arguments.put("device_id", publisherSession.getDevice().getId());
-        arguments.put("publisher_id", publisherSession.getPublisher().getId());
-        arguments.put("createdDate", publisherSession.getCreatedDate().getTime());
-        arguments.put("modifiedDate", publisherSession.getModifiedDate().getTime());
+        Map<String, Object> arguments = QueryMapper.buildQueryArguments(createCypher, publisherSession);
 
         return Neo4JExecutor.executeQuery(createCypher, arguments, PublisherSession.class).get(0);
     }

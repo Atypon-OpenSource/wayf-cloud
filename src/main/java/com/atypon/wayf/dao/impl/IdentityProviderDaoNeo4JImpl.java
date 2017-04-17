@@ -17,6 +17,7 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.IdentityProviderDao;
+import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
 import com.atypon.wayf.data.IdentityProvider;
 import com.atypon.wayf.data.cache.KeyValueCache;
@@ -51,12 +52,7 @@ public class IdentityProviderDaoNeo4JImpl implements IdentityProviderDao, KeyVal
         return Single.just(identityProvider)
                 .observeOn(Schedulers.io())
                 .map((identityProviderToWrite) -> {
-                    Map<String, Object> args = new HashMap<>();
-                    args.put("id", identityProvider.getId());
-                    args.put("name", identityProvider.getName());
-                    args.put("entityId", identityProvider.getEntityId());
-                    args.put("createdDate", identityProvider.getCreatedDate().getTime());
-                    args.put("modifiedDate", identityProvider.getModifiedDate().getTime());
+                    Map<String, Object> args = QueryMapper.buildQueryArguments(createCypher, identityProvider);
 
                     return Neo4JExecutor.executeQuery(createCypher, args, IdentityProvider.class).get(0);
                 });
@@ -70,9 +66,7 @@ public class IdentityProviderDaoNeo4JImpl implements IdentityProviderDao, KeyVal
                     Map<String, Object> args = new HashMap<>();
                     args.put("entityId", key);
 
-
                     List<IdentityProvider> results = Neo4JExecutor.executeQuery(getByEntityIdCypher, args, IdentityProvider.class);
-
 
                     return results.size() == 0? Maybe.empty() : Maybe.just(results.get(0).getId());
                 });
