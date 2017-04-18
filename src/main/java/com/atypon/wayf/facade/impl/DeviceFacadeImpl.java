@@ -23,11 +23,14 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
 @Singleton
 public class DeviceFacadeImpl implements DeviceFacade {
+    private static final Logger LOG = LoggerFactory.getLogger(DeviceFacadeImpl.class);
 
     @Inject
     private DeviceDao deviceDao;
@@ -37,10 +40,20 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
     @Override
     public Single<Device> create(Device device) {
+        LOG.debug("Creating device [{}]", device);
+
         device.setId(UUID.randomUUID().toString());
 
         return Single.just(device)
                 .observeOn(Schedulers.io())
                 .map((o_device) -> deviceDao.create(o_device));
+    }
+
+    @Override
+    public Single<Device> read(String id) {
+        LOG.debug("Reading device with id [{}]", id);
+        return Single.just(id)
+                .observeOn(Schedulers.io())
+                .map((_id) -> deviceDao.read(_id));
     }
 }

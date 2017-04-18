@@ -35,7 +35,7 @@ public class QueryMapperTest {
         PublisherSession publisherSession = new PublisherSession();
         publisherSession.setId(UUID.randomUUID().toString());
         publisherSession.setStatus(PublisherSessionStatus.ACTIVE);
-        publisherSession.setPublisherId("123abc456");
+        publisherSession.setLocalId("123abc456");
         publisherSession.setLastActiveDate(new Date());
         publisherSession.setCreatedDate(new Date());
         publisherSession.setModifiedDate(new Date());
@@ -70,7 +70,7 @@ public class QueryMapperTest {
                 "        ps.modifiedDate AS modifiedDate;", publisherSession);
 
         Assert.assertEquals(publisherSession.getId(), arguments.get("id"));
-        Assert.assertEquals(publisherSession.getPublisherId(), arguments.get("publisherId"));
+        Assert.assertEquals(publisherSession.getLocalId(), arguments.get("publisherId"));
         Assert.assertEquals(publisherSession.getStatus().toString(), arguments.get("status"));
         Assert.assertEquals(publisherSession.getLastActiveDate().getTime(), arguments.get("lastActiveDate"));
         Assert.assertEquals(publisherSession.getDevice().getId(), arguments.get("device.id"));

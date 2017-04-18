@@ -41,6 +41,10 @@ public class IdentityProviderDaoNeo4JImpl implements IdentityProviderDao, KeyVal
     private String createCypher;
 
     @Inject
+    @Named("identity-provider.dao.neo4j.read")
+    private String readCypher;
+
+    @Inject
     @Named("identity-provider.dao.neo4j.get-by-entity-id")
     private String getByEntityIdCypher;
 
@@ -55,6 +59,20 @@ public class IdentityProviderDaoNeo4JImpl implements IdentityProviderDao, KeyVal
                     Map<String, Object> args = QueryMapper.buildQueryArguments(createCypher, identityProvider);
 
                     return Neo4JExecutor.executeQuery(createCypher, args, IdentityProvider.class).get(0);
+                });
+    }
+
+    @Override
+    public Single<IdentityProvider> read(String id) {
+        return Single.just(id)
+                .observeOn(Schedulers.io())
+                .map((_id) -> {
+                    IdentityProvider provider = new IdentityProvider();
+                    provider.setId(_id);
+
+                    Map<String, Object> args = QueryMapper.buildQueryArguments(readCypher, provider);
+
+                    return  Neo4JExecutor.executeQuery(readCypher, args, IdentityProvider.class).get(0);
                 });
     }
 

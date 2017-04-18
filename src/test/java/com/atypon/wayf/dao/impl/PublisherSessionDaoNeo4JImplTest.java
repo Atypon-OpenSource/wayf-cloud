@@ -69,7 +69,7 @@ public class PublisherSessionDaoNeo4JImplTest {
         publisherSession.setId("123");
         publisherSession.setDevice(createdDevice);
         publisherSession.setPublisher(createdPublisher);
-        publisherSession.setPublisherId("123abc");
+        publisherSession.setLocalId("123abc");
         publisherSession.setLastActiveDate(new Date());
         publisherSession.setStatus(PublisherSessionStatus.ACTIVE);
 

@@ -19,7 +19,6 @@ package com.atypon.wayf.verticle.routing;
 import com.atypon.wayf.data.IdentityProvider;
 import com.atypon.wayf.data.publisher.PublisherSession;
 import com.atypon.wayf.facade.PublisherSessionFacade;
-import com.atypon.wayf.facade.impl.PublisherSessionFacadeImpl;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;
 import com.google.inject.Inject;
@@ -38,8 +37,9 @@ public class PublisherSessionRouting implements RoutingProvider {
 
     private static final String PUBLISHER_SESSION_BASE_URL = "/1/publisherSession";
     private static final String PUBLISHER_SESSION_ID_PARAM_NAME = "id";
+    private static final String SESSION_ID_PARAM_NAME = "sessionId";
     private static final String PUBLISHER_SESSION_ID_PARAM = ":" + PUBLISHER_SESSION_ID_PARAM_NAME;
-    private static final String PUBLISHER_SESSION_PUBLISHER_ID_PARAM = "publisherId=:" + PUBLISHER_SESSION_ID_PARAM_NAME;
+    private static final String PUBLISHER_SESSION_PUBLISHER_ID_PARAM = "publisherId=:" + SESSION_ID_PARAM_NAME;
 
     private static final String CREATE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL;
     private static final String READ_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
@@ -93,14 +93,14 @@ public class PublisherSessionRouting implements RoutingProvider {
         LOG.debug("Received update PublisherSession request");
 
         return Single.zip(
-                RequestReader.readPathArgument(routingContext, PUBLISHER_SESSION_ID_PARAM_NAME),
+                RequestReader.readPathArgument(routingContext, SESSION_ID_PARAM_NAME),
                 RequestReader.readRequestBody(routingContext, IdentityProvider.class),
 
                 (publisherId, identityProvider) -> {
                     LOG.debug("Publisher ID[{}] Identity Provider[{}]", publisherId, identityProvider);
                     PublisherSession publisherSession = new PublisherSession();
-                    publisherSession.setPublisherId(publisherId);
-                    publisherSession.setIdp(identityProvider);
+                    publisherSession.setLocalId(publisherId);
+                    publisherSession.setIdentityProvider(identityProvider);
 
                     return publisherSession;
                 })

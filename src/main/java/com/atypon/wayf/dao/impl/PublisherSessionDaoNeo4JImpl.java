@@ -19,6 +19,7 @@ package com.atypon.wayf.dao.impl;
 import com.atypon.wayf.dao.PublisherSessionDao;
 import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
+import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherSession;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -71,7 +72,12 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
 
     @Override
     public PublisherSession read(String id) {
-        return null;
+        PublisherSession session = new PublisherSession();
+        session.setId(id);
+
+        Map<String, Object> arguments = QueryMapper.buildQueryArguments(createCypher, session);
+
+        return Neo4JExecutor.executeQuery(readCypher, arguments, PublisherSession.class).get(0);
     }
 
     @Override
@@ -87,12 +93,11 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
     @Override
     public Completable addIdpRelationship(PublisherSession publisherSession) {
         LOG.debug("Adding IDP relationship");
+
         return Single.just(publisherSession)
                 .observeOn(Schedulers.io())
                 .map((o_publisherSession) -> {
-                    Map<String, Object> arguments = new HashMap<>();
-                    arguments.put("publisherSessionId", "666e9a41-01ae-4d9b-9294-ce05597ddd69");
-                    arguments.put("idpId", o_publisherSession.getIdp().getId());
+                    Map<String, Object> arguments = QueryMapper.buildQueryArguments(addIdpRelationshipCypher, publisherSession);
 
                     return Neo4JExecutor.executeQuery(addIdpRelationshipCypher, arguments, PublisherSession.class);
                 }).toCompletable();

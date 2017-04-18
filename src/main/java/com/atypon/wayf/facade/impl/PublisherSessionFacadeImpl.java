@@ -87,7 +87,9 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
 
     @Override
     public Single<PublisherSession> read(String id) {
-        return null;
+        return Single.just(id)
+                .observeOn(Schedulers.io())
+                .map((_id) -> publisherSessionDao.read(_id));
     }
 
     @Override
@@ -97,7 +99,7 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
                 resolveId(publisherSession),
 
                 (o_publisherSession, o_publisherId) -> {
-                    o_publisherSession.setPublisherId(o_publisherId);
+                    o_publisherSession.setLocalId(o_publisherId);
                     return o_publisherSession;
                 }
         );
@@ -113,12 +115,12 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
         LOG.debug("Adding relationship");
 
         return Single.zip(
-                        identityProviderFacade.resolve(publisherSession.getIdp()).subscribeOn(Schedulers.io()),
+                        identityProviderFacade.resolve(publisherSession.getIdentityProvider()).subscribeOn(Schedulers.io()),
                         resolveId(publisherSession).subscribeOn(Schedulers.io()),
 
                         (identityProvider, publisherId) -> {
-                            publisherSession.setIdp(identityProvider);
-                            publisherSession.setPublisherId(publisherId);
+                            publisherSession.setIdentityProvider(identityProvider);
+                            publisherSession.setId(publisherId);
 
                             return publisherSession;
                         }
@@ -152,13 +154,13 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
 
 
     private Single<String> resolveId(PublisherSession publisherSession) {
-        Preconditions.checkArgument(publisherSession.getId() != null || publisherSession.getPublisherId() != null, "PublisherSession requires an ID or Publisher ID");
+        Preconditions.checkArgument(publisherSession.getId() != null || publisherSession.getLocalId() != null, "PublisherSession requires an ID or Publisher ID");
 
         return Maybe.concat(
                         publisherSession.getId() == null ?
                                 Maybe.empty() :
                                 Maybe.just(publisherSession.getId()),
-                        idCache.get(publisherSession.getPublisherId())
+                        idCache.get(publisherSession.getLocalId())
                 )
                 .firstOrError();
     }

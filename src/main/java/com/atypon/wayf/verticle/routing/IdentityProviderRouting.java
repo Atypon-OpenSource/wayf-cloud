@@ -29,6 +29,7 @@ import io.reactivex.Single;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import org.apache.commons.collections.map.IdentityMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +42,7 @@ public class IdentityProviderRouting implements RoutingProvider {
     private static final String IDENTITY_PROVIDER_ID_PARAM = ":" + IDENTITY_PROVIDER_ID_PARAM_NAME;
 
     private static final String CREATE_IDENTITY_PROVIDER = IDENTITY_PROVIDER_BASE_URL;
+    private static final String READ_IDENTITY_PROVIDER = IDENTITY_PROVIDER_BASE_URL + "/" + IDENTITY_PROVIDER_ID_PARAM;
 
     @Inject
     private IdentityProviderFacade identityProviderFacade;
@@ -51,13 +53,22 @@ public class IdentityProviderRouting implements RoutingProvider {
     public void addRoutings(Router router) {
         router.route(IDENTITY_PROVIDER_BASE_URL + "*").handler(BodyHandler.create());
         router.post(CREATE_IDENTITY_PROVIDER).handler(WayfRequestHandler.single((rc) -> createIdentityProvider(rc)));
+        router.get(READ_IDENTITY_PROVIDER).handler(WayfRequestHandler.single((rc) -> readIdentityProvider(rc)));
     }
 
     public Single<IdentityProvider> createIdentityProvider(RoutingContext routingContext) {
-        LOG.debug("Received create PublisherSession request");
+        LOG.debug("Received create IdentityProvider request");
 
         return Single.just(routingContext)
                 .flatMap((rc) -> RequestReader.readRequestBody(rc, IdentityProvider.class))
                 .flatMap((requestIdentityProvider) -> identityProviderFacade.create(requestIdentityProvider));
+    }
+
+    public Single<IdentityProvider> readIdentityProvider(RoutingContext routingContext) {
+        LOG.debug("Received read IdentityProvider request");
+
+        return Single.just(routingContext)
+                .flatMap((rc) -> RequestReader.readPathArgument(rc, IDENTITY_PROVIDER_ID_PARAM_NAME))
+                .flatMap((requestIdentityProviderId) -> identityProviderFacade.read(requestIdentityProviderId));
     }
 }

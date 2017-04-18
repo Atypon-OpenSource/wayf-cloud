@@ -24,13 +24,13 @@ import java.util.Date;
 public class PublisherSession {
     private String id;
 
-    private String publisherId;
+    private String localId;
 
     private PublisherSessionStatus status;
 
     private Device device;
 
-    private IdentityProvider idp;
+    private IdentityProvider identityProvider;
 
     private Publisher publisher;
 
@@ -50,12 +50,12 @@ public class PublisherSession {
         this.id = id;
     }
 
-    public String getPublisherId() {
-        return publisherId;
+    public String getLocalId() {
+        return localId;
     }
 
-    public void setPublisherId(String publisherId) {
-        this.publisherId = publisherId;
+    public void setLocalId(String localId) {
+        this.localId = localId;
     }
 
     public PublisherSessionStatus getStatus() {
@@ -74,12 +74,12 @@ public class PublisherSession {
         this.device = device;
     }
 
-    public IdentityProvider getIdp() {
-        return idp;
+    public IdentityProvider getIdentityProvider() {
+        return identityProvider;
     }
 
-    public void setIdp(IdentityProvider idp) {
-        this.idp = idp;
+    public void setIdentityProvider(IdentityProvider identityProvider) {
+        this.identityProvider = identityProvider;
     }
 
     public Publisher getPublisher() {

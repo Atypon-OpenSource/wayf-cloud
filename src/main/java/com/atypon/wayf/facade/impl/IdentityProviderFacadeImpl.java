@@ -26,13 +26,15 @@ import com.google.inject.name.Named;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.UUID;
 
 @Singleton
 public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
-
+    private static final Logger LOG = LoggerFactory.getLogger(IdentityProviderFacadeImpl.class);
     @Inject
     private IdentityProviderDao identityProviderDao;
 
@@ -54,18 +56,31 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     }
 
     @Override
+    public Single<IdentityProvider> read(String id) {
+        return Single.just(id)
+                .observeOn(Schedulers.io())
+                .flatMap((_id) -> identityProviderDao.read(_id));
+    }
+
+    @Override
     public Single<IdentityProvider> resolve(IdentityProvider identityProvider) {
+        LOG.debug("Resolving identityProvider with id [{}] entityId [{}]", identityProvider.getId(), identityProvider.getEntityId());
+
         return Maybe.concat(
                         identityProvider.getId() != null? Maybe.just(identityProvider) : Maybe.empty(),
 
-                        cache.get(identityProvider.getEntityId())
+                        Maybe.just(identityProvider)
+                                .map((_identityProvider) -> _identityProvider.getEntityId())
+                                .flatMap((entityId) -> cache.get(identityProvider.getEntityId()))
                                 .map((id) -> {
                                         IdentityProvider idp = new IdentityProvider();
-                                        idp.setId(id);
-                                        return idp;
+                                            idp.setId(id);
+                                            return idp;
                                 }),
 
-                        create(identityProvider).toMaybe()
+                        Maybe.just(identityProvider)
+                                .map((_identityProvider) -> create(_identityProvider))
+                                .cast(IdentityProvider.class)
                 )
                 .firstOrError();
     }

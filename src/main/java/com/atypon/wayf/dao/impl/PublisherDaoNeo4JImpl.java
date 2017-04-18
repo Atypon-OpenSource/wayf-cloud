@@ -54,7 +54,7 @@ public class PublisherDaoNeo4JImpl implements PublisherDao {
 
     @Override
     public Publisher create(Publisher publisher) {
-        LOG.debug("Creating device [{}] in Neo4J", publisher);
+        LOG.debug("Creating publisher [{}] in Neo4J", publisher);
 
         publisher.setId(UUID.randomUUID().toString());
         publisher.setCreatedDate(new Date());
@@ -67,7 +67,13 @@ public class PublisherDaoNeo4JImpl implements PublisherDao {
 
     @Override
     public Publisher read(String id) {
-        return null;
+        Publisher publisher = new Publisher();
+        publisher.setId(id);
+
+
+        Map<String, Object> arguments = QueryMapper.buildQueryArguments(readCypher, publisher);
+
+        return Neo4JExecutor.executeQuery(readCypher, arguments, Publisher.class).get(0);
     }
 
     @Override

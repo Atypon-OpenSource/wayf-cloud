@@ -16,14 +16,10 @@
 
 package com.atypon.wayf.verticle;
 
-import com.atypon.wayf.data.IdentityProvider;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.ResponseWriter;
-import com.atypon.wayf.verticle.routing.IdentityProviderRouting;
-import com.atypon.wayf.verticle.routing.InstitutionRouting;
-import com.atypon.wayf.verticle.routing.PublisherSessionRouting;
-import com.atypon.wayf.verticle.routing.RoutingProvider;
+import com.atypon.wayf.verticle.routing.*;
 import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
@@ -51,7 +47,13 @@ public class WayfVerticle extends AbstractVerticle {
     @Inject
     private IdentityProviderRouting identityProviderRouting;
 
-    private List<RoutingProvider> routingProviders = Lists.newArrayList(institutionRouting, publisherSessionRouting, identityProviderRouting);
+    @Inject
+    private DeviceRoutingProvider deviceRoutingProvider;
+
+    @Inject
+    private PublisherRouting publisherRouting;
+
+    private List<RoutingProvider> routingProviders;
 
     public WayfVerticle() {
     }
@@ -64,7 +66,7 @@ public class WayfVerticle extends AbstractVerticle {
 
     private void startWebApp(Handler<AsyncResult<HttpServer>> next) {
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
-        routingProviders = Lists.newArrayList(institutionRouting, publisherSessionRouting, identityProviderRouting);
+        routingProviders = Lists.newArrayList(institutionRouting, publisherSessionRouting, identityProviderRouting, deviceRoutingProvider, publisherRouting);
         // Create a router object.
         Router router = Router.router(vertx);
 

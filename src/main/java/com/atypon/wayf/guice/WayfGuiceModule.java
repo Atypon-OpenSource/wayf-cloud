@@ -21,14 +21,8 @@ import com.atypon.wayf.dao.impl.*;
 import com.atypon.wayf.dao.redis.RedisDao;
 import com.atypon.wayf.dao.redis.impl.RedisDaoDefaultImpl;
 import com.atypon.wayf.data.cache.CascadingCache;
-import com.atypon.wayf.facade.DeviceFacade;
-import com.atypon.wayf.facade.IdentityProviderFacade;
-import com.atypon.wayf.facade.InstitutionFacade;
-import com.atypon.wayf.facade.PublisherSessionFacade;
-import com.atypon.wayf.facade.impl.DeviceFacadeImpl;
-import com.atypon.wayf.facade.impl.IdentityProviderFacadeImpl;
-import com.atypon.wayf.facade.impl.InstitutionFacadeImpl;
-import com.atypon.wayf.facade.impl.PublisherSessionFacadeImpl;
+import com.atypon.wayf.facade.*;
+import com.atypon.wayf.facade.impl.*;
 import com.google.inject.*;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
@@ -64,6 +58,7 @@ public class WayfGuiceModule extends AbstractModule {
             bind(DeviceFacade.class).to(DeviceFacadeImpl.class);
             bind(DeviceDao.class).to(DeviceDaoNeo4JImpl.class);
 
+            bind(PublisherFacade.class).to(PublisherFacadeImpl.class);
             bind(PublisherDao.class).to(PublisherDaoNeo4JImpl.class);
 
             bind(IdentityProviderFacade.class).to(IdentityProviderFacadeImpl.class);

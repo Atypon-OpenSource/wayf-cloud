@@ -21,4 +21,5 @@ import io.reactivex.Single;
 
 public interface DeviceFacade {
     Single<Device> create(Device device);
+    Single<Device> read(String id);
 }

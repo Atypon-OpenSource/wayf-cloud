@@ -69,7 +69,11 @@ public class DeviceDaoNeo4JImpl implements DeviceDao {
 
     @Override
     public Device read(String id) {
-        return null;
+        Device device = new Device();
+        device.setId(id);
+        Map<String, Object> arguments = QueryMapper.buildQueryArguments(readCypher, device);
+
+        return Neo4JExecutor.executeQuery(readCypher, arguments, Device.class).get(0);
     }
 
     @Override
