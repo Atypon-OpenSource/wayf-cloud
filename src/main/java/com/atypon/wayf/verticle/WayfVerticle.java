@@ -16,11 +16,13 @@
 
 package com.atypon.wayf.verticle;
 
-import com.atypon.wayf.reactive.WayfReactiveConfig;
+import com.atypon.wayf.guice.WayfGuiceModule;
+import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.ResponseWriter;
-import com.atypon.wayf.verticle.routing.InstitutionRouting;
-import com.atypon.wayf.verticle.routing.RoutingProvider;
+import com.atypon.wayf.verticle.routing.*;
 import com.google.common.collect.Lists;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -36,7 +38,22 @@ import java.util.List;
 public class WayfVerticle extends AbstractVerticle {
     private static final Logger LOG = LoggerFactory.getLogger(WayfVerticle.class);
 
-    private List<RoutingProvider> routingProviders = Lists.newArrayList(new InstitutionRouting());
+    @Inject
+    private InstitutionRouting institutionRouting;
+
+    @Inject
+    private PublisherSessionRouting publisherSessionRouting;
+
+    @Inject
+    private IdentityProviderRouting identityProviderRouting;
+
+    @Inject
+    private DeviceRoutingProvider deviceRoutingProvider;
+
+    @Inject
+    private PublisherRouting publisherRouting;
+
+    private List<RoutingProvider> routingProviders;
 
     public WayfVerticle() {
     }
@@ -48,16 +65,18 @@ public class WayfVerticle extends AbstractVerticle {
     }
 
     private void startWebApp(Handler<AsyncResult<HttpServer>> next) {
+        Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
+        routingProviders = Lists.newArrayList(institutionRouting, publisherSessionRouting, identityProviderRouting, deviceRoutingProvider, publisherRouting);
         // Create a router object.
         Router router = Router.router(vertx);
 
         LOG.debug("Adding routes");
         routingProviders.forEach((routingProvider) -> routingProvider.addRoutings(router));
 
-
         LOG.debug("Adding default error handler to routes");
         for (Route route : router.getRoutes()) {
             route.failureHandler((rc) -> ResponseWriter.buildFailure(rc));
+            LOG.debug("Found path {}", route);
         }
 
         LOG.debug("Starting HTTP server");
@@ -88,6 +107,6 @@ public class WayfVerticle extends AbstractVerticle {
     private void initConfigs() {
         LOG.info("Initializing server configs");
 
-        WayfReactiveConfig.initializePlugins();
+        WayfReactivexConfig.initializePlugins();
     }
 }

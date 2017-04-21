@@ -14,37 +14,19 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.dao;
 
-public class Institution {
+import com.atypon.wayf.data.publisher.PublisherSession;
+import com.atypon.wayf.data.publisher.PublisherSessionFilter;
+import io.reactivex.Completable;
 
-    private String id;
-    private String name;
-    private String description;
+public interface PublisherSessionDao {
+    PublisherSession create(PublisherSession publisherSession);
+    PublisherSession read(String id);
+    PublisherSession update(PublisherSession publisherSession);
+    void delete(String id);
 
-    public Institution() {
-    }
+    PublisherSession[] filter(PublisherSessionFilter filterCritera);
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+    Completable addIdpRelationship(PublisherSession publisherSession);
 }

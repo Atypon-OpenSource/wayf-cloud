@@ -14,37 +14,14 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.facade;
 
-public class Institution {
+import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.data.publisher.PublisherFilter;
+import io.reactivex.Single;
 
-    private String id;
-    private String name;
-    private String description;
-
-    public Institution() {
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+public interface PublisherFacade {
+    Single<Publisher> create(Publisher publisher);
+    Single<Publisher> read(String id);
+    Single<Publisher[]> filter(PublisherFilter filter);
 }

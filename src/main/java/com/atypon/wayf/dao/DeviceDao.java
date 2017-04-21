@@ -14,37 +14,13 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.dao;
 
-public class Institution {
+import com.atypon.wayf.data.device.Device;
 
-    private String id;
-    private String name;
-    private String description;
-
-    public Institution() {
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+public interface DeviceDao {
+    Device create(Device device);
+    Device read(String id);
+    Device update(Device device);
+    void delete(String id);
 }

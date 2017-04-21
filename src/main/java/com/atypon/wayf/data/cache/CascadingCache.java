@@ -14,37 +14,23 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.data.cache;
 
-public class Institution {
+import io.reactivex.Maybe;
 
-    private String id;
-    private String name;
-    private String description;
+public class CascadingCache<K, V> {
 
-    public Institution() {
+    private KeyValueCache<K, V> l1;
+    private KeyValueCache<K, V> l2;
+
+    public CascadingCache(KeyValueCache<K, V> l1, KeyValueCache<K, V> l2) {
+        this.l1 = l1;
+        this.l2 = l2;
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
+    public Maybe<V> get(K key) {
+        return Maybe.concat(
+                l1.get(key),
+                l2.get(key).doOnSuccess((value) -> l1.put(key, value).subscribe())
+        ).firstElement();
     }
 }

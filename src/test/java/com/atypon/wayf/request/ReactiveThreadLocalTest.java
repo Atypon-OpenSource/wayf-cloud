@@ -16,9 +16,7 @@
 
 package com.atypon.wayf.request;
 
-import com.atypon.wayf.reactive.WayfReactiveConfig;
-import com.atypon.wayf.request.RequestContext;
-import com.atypon.wayf.request.RequestContextAccessor;
+import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import org.junit.After;
@@ -32,7 +30,7 @@ public class ReactiveThreadLocalTest {
 
     @Before
     public void setUp() {
-        WayfReactiveConfig.initializePlugins();
+        WayfReactivexConfig.initializePlugins();
 
         RequestContextAccessor.set(new RequestContext().setRequestUrl(REQUEST_URI));
     }

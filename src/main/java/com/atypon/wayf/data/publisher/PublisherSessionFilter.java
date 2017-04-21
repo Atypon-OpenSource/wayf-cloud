@@ -14,37 +14,20 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.data.publisher;
 
-public class Institution {
+public class PublisherSessionFilter {
+    private String deviceId;
 
-    private String id;
-    private String name;
-    private String description;
-
-    public Institution() {
+    public PublisherSessionFilter() {
     }
 
-    public String getName() {
-        return name;
+    public String getDeviceId() {
+        return deviceId;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
+    public PublisherSessionFilter setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+        return this;
     }
 }

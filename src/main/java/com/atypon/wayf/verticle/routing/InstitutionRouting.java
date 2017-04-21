@@ -21,6 +21,7 @@ import com.atypon.wayf.facade.InstitutionFacade;
 import com.atypon.wayf.facade.impl.InstitutionFacadeImpl;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;
+import com.google.inject.Inject;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.ext.web.Router;
@@ -43,8 +44,9 @@ public class InstitutionRouting implements RoutingProvider {
 
     private InstitutionFacade institutionFacade;
 
-    public InstitutionRouting() {
-        institutionFacade = new InstitutionFacadeImpl();
+    @Inject
+    public InstitutionRouting(InstitutionFacade institutionFacade) {
+        this.institutionFacade = institutionFacade;
     }
 
     public void addRoutings(Router router) {

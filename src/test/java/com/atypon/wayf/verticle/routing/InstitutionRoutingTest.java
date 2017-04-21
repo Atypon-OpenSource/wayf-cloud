@@ -66,7 +66,11 @@ public class InstitutionRoutingTest {
     public void testInstitutionCreate(TestContext context) {
         final Async async = context.async();
 
-        final String institutionJson = Json.encodePrettily(new Institution().setName(institutionName).setDescription(institutionDescription));
+        Institution institution = new Institution();
+        institution.setName(institutionName);
+        institution.setDescription(institutionDescription);
+
+        final String institutionJson = Json.encodePrettily(institution);
         final String length = Integer.toString(institutionJson.length());
 
         vertx.createHttpClient().post(port, "localhost", "/1/institution?forceSync=true")
@@ -76,10 +80,10 @@ public class InstitutionRoutingTest {
                     context.assertEquals(response.statusCode(), 200);
                     context.assertTrue(response.headers().get("content-type").contains("application/json"));
                     response.bodyHandler(body -> {
-                        Institution institution = Json.decodeValue(body.toString(), Institution.class);
-                        context.assertEquals(institution.getName(), institutionName);
-                        context.assertEquals(institution.getDescription(), institutionDescription);
-                        context.assertNotNull(institution.getId());
+                        Institution responseInstitution = Json.decodeValue(body.toString(), Institution.class);
+                        context.assertEquals(responseInstitution.getName(), institutionName);
+                        context.assertEquals(responseInstitution.getDescription(), institutionDescription);
+                        context.assertNotNull(responseInstitution.getId());
                         async.complete();
                     });
                 })
@@ -91,7 +95,11 @@ public class InstitutionRoutingTest {
     public void testInstitutionRead(TestContext context) {
         final Async async = context.async();
 
-        final String institutionJson = Json.encodePrettily(new Institution().setName(institutionName).setDescription(institutionDescription));
+        Institution institution = new Institution();
+        institution.setName(institutionName);
+        institution.setDescription(institutionDescription);
+
+        final String institutionJson = Json.encodePrettily(institution);
         final String length = Integer.toString(institutionJson.length());
 
         vertx.createHttpClient().post(port, "localhost", "/1/institution?forceSync=true")
@@ -126,7 +134,11 @@ public class InstitutionRoutingTest {
     public void testInstitutionUpdate(TestContext context) {
         final Async async = context.async();
 
-        final String institutionJson = Json.encodePrettily(new Institution().setName(institutionName).setDescription(institutionDescription));
+        Institution institution = new Institution();
+        institution.setName(institutionName);
+        institution.setDescription(institutionDescription);
+
+        final String institutionJson = Json.encodePrettily(institution);
         final String length = Integer.toString(institutionJson.length());
 
         vertx.createHttpClient().post(port, "localhost", "/1/institution?forceSync=true")
@@ -142,7 +154,9 @@ public class InstitutionRoutingTest {
                         context.assertNotNull(postInstitution.getId());
 
                         final String updatedInstitutionDescription = institutionDescription + " UPDATED";
-                        final String updatedJson = Json.encodePrettily(postInstitution.setDescription(updatedInstitutionDescription));
+                        postInstitution.setDescription(updatedInstitutionDescription);
+
+                        final String updatedJson = Json.encodePrettily(postInstitution);
                         final String updatedLength = Integer.toString(updatedJson.length());
 
 

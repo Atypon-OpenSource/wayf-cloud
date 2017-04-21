@@ -14,37 +14,17 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.dao;
 
-public class Institution {
 
-    private String id;
-    private String name;
-    private String description;
+import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.data.publisher.PublisherFilter;
 
-    public Institution() {
-    }
+public interface PublisherDao {
+    Publisher create(Publisher publisher);
+    Publisher read(String id);
+    Publisher update(Publisher publisher);
+    void delete(String id);
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+    Publisher[] filter(PublisherFilter filter);
 }

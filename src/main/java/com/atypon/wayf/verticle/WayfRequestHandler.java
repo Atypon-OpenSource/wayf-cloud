@@ -25,9 +25,12 @@ import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.Handler;
+import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.text.SimpleDateFormat;
 
 /**
  * An implementation of Handler that ensures all inbound requests are handled uniformly. This stores relevant
@@ -38,6 +41,7 @@ public abstract class WayfRequestHandler implements Handler<RoutingContext> {
     private static final Logger LOG = LoggerFactory.getLogger(WayfRequestHandler.class);
 
     private WayfRequestHandler() {
+        Json.prettyMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S"));
     }
 
     public static WayfRequestHandler observable(Function<RoutingContext, Observable<?>> delegate) {
