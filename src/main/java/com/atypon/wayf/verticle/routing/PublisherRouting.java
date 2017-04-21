@@ -88,13 +88,8 @@ public class PublisherRouting implements RoutingProvider {
                 .flatMap((idsArg) -> {
                         LOG.debug(idsArg);
                         String[] ids = idsArg.split("\\,");
-                            LOG.debug(ids.toString());
                         PublisherFilter filter = new PublisherFilter();
-                        List<String> idList = new LinkedList<>();
-                        for (String id : ids) {
-                            idList.add(id);
-                        }
-                        filter.setIds(idList);
+                        filter.setIds(Lists.newArrayList(idList));
                         return  publisherFacade.filter(filter);
                     }
                 );
