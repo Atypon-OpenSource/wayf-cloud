@@ -18,6 +18,7 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.PublisherDao;
 import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.data.publisher.PublisherFilter;
 import com.atypon.wayf.facade.PublisherFacade;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -42,5 +43,11 @@ public class PublisherFacadeImpl implements PublisherFacade {
     public Single<Publisher> read(String id) {
         return Single.just(id)
                 .map((_id) -> publisherDao.read(_id));
+    }
+
+    @Override
+    public Single<Publisher[]> filter(PublisherFilter filter) {
+        return Single.just(filter)
+                .map((_filter) -> publisherDao.filter(_filter));
     }
 }

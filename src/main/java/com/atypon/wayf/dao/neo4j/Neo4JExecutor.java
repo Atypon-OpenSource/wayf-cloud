@@ -39,7 +39,7 @@ public class Neo4JExecutor {
 
         Session session = driver.session();
 
-        StatementResult result = session.run(query, Values.value(arguments));
+        StatementResult result = session.run(query, arguments);
 
         List<T> returnValues = new LinkedList<>();
 

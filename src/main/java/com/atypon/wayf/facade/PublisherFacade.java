@@ -17,9 +17,11 @@
 package com.atypon.wayf.facade;
 
 import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.data.publisher.PublisherFilter;
 import io.reactivex.Single;
 
 public interface PublisherFacade {
     Single<Publisher> create(Publisher publisher);
     Single<Publisher> read(String id);
+    Single<Publisher[]> filter(PublisherFilter filter);
 }

@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.data.publisher;
 
+public class PublisherSessionFilter {
+    private String deviceId;
 
-import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherFilter;
+    public PublisherSessionFilter() {
+    }
 
-public interface PublisherDao {
-    Publisher create(Publisher publisher);
-    Publisher read(String id);
-    Publisher update(Publisher publisher);
-    void delete(String id);
+    public String getDeviceId() {
+        return deviceId;
+    }
 
-    Publisher[] filter(PublisherFilter filter);
+    public PublisherSessionFilter setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+        return this;
+    }
 }

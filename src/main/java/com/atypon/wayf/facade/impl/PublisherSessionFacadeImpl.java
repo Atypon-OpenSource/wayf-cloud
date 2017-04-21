@@ -21,6 +21,7 @@ import com.atypon.wayf.data.cache.CascadingCache;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceStatus;
 import com.atypon.wayf.data.publisher.PublisherSession;
+import com.atypon.wayf.data.publisher.PublisherSessionFilter;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.atypon.wayf.facade.PublisherSessionFacade;
@@ -126,6 +127,15 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
                         }
                 )
                 .flatMapCompletable(publisherSessionToPersist -> publisherSessionDao.addIdpRelationship(publisherSessionToPersist));
+    }
+
+    @Override
+    public Single<PublisherSession[]> filter(PublisherSessionFilter filterCriteria) {
+        LOG.debug("Filtering for publisher sessions with criteria [{}]", filterCriteria);
+
+        return Single.just(filterCriteria)
+                .observeOn(Schedulers.io())
+                .map((_filterCriteria) -> publisherSessionDao.filter(_filterCriteria));
     }
 
     private Single<Device> getOrCreateDevice(Device device) {

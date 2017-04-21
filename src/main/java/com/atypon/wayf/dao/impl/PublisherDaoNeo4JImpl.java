@@ -20,36 +20,43 @@ import com.atypon.wayf.dao.PublisherDao;
 import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
 import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.data.publisher.PublisherFilter;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import org.neo4j.driver.internal.value.ListValue;
+import org.neo4j.driver.v1.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Singleton
 public class PublisherDaoNeo4JImpl implements PublisherDao {
     private static final Logger LOG = LoggerFactory.getLogger(PublisherDaoNeo4JImpl.class);
 
+    @Inject
+    @Named("publisher.dao.neo4j.create")
     private String createCypher;
-    private String readCypher;
-    private String updateCypher;
-    private String deleteCypher;
 
     @Inject
-    public PublisherDaoNeo4JImpl(
-            @Named("publisher.dao.neo4j.create") String createCypher,
-            @Named("publisher.dao.neo4j.read") String readCypher,
-            @Named("publisher.dao.neo4j.update")  String updateCypher,
-            @Named("publisher.dao.neo4j.delete") String deleteCypher) {
-        this.createCypher = createCypher;
-        this.readCypher = readCypher;
-        this.updateCypher = updateCypher;
-        this.deleteCypher = deleteCypher;
+    @Named("publisher.dao.neo4j.read")
+    private String readCypher;
+
+    @Inject
+    @Named("publisher.dao.neo4j.update")
+    private String updateCypher;
+
+    @Inject
+    @Named("publisher.dao.neo4j.delete")
+    private String deleteCypher;
+
+
+    @Inject
+    @Named("publisher.dao.neo4j.filter")
+    private String filterCypher;
+
+    public PublisherDaoNeo4JImpl() {
     }
 
     @Override
@@ -84,5 +91,14 @@ public class PublisherDaoNeo4JImpl implements PublisherDao {
     @Override
     public void delete(String id) {
 
+    }
+
+    @Override
+    public Publisher[] filter(PublisherFilter filter) {
+        Map<String, Object> arguments = QueryMapper.buildQueryArguments(filterCypher, filter);
+
+        List<Publisher> publishers = Neo4JExecutor.executeQuery(filterCypher, arguments, Publisher.class);
+        
+        return publishers.toArray(new Publisher[0]);
     }
 }

@@ -17,6 +17,7 @@
 package com.atypon.wayf.facade;
 
 import com.atypon.wayf.data.publisher.PublisherSession;
+import com.atypon.wayf.data.publisher.PublisherSessionFilter;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
@@ -25,6 +26,7 @@ public interface PublisherSessionFacade {
     Single<PublisherSession> read(String id);
     Single<PublisherSession> update(PublisherSession publisherSession);
     Completable delete(String id);
+    Single<PublisherSession[]> filter(PublisherSessionFilter filterCriteria);
 
     Completable addIdpRelationship(PublisherSession publisherSession);
 }

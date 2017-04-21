@@ -16,6 +16,8 @@
 
 package com.atypon.wayf.request;
 
+import com.atypon.wayf.data.device.DeviceInfo;
+import eu.bitwalker.useragentutils.UserAgent;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.json.Json;
@@ -46,6 +48,8 @@ public class RequestReader {
     }
 
     public static String getQueryValue(RoutingContext routingContext, String queryKey) {
+        LOG.debug("Reading query param [{}] from request", queryKey);
         return routingContext.request().getParam(queryKey);
     }
+
 }

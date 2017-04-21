@@ -19,8 +19,8 @@ package com.atypon.wayf.dao.impl;
 import com.atypon.wayf.dao.PublisherSessionDao;
 import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
-import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherSession;
+import com.atypon.wayf.data.publisher.PublisherSessionFilter;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -31,31 +31,38 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Singleton
 public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
     private static Logger LOG = LoggerFactory.getLogger(PublisherSessionDaoNeo4JImpl.class);
 
+    @Inject
+    @Named("publisher-session.dao.neo4j.create")
     private String createCypher;
+
+    @Inject
+    @Named("publisher-session.dao.neo4j.read")
     private String readCypher;
+
+    @Inject
+    @Named("publisher-session.dao.neo4j.update")
     private String updateCypher;
+
+    @Inject
+    @Named("publisher-session.dao.neo4j.delete")
     private String deleteCypher;
+
+    @Inject
+    @Named("publisher-session.dao.neo4j.add-idp-relationship")
     private String addIdpRelationshipCypher;
 
     @Inject
-    public PublisherSessionDaoNeo4JImpl(
-            @Named("publisher-session.dao.neo4j.create") String createCypher,
-            @Named("publisher-session.dao.neo4j.read") String readCypher,
-            @Named("publisher-session.dao.neo4j.update")  String updateCypher,
-            @Named("publisher-session.dao.neo4j.delete") String deleteCypher,
-            @Named("publisher-session.dao.neo4j.add-idp-relationship") String addIdpRelationshipCypher) {
-        this.createCypher = createCypher;
-        this.readCypher = readCypher;
-        this.updateCypher = updateCypher;
-        this.deleteCypher = deleteCypher;
-        this.addIdpRelationshipCypher = addIdpRelationshipCypher;
+    @Named("publisher-session.dao.neo4j.filter")
+    private String filterCypher;
+
+    public PublisherSessionDaoNeo4JImpl() {
     }
 
     @Override
@@ -102,5 +109,16 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
                     return Neo4JExecutor.executeQuery(addIdpRelationshipCypher, arguments, PublisherSession.class);
                 }).toCompletable();
 
+    }
+
+    @Override
+    public PublisherSession[] filter(PublisherSessionFilter filterCriteria) {
+        LOG.debug("Filtering in Neo4J for criteria [{}]", filterCriteria);
+
+        Map<String, Object> arguments = QueryMapper.buildQueryArguments(filterCypher, filterCriteria);
+
+        List<PublisherSession> publisherSessions = Neo4JExecutor.executeQuery(filterCypher, arguments, PublisherSession.class);
+
+        return publisherSessions.toArray(new PublisherSession[0]);
     }
 }

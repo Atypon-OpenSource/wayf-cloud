@@ -18,6 +18,7 @@ package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.data.IdentityProvider;
 import com.atypon.wayf.data.publisher.PublisherSession;
+import com.atypon.wayf.data.publisher.PublisherSessionFilter;
 import com.atypon.wayf.facade.PublisherSessionFacade;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;
@@ -37,6 +38,7 @@ public class PublisherSessionRouting implements RoutingProvider {
 
     private static final String PUBLISHER_SESSION_BASE_URL = "/1/publisherSession";
     private static final String PUBLISHER_SESSION_ID_PARAM_NAME = "id";
+    private static final String DEVICE_ID_QUERY_PARAM = "device.id";
     private static final String SESSION_ID_PARAM_NAME = "sessionId";
     private static final String PUBLISHER_SESSION_ID_PARAM = ":" + PUBLISHER_SESSION_ID_PARAM_NAME;
     private static final String PUBLISHER_SESSION_PUBLISHER_ID_PARAM = "publisherId=:" + SESSION_ID_PARAM_NAME;
@@ -47,6 +49,7 @@ public class PublisherSessionRouting implements RoutingProvider {
     private static final String SET_IDP_BY_PUBLISHER_ID = UPDATE_PUBLISHER_SESSION_BY_PUBLISHER_ID + "/idp";
     private static final String UPDATE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
     private static final String DELETE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
+    private static final String FILTER_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "s";
 
     private PublisherSessionFacade publisherSessionFacade;
 
@@ -61,6 +64,8 @@ public class PublisherSessionRouting implements RoutingProvider {
         router.get(READ_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> readPublisherSession(rc)));
         router.put(UPDATE_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> updatePublisherSession(rc)));
         router.put(SET_IDP_BY_PUBLISHER_ID).handler(WayfRequestHandler.completable((rc) -> addIdp(rc)));
+        router.get(FILTER_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> filter(rc)));
+
 
         router.delete(DELETE_PUBLISHER_SESSION).handler(WayfRequestHandler.completable((rc) -> deletePublisherSession(rc)));
     }
@@ -105,6 +110,15 @@ public class PublisherSessionRouting implements RoutingProvider {
                     return publisherSession;
                 })
                 .flatMapCompletable((requestPublisherSession) -> publisherSessionFacade.addIdpRelationship(requestPublisherSession));
+    }
+
+    public Single<PublisherSession[]> filter(RoutingContext routingContext) {
+        LOG.debug("Received filter PublisherSession request");
+
+        return Single.just(routingContext)
+                .map((rc) -> RequestReader.getQueryValue(rc, DEVICE_ID_QUERY_PARAM))
+                .map((deviceID) -> new PublisherSessionFilter().setDeviceId(deviceID))
+                .flatMap((publisherSessionFilter) -> publisherSessionFacade.filter(publisherSessionFilter));
     }
 
     public Completable deletePublisherSession(RoutingContext routingContext) {

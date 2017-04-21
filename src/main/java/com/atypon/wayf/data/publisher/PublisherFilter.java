@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.data.publisher;
 
+import java.util.List;
 
-import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherFilter;
+public class PublisherFilter {
+    private List<String> ids;
 
-public interface PublisherDao {
-    Publisher create(Publisher publisher);
-    Publisher read(String id);
-    Publisher update(Publisher publisher);
-    void delete(String id);
+    public PublisherFilter() {
+    }
 
-    Publisher[] filter(PublisherFilter filter);
+    public List<String> getIds() {
+        return ids;
+    }
+
+    public PublisherFilter setIds(List<String> ids) {
+        this.ids = ids;
+        return this;
+    }
 }

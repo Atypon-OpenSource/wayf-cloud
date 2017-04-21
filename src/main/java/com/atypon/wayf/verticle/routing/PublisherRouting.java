@@ -18,11 +18,13 @@ package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.data.IdentityProvider;
 import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.data.publisher.PublisherFilter;
 import com.atypon.wayf.data.publisher.PublisherSession;
 import com.atypon.wayf.facade.PublisherFacade;
 import com.atypon.wayf.facade.PublisherSessionFacade;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Completable;
@@ -32,6 +34,9 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.LinkedList;
+import java.util.List;
 
 @Singleton
 public class PublisherRouting implements RoutingProvider {
@@ -43,6 +48,7 @@ public class PublisherRouting implements RoutingProvider {
 
     private static final String CREATE_PUBLISHER = PUBLISHER_BASE_URL;
     private static final String READ_PUBLISHER = PUBLISHER_BASE_URL + "/" +  PUBLISHER_ID_PARAM;
+    private static final String FILTER_PUBLISHERS = PUBLISHER_BASE_URL + "s";
 
     @Inject
     private PublisherFacade publisherFacade;
@@ -54,6 +60,8 @@ public class PublisherRouting implements RoutingProvider {
         router.route(PUBLISHER_BASE_URL + "*").handler(BodyHandler.create());
         router.post(CREATE_PUBLISHER).handler(WayfRequestHandler.single((rc) -> createPublisher(rc)));
         router.get(READ_PUBLISHER).handler(WayfRequestHandler.single((rc) -> readPublisher(rc)));
+        router.get(FILTER_PUBLISHERS).handler(WayfRequestHandler.single((rc) -> filterPublishers(rc)));
+
     }
 
     public Single<Publisher> createPublisher(RoutingContext routingContext) {
@@ -70,5 +78,25 @@ public class PublisherRouting implements RoutingProvider {
         return Single.just(routingContext)
                 .flatMap((rc) -> RequestReader.readPathArgument(rc, PUBLISHER_ID_PARAM_NAME))
                 .flatMap((publisherId) -> publisherFacade.read(publisherId));
+    }
+
+    public Single<Publisher[]> filterPublishers(RoutingContext routingContext) {
+        LOG.debug("Received filter PublisherSession request");
+
+        return Single.just(routingContext)
+                .map((rc) -> RequestReader.getQueryValue(rc, PUBLISHER_ID_PARAM_NAME))
+                .flatMap((idsArg) -> {
+                        LOG.debug(idsArg);
+                        String[] ids = idsArg.split("\\,");
+                            LOG.debug(ids.toString());
+                        PublisherFilter filter = new PublisherFilter();
+                        List<String> idList = new LinkedList<>();
+                        for (String id : ids) {
+                            idList.add(id);
+                        }
+                        filter.setIds(idList);
+                        return  publisherFacade.filter(filter);
+                    }
+                );
     }
 }

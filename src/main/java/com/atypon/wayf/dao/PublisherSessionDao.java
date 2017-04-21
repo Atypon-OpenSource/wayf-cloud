@@ -17,6 +17,7 @@
 package com.atypon.wayf.dao;
 
 import com.atypon.wayf.data.publisher.PublisherSession;
+import com.atypon.wayf.data.publisher.PublisherSessionFilter;
 import io.reactivex.Completable;
 
 public interface PublisherSessionDao {
@@ -24,6 +25,8 @@ public interface PublisherSessionDao {
     PublisherSession read(String id);
     PublisherSession update(PublisherSession publisherSession);
     void delete(String id);
+
+    PublisherSession[] filter(PublisherSessionFilter filterCritera);
 
     Completable addIdpRelationship(PublisherSession publisherSession);
 }
