@@ -37,21 +37,25 @@ import java.util.UUID;
 public class DeviceDaoNeo4JImpl implements DeviceDao {
     private static final Logger LOG = LoggerFactory.getLogger(DeviceDaoNeo4JImpl.class);
 
+    @Inject
+    @Named("device.dao.neo4j.create")
     private String createCypher;
+
+    @Inject@Named("device.dao.neo4j.read")
     private String readCypher;
+
+    @Inject
+    @Named("device.dao.neo4j.update")
     private String updateCypher;
+
+    @Inject
+    @Named("device.dao.neo4j.delete")
     private String deleteCypher;
 
     @Inject
-    public DeviceDaoNeo4JImpl(
-            @Named("device.dao.neo4j.create") String createCypher,
-            @Named("device.dao.neo4j.read") String readCypher,
-            @Named("device.dao.neo4j.update")  String updateCypher,
-            @Named("device.dao.neo4j.delete") String deleteCypher) {
-        this.createCypher = createCypher;
-        this.readCypher = readCypher;
-        this.updateCypher = updateCypher;
-        this.deleteCypher = deleteCypher;
+    private Neo4JExecutor dbExecutor;
+
+    public DeviceDaoNeo4JImpl() {
     }
 
     @Override
@@ -64,7 +68,7 @@ public class DeviceDaoNeo4JImpl implements DeviceDao {
 
         Map<String, Object> arguments = QueryMapper.buildQueryArguments(createCypher, device);
 
-        return Neo4JExecutor.executeQuery(createCypher, arguments, Device.class).get(0);
+        return dbExecutor.executeQuerySelectFirst(createCypher, arguments, Device.class);
     }
 
     @Override
@@ -73,7 +77,7 @@ public class DeviceDaoNeo4JImpl implements DeviceDao {
         device.setId(id);
         Map<String, Object> arguments = QueryMapper.buildQueryArguments(readCypher, device);
 
-        return Neo4JExecutor.executeQuery(readCypher, arguments, Device.class).get(0);
+        return dbExecutor.executeQuerySelectFirst(readCypher, arguments, Device.class);
     }
 
     @Override

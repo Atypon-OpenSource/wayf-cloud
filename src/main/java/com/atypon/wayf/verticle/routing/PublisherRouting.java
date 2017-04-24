@@ -16,27 +16,20 @@
 
 package com.atypon.wayf.verticle.routing;
 
-import com.atypon.wayf.data.IdentityProvider;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherFilter;
-import com.atypon.wayf.data.publisher.PublisherSession;
 import com.atypon.wayf.facade.PublisherFacade;
-import com.atypon.wayf.facade.PublisherSessionFacade;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.LinkedList;
-import java.util.List;
 
 @Singleton
 public class PublisherRouting implements RoutingProvider {
@@ -89,7 +82,7 @@ public class PublisherRouting implements RoutingProvider {
                         LOG.debug(idsArg);
                         String[] ids = idsArg.split("\\,");
                         PublisherFilter filter = new PublisherFilter();
-                        filter.setIds(Lists.newArrayList(idList));
+                        filter.setIds(Lists.newArrayList(ids));
                         return  publisherFacade.filter(filter);
                     }
                 );

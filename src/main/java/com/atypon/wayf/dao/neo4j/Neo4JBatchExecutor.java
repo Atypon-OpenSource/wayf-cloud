@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.dao.neo4j;
 
+import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.Values;
 import org.quartz.JobExecutionContext;
@@ -28,6 +29,7 @@ import java.util.List;
 public class Neo4JBatchExecutor implements org.quartz.Job {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Neo4JBatchExecutor.class);
 
+    private Driver driver;
     public Neo4JBatchExecutor() {
     }
 
@@ -41,7 +43,7 @@ public class Neo4JBatchExecutor implements org.quartz.Job {
         LOG.trace("Found [{}] requests to write", requests.size());
 
         if (!requests.isEmpty()) {
-            Session session = Neo4JExecutor.driver.session();
+            Session session = driver.session();
 
             for (Neo4JRequest request : requests) {
                 session.run(request.getCypher(), Values.value(request.getArgs()));

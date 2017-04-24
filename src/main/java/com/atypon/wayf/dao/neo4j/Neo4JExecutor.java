@@ -17,9 +17,12 @@
 package com.atypon.wayf.dao.neo4j;
 
 import com.atypon.wayf.dao.ResultSetProcessor;
-import org.apache.commons.beanutils.BeanUtilsBean;
-import org.apache.commons.beanutils.ConvertUtilsBean;
-import org.neo4j.driver.v1.*;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import org.neo4j.driver.v1.Driver;
+import org.neo4j.driver.v1.Record;
+import org.neo4j.driver.v1.Session;
+import org.neo4j.driver.v1.StatementResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,41 +30,50 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+@Singleton
 public class Neo4JExecutor {
     private static final Logger LOG = LoggerFactory.getLogger(Neo4JExecutor.class);
 
-    public static Driver driver = GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("test", "test"));
+    @Inject
+    private Driver driver;
 
-    private static final ResultSetProcessor processor = new ResultSetProcessor();
+    private ResultSetProcessor processor;
 
-    public static <T> List<T> executeQuery(String query, Map<String, Object> arguments, Class<T> returnType) {
+    public Neo4JExecutor() {
+        processor = new ResultSetProcessor();
+    }
+
+    public <T> T executeQuerySelectFirst(String query, Map<String, Object> arguments, Class<T> returnType) {
         LOG.debug("Running statement[{}] with values[{}]", query, arguments);
 
-        Session session = driver.session();
+        try (Session session = driver.session()){
+            StatementResult result = session.run(query, arguments);
 
-        StatementResult result = session.run(query, arguments);
-
-        List<T> returnValues = new LinkedList<>();
-
-        if (returnType == null) {
-            return null;
+            return (returnType != null && result.hasNext())? processor.processRow(result.next().asMap(), returnType) : null;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
+    }
 
-        while (result.hasNext()) {
-            Record record = result.next();
-            T returnValue = null;
+    public <T> List<T> executeQuery(String query, Map<String, Object> arguments, Class<T> returnType) {
+        LOG.debug("Running statement[{}] with values[{}]", query, arguments);
 
-            try {
-                returnValue = processor.processRow(record.asMap(), returnType);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+
+        try (Session session = driver.session()){
+            StatementResult result = session.run(query, arguments);
+
+            List<T> returnValues = new LinkedList<>();
+
+            while (result.hasNext()) {
+                Record record = result.next();
+                T returnValue = processor.processRow(record.asMap(), returnType);
+
+                returnValues.add(returnValue);
             }
 
-            returnValues.add(returnValue);
+            return returnValues;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        session.close();
-
-        return returnValues;
     }
 }

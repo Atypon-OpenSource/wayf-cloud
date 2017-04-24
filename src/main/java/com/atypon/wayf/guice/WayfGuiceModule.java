@@ -26,6 +26,9 @@ import com.atypon.wayf.facade.impl.*;
 import com.google.inject.*;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import org.neo4j.driver.v1.AuthTokens;
+import org.neo4j.driver.v1.Driver;
+import org.neo4j.driver.v1.GraphDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +75,8 @@ public class WayfGuiceModule extends AbstractModule {
                     .annotatedWith(Names.named("identityProviderRedisDao"))
                     .toProvider(() -> new RedisDaoDefaultImpl("IDENTITY_PROVIDER"));
 
+            bind(Driver.class).toProvider(() -> GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("test", "test")));
+
             bind(new TypeLiteral<CascadingCache<String, String>>(){})
                     .annotatedWith(Names.named("publisherIdCache"))
                     .toProvider(new Provider<CascadingCache<String, String>>() {
@@ -105,6 +110,7 @@ public class WayfGuiceModule extends AbstractModule {
                             return new CascadingCache(l1, l2);
                         }
                     });
+
         } catch (Exception e) {
             LOG.error("Error initializing Guice", e);
             throw new RuntimeException(e);

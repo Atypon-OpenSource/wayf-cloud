@@ -62,6 +62,9 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
     @Named("publisher-session.dao.neo4j.filter")
     private String filterCypher;
 
+    @Inject
+    private Neo4JExecutor dbExecutor;
+
     public PublisherSessionDaoNeo4JImpl() {
     }
 
@@ -74,7 +77,7 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
 
         Map<String, Object> arguments = QueryMapper.buildQueryArguments(createCypher, publisherSession);
 
-        return Neo4JExecutor.executeQuery(createCypher, arguments, PublisherSession.class).get(0);
+        return dbExecutor.executeQuerySelectFirst(createCypher, arguments, PublisherSession.class);
     }
 
     @Override
@@ -84,7 +87,7 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
 
         Map<String, Object> arguments = QueryMapper.buildQueryArguments(createCypher, session);
 
-        return Neo4JExecutor.executeQuery(readCypher, arguments, PublisherSession.class).get(0);
+        return dbExecutor.executeQuerySelectFirst(readCypher, arguments, PublisherSession.class);
     }
 
     @Override
@@ -106,7 +109,7 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
                 .map((o_publisherSession) -> {
                     Map<String, Object> arguments = QueryMapper.buildQueryArguments(addIdpRelationshipCypher, publisherSession);
 
-                    return Neo4JExecutor.executeQuery(addIdpRelationshipCypher, arguments, PublisherSession.class);
+                    return dbExecutor.executeQuerySelectFirst(addIdpRelationshipCypher, arguments, PublisherSession.class);
                 }).toCompletable();
 
     }
@@ -117,7 +120,7 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
 
         Map<String, Object> arguments = QueryMapper.buildQueryArguments(filterCypher, filterCriteria);
 
-        List<PublisherSession> publisherSessions = Neo4JExecutor.executeQuery(filterCypher, arguments, PublisherSession.class);
+        List<PublisherSession> publisherSessions = dbExecutor.executeQuery(filterCypher, arguments, PublisherSession.class);
 
         return publisherSessions.toArray(new PublisherSession[0]);
     }

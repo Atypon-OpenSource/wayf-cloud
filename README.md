@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/atypon/wayf-cloud.svg?branch=development)](https://travis-ci.org/atypon/wayf-cloud)
+
 # WAYF Cloud
 ## Introduction
 The where-are-you-from (WAYF) service is intended to reduce, or eliminate where possible, the friction that users/researchers experience as they try to access content on different publisher platforms where they are presented with a very large number of access options (e.g login, signup, institutional access, Social Logins etc). This goal is achieved by establishing an architecture and methods where content providers can access information about the user's browsing/authentication history and make intelligent decisions about the options which will allow the users to access their content, thus reducing the access options to a minimal set that apply for the given user profile.
