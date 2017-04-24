@@ -48,6 +48,9 @@ public class IdentityProviderDaoNeo4JImpl implements IdentityProviderDao, KeyVal
     @Named("identity-provider.dao.neo4j.get-by-entity-id")
     private String getByEntityIdCypher;
 
+    @Inject
+    private Neo4JExecutor dbExecutor;
+
     public IdentityProviderDaoNeo4JImpl() {
     }
 
@@ -58,7 +61,7 @@ public class IdentityProviderDaoNeo4JImpl implements IdentityProviderDao, KeyVal
                 .map((identityProviderToWrite) -> {
                     Map<String, Object> args = QueryMapper.buildQueryArguments(createCypher, identityProvider);
 
-                    return Neo4JExecutor.executeQuery(createCypher, args, IdentityProvider.class).get(0);
+                    return dbExecutor.executeQuerySelectFirst(createCypher, args, IdentityProvider.class);
                 });
     }
 
@@ -72,7 +75,7 @@ public class IdentityProviderDaoNeo4JImpl implements IdentityProviderDao, KeyVal
 
                     Map<String, Object> args = QueryMapper.buildQueryArguments(readCypher, provider);
 
-                    return  Neo4JExecutor.executeQuery(readCypher, args, IdentityProvider.class).get(0);
+                    return dbExecutor.executeQuerySelectFirst(readCypher, args, IdentityProvider.class);
                 });
     }
 
@@ -84,9 +87,9 @@ public class IdentityProviderDaoNeo4JImpl implements IdentityProviderDao, KeyVal
                     Map<String, Object> args = new HashMap<>();
                     args.put("entityId", key);
 
-                    List<IdentityProvider> results = Neo4JExecutor.executeQuery(getByEntityIdCypher, args, IdentityProvider.class);
+                    IdentityProvider result = dbExecutor.executeQuerySelectFirst(getByEntityIdCypher, args, IdentityProvider.class);
 
-                    return results.size() == 0? Maybe.empty() : Maybe.just(results.get(0).getId());
+                    return result == null? Maybe.empty() : Maybe.just(result.getId());
                 });
     }
 

@@ -49,10 +49,10 @@ public class QueryMapperTest {
         publisherSession.setPublisher(publisher);
 
         Map<String, Object> arguments = QueryMapper.buildQueryArguments("    MATCH (d:Device {id: {device.id}}) \\\n" +
-                "    MATCH (p:Publisher {id: {publisher.id}}) \\\n" +
+                "    MATCH (p:Publisher {id: {`publisher.id`}}) \\\n" +
                 "    CREATE (ps:PublisherSession {\\\n" +
                 "        id: {id}, \\\n" +
-                "        publisherId: {publisherId}, \\\n" +
+                "        localId: {localId}, \\\n" +
                 "        status: {status}, \\\n" +
                 "        lastActiveDate: {lastActiveDate}, \\\n" +
                 "        createdDate: {createdDate}, \\\n" +
@@ -61,7 +61,7 @@ public class QueryMapperTest {
                 "    CREATE (d)-[:HAS_SESSION]->(ps) \\\n" +
                 "    CREATE (ps)-[:VALID_FOR]->(p) \\\n" +
                 "    RETURN ps.id AS id, \\\n" +
-                "        ps.publisherId AS publisherId, \\\n" +
+                "        ps.localId AS localId, \\\n" +
                 "        ps.status AS status, \\\n" +
                 "        p.id AS `publisher.id`, \\\n" +
                 "        d.id AS `device.id`, \\\n" +
@@ -70,7 +70,7 @@ public class QueryMapperTest {
                 "        ps.modifiedDate AS modifiedDate;", publisherSession);
 
         Assert.assertEquals(publisherSession.getId(), arguments.get("id"));
-        Assert.assertEquals(publisherSession.getLocalId(), arguments.get("publisherId"));
+        Assert.assertEquals(publisherSession.getLocalId(), arguments.get("localId"));
         Assert.assertEquals(publisherSession.getStatus().toString(), arguments.get("status"));
         Assert.assertEquals(publisherSession.getLastActiveDate().getTime(), arguments.get("lastActiveDate"));
         Assert.assertEquals(publisherSession.getDevice().getId(), arguments.get("device.id"));

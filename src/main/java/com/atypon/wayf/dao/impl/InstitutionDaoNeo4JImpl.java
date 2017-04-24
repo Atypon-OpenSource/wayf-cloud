@@ -33,21 +33,26 @@ import java.util.*;
 public class InstitutionDaoNeo4JImpl implements InstitutionDao {
     private static final Logger LOG = LoggerFactory.getLogger(InstitutionDaoNeo4JImpl.class);
 
+    @Inject
+    @Named("institution.dao.neo4j.create")
     private String createCypher;
+
+    @Inject
+    @Named("institution.dao.neo4j.read")
     private String readCypher;
+
+    @Inject
+    @Named("institution.dao.neo4j.update")
     private String updateCypher;
+
+    @Inject
+    @Named("institution.dao.neo4j.delete")
     private String deleteCypher;
 
     @Inject
-    public InstitutionDaoNeo4JImpl(
-            @Named("institution.dao.neo4j.create") String createCypher,
-            @Named("institution.dao.neo4j.read") String readCypher,
-            @Named("institution.dao.neo4j.update")  String updateCypher,
-            @Named("institution.dao.neo4j.delete") String deleteCypher) {
-        this.createCypher = createCypher;
-        this.readCypher = readCypher;
-        this.updateCypher = updateCypher;
-        this.deleteCypher = deleteCypher;
+    private Neo4JExecutor dbExecutor;
+
+    public InstitutionDaoNeo4JImpl() {
     }
 
     @Override
@@ -63,7 +68,7 @@ public class InstitutionDaoNeo4JImpl implements InstitutionDao {
 
         if (RequestContextAccessor.get().isForceSync()) {
             LOG.debug("Running create in sync mode");
-            return Neo4JExecutor.executeQuery(createCypher, arguments, Institution.class).get(0);
+            return dbExecutor.executeQuerySelectFirst(createCypher, arguments, Institution.class);
         } else {
             Neo4JBatchWriter.INSTANCE.queue(createCypher, arguments);
         }
@@ -78,7 +83,7 @@ public class InstitutionDaoNeo4JImpl implements InstitutionDao {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("id", id);
 
-        return Neo4JExecutor.executeQuery(readCypher, arguments, Institution.class).get(0);
+        return dbExecutor.executeQuerySelectFirst(readCypher, arguments, Institution.class);
     }
 
     @Override
@@ -90,7 +95,7 @@ public class InstitutionDaoNeo4JImpl implements InstitutionDao {
         arguments.put("name", institution.getName());
         arguments.put("description", institution.getDescription());
 
-        return Neo4JExecutor.executeQuery(updateCypher, arguments, Institution.class).get(0);
+        return dbExecutor.executeQuerySelectFirst(updateCypher, arguments, Institution.class);
     }
 
     @Override
@@ -100,6 +105,6 @@ public class InstitutionDaoNeo4JImpl implements InstitutionDao {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("id", id);
 
-        Neo4JExecutor.executeQuery(deleteCypher, arguments, null);
+        dbExecutor.executeQuerySelectFirst(deleteCypher, arguments, null);
     }
 }

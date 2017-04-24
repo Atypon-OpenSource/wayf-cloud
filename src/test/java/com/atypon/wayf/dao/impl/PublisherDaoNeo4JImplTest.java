@@ -16,8 +16,6 @@
 
 package com.atypon.wayf.dao.impl;
 
-import com.atypon.wayf.data.device.Device;
-import com.atypon.wayf.data.device.DeviceStatus;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherStatus;
 import com.atypon.wayf.guice.WayfGuiceModule;
@@ -25,9 +23,11 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 
+@Ignore
 public class PublisherDaoNeo4JImplTest {
 
     @Inject

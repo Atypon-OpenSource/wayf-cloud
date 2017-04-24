@@ -51,10 +51,12 @@ public class PublisherDaoNeo4JImpl implements PublisherDao {
     @Named("publisher.dao.neo4j.delete")
     private String deleteCypher;
 
-
     @Inject
     @Named("publisher.dao.neo4j.filter")
     private String filterCypher;
+
+    @Inject
+    private Neo4JExecutor dbExecutor;
 
     public PublisherDaoNeo4JImpl() {
     }
@@ -69,7 +71,7 @@ public class PublisherDaoNeo4JImpl implements PublisherDao {
 
         Map<String, Object> arguments = QueryMapper.buildQueryArguments(createCypher, publisher);
 
-        return Neo4JExecutor.executeQuery(createCypher, arguments, Publisher.class).get(0);
+        return dbExecutor.executeQuerySelectFirst(createCypher, arguments, Publisher.class);
     }
 
     @Override
@@ -80,7 +82,7 @@ public class PublisherDaoNeo4JImpl implements PublisherDao {
 
         Map<String, Object> arguments = QueryMapper.buildQueryArguments(readCypher, publisher);
 
-        return Neo4JExecutor.executeQuery(readCypher, arguments, Publisher.class).get(0);
+        return dbExecutor.executeQuerySelectFirst(readCypher, arguments, Publisher.class);
     }
 
     @Override
@@ -97,7 +99,7 @@ public class PublisherDaoNeo4JImpl implements PublisherDao {
     public Publisher[] filter(PublisherFilter filter) {
         Map<String, Object> arguments = QueryMapper.buildQueryArguments(filterCypher, filter);
 
-        List<Publisher> publishers = Neo4JExecutor.executeQuery(filterCypher, arguments, Publisher.class);
+        List<Publisher> publishers = dbExecutor.executeQuery(filterCypher, arguments, Publisher.class);
         
         return publishers.toArray(new Publisher[0]);
     }

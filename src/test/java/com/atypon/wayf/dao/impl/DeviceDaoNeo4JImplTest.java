@@ -23,9 +23,11 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 
+@Ignore
 public class DeviceDaoNeo4JImplTest {
 
     @Inject

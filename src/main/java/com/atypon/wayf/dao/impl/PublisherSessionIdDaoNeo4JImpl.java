@@ -36,7 +36,8 @@ public class PublisherSessionIdDaoNeo4JImpl implements KeyValueCache<String, Str
     @Named("publisher-session-id.dao.neo4j.findInternal")
     private String readInternalIdCypher;
 
-    private String addMappingCypher;
+    @Inject
+    private Neo4JExecutor dbExecutor;
 
     public PublisherSessionIdDaoNeo4JImpl() {
     }
@@ -56,7 +57,7 @@ public class PublisherSessionIdDaoNeo4JImpl implements KeyValueCache<String, Str
 
                         Map<String, Object> args = QueryMapper.buildQueryArguments(readInternalIdCypher, session);
 
-                        session = Neo4JExecutor.executeQuery(readInternalIdCypher, args, PublisherSession.class).get(0);
+                        session = dbExecutor.executeQuerySelectFirst(readInternalIdCypher, args, PublisherSession.class);
                         return session.getId();
                 });
     }
