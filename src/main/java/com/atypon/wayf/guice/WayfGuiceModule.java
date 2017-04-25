@@ -75,7 +75,7 @@ public class WayfGuiceModule extends AbstractModule {
                     .annotatedWith(Names.named("identityProviderRedisDao"))
                     .toProvider(() -> new RedisDaoDefaultImpl("IDENTITY_PROVIDER"));
 
-            bind(Driver.class).toProvider(() -> GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("test", "test")));
+            bind(Driver.class).toProvider(() -> GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "test")));
 
             bind(new TypeLiteral<CascadingCache<String, String>>(){})
                     .annotatedWith(Names.named("publisherIdCache"))

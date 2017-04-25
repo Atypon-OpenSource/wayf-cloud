@@ -16,8 +16,6 @@
 
 package com.atypon.wayf.request;
 
-import com.atypon.wayf.data.device.DeviceInfo;
-import eu.bitwalker.useragentutils.UserAgent;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.json.Json;
