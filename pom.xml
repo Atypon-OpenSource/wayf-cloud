@@ -37,6 +37,10 @@
       <version>21.0</version>
     </dependency>
 
+    <!-- Test dependencies -->
+
+
+
     <dependency>
       <groupId>org.neo4j.driver</groupId>
       <artifactId>neo4j-java-driver</artifactId>
@@ -44,10 +48,13 @@
     </dependency>
 
     <dependency>
-      <groupId>eu.bitwalker</groupId>
-      <artifactId>UserAgentUtils</artifactId>
-      <version>1.20</version>
+      <groupId>org.neo4j.driver</groupId>
+      <artifactId>neo4j-java-driver</artifactId>
+      <version>1.2.0</version>
+      <type>test-jar</type>
+      <scope>test</scope>
     </dependency>
+
 
     <dependency>
       <groupId>redis.clients</groupId>
@@ -66,6 +73,8 @@
       <artifactId>commons-dbcp</artifactId>
       <version>1.4</version>
     </dependency>
+
+
 
     <dependency>
       <groupId>org.quartz-scheduler</groupId>

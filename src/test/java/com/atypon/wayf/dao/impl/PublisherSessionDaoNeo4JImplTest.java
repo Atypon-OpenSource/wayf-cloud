@@ -34,8 +34,6 @@ import org.junit.Test;
 
 import java.util.Date;
 
-
-@Ignore
 public class PublisherSessionDaoNeo4JImplTest {
 
     @Inject
