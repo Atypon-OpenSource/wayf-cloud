@@ -31,8 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * An implementation of Handler that ensures all inbound requests are handled uniformly. This stores relevant
