@@ -46,7 +46,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
         return Single.just(device)
                 .observeOn(Schedulers.io())
-                .map((o_device) -> deviceDao.create(o_device));
+                .flatMap((o_device) -> deviceDao.create(o_device));
     }
 
     @Override
@@ -54,6 +54,6 @@ public class DeviceFacadeImpl implements DeviceFacade {
         LOG.debug("Reading device with id [{}]", id);
         return Single.just(id)
                 .observeOn(Schedulers.io())
-                .map((_id) -> deviceDao.read(_id));
+                .flatMap((_id) -> deviceDao.read(_id));
     }
 }

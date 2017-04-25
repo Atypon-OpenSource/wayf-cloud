@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.facade;
+package com.atypon.wayf.guice;
 
-import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherFilter;
-import io.reactivex.Observable;
-import io.reactivex.Single;
+import com.google.inject.AbstractModule;
+import org.junit.ClassRule;
+import org.neo4j.driver.v1.Driver;
+import org.neo4j.driver.v1.util.TestNeo4j;
 
-public interface PublisherFacade {
-    Single<Publisher> create(Publisher publisher);
-    Single<Publisher> read(String id);
-    Observable<Publisher> filter(PublisherFilter filter);
+public class TestGuiceModule extends AbstractModule {
+
+    @ClassRule
+    public TestNeo4j neo4j;
+    public TestGuiceModule(TestNeo4j neo4j) {
+        this.neo4j = neo4j;
+    }
+
+    @Override
+    protected void configure() {
+        bind(Driver.class).toProvider(() -> neo4j.driver());
+    }
 }

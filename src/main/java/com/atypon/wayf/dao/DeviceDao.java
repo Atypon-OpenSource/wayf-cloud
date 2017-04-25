@@ -17,10 +17,12 @@
 package com.atypon.wayf.dao;
 
 import com.atypon.wayf.data.device.Device;
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 public interface DeviceDao {
-    Device create(Device device);
-    Device read(String id);
-    Device update(Device device);
-    void delete(String id);
+    Single<Device> create(Device device);
+    Single<Device> read(String id);
+    Single<Device> update(Device device);
+    Completable delete(String id);
 }

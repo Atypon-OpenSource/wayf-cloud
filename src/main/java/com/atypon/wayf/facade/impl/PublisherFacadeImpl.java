@@ -22,6 +22,7 @@ import com.atypon.wayf.data.publisher.PublisherFilter;
 import com.atypon.wayf.facade.PublisherFacade;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 
 @Singleton
@@ -36,18 +37,18 @@ public class PublisherFacadeImpl implements PublisherFacade {
     @Override
     public Single<Publisher> create(Publisher publisher) {
         return Single.just(publisher)
-                .map((_publisher) -> publisherDao.create(_publisher));
+                .flatMap((_publisher) -> publisherDao.create(_publisher));
     }
 
     @Override
     public Single<Publisher> read(String id) {
         return Single.just(id)
-                .map((_id) -> publisherDao.read(_id));
+                .flatMap((_id) -> publisherDao.read(_id));
     }
 
     @Override
-    public Single<Publisher[]> filter(PublisherFilter filter) {
+    public Observable<Publisher> filter(PublisherFilter filter) {
         return Single.just(filter)
-                .map((_filter) -> publisherDao.filter(_filter));
+                .flatMapObservable((_filter) -> publisherDao.filter(_filter));
     }
 }

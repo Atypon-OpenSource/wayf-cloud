@@ -19,6 +19,7 @@ package com.atypon.wayf.dao.neo4j;
 import com.atypon.wayf.dao.ResultSetProcessor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import io.reactivex.Observable;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
@@ -46,7 +47,7 @@ public class Neo4JExecutor {
     public <T> T executeQuerySelectFirst(String query, Map<String, Object> arguments, Class<T> returnType) {
         LOG.debug("Running statement[{}] with values[{}]", query, arguments);
 
-        try (Session session = driver.session()){
+        try (Session session = driver.session()) {
             StatementResult result = session.run(query, arguments);
 
             return (returnType != null && result.hasNext())? processor.processRow(result.next().asMap(), returnType) : null;
@@ -55,23 +56,15 @@ public class Neo4JExecutor {
         }
     }
 
-    public <T> List<T> executeQuery(String query, Map<String, Object> arguments, Class<T> returnType) {
+    public <T> Observable<T> executeQuery(String query, Map<String, Object> arguments, Class<T> returnType) {
         LOG.debug("Running statement[{}] with values[{}]", query, arguments);
 
 
         try (Session session = driver.session()){
             StatementResult result = session.run(query, arguments);
 
-            List<T> returnValues = new LinkedList<>();
-
-            while (result.hasNext()) {
-                Record record = result.next();
-                T returnValue = processor.processRow(record.asMap(), returnType);
-
-                returnValues.add(returnValue);
-            }
-
-            return returnValues;
+            return Observable.fromIterable(result.list())
+                    .map((record) -> processor.processRow(record.asMap(), returnType));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

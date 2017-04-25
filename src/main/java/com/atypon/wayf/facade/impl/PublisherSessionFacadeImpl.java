@@ -83,14 +83,14 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
                             }
                     )
                     .observeOn(Schedulers.io())
-                    .flatMap((o_publisherSession) -> Single.just(publisherSessionDao.create(o_publisherSession)));
+                    .flatMap((o_publisherSession) -> publisherSessionDao.create(o_publisherSession));
     }
 
     @Override
     public Single<PublisherSession> read(String id) {
         return Single.just(id)
                 .observeOn(Schedulers.io())
-                .map((_id) -> publisherSessionDao.read(_id));
+                .flatMap((_id) -> publisherSessionDao.read(_id));
     }
 
     @Override
@@ -130,12 +130,12 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     }
 
     @Override
-    public Single<PublisherSession[]> filter(PublisherSessionFilter filterCriteria) {
+    public Observable<PublisherSession> filter(PublisherSessionFilter filterCriteria) {
         LOG.debug("Filtering for publisher sessions with criteria [{}]", filterCriteria);
 
-        return Single.just(filterCriteria)
+        return Observable.just(filterCriteria)
                 .observeOn(Schedulers.io())
-                .map((_filterCriteria) -> publisherSessionDao.filter(_filterCriteria));
+                .flatMap((_filterCriteria) -> publisherSessionDao.filter(_filterCriteria));
     }
 
     private Single<Device> getOrCreateDevice(Device device) {

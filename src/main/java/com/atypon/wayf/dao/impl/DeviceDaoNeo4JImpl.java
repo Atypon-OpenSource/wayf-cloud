@@ -20,11 +20,16 @@ import com.atypon.wayf.dao.DeviceDao;
 import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
 import com.atypon.wayf.data.Institution;
+import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.device.Device;
+import com.atypon.wayf.reactivex.DaoPolicies;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import io.reactivex.Completable;
+import io.reactivex.Single;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,34 +64,37 @@ public class DeviceDaoNeo4JImpl implements DeviceDao {
     }
 
     @Override
-    public Device create(Device device) {
+    public Single<Device> create(Device device) {
         LOG.debug("Creating device [{}] in Neo4J", device);
 
         device.setId(UUID.randomUUID().toString());
         device.setCreatedDate(new Date());
         device.setModifiedDate(new Date());
 
-        Map<String, Object> arguments = QueryMapper.buildQueryArguments(createCypher, device);
-
-        return dbExecutor.executeQuerySelectFirst(createCypher, arguments, Device.class);
+        return Single.just(device)
+                .compose((single) -> DaoPolicies.applySingle(single))
+                .map((_device) -> QueryMapper.buildQueryArguments(createCypher, device))
+                .map((arguments) -> dbExecutor.executeQuerySelectFirst(createCypher, arguments, Device.class));
     }
 
     @Override
-    public Device read(String id) {
+    public Single<Device> read(String id) {
         Device device = new Device();
         device.setId(id);
-        Map<String, Object> arguments = QueryMapper.buildQueryArguments(readCypher, device);
 
-        return dbExecutor.executeQuerySelectFirst(readCypher, arguments, Device.class);
+        return Single.just(device)
+                .compose((single) -> DaoPolicies.applySingle(single))
+                .map((_device) -> QueryMapper.buildQueryArguments(readCypher, device))
+                .map((arguments) -> dbExecutor.executeQuerySelectFirst(readCypher, arguments, Device.class));
     }
 
     @Override
-    public Device update(Device device) {
+    public Single<Device> update(Device device) {
         return null;
     }
 
     @Override
-    public void delete(String id) {
-
+    public Completable delete(String id) {
+        return Completable.complete();
     }
 }
