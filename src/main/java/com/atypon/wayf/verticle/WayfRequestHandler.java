@@ -31,6 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * An implementation of Handler that ensures all inbound requests are handled uniformly. This stores relevant
@@ -56,10 +58,10 @@ public abstract class WayfRequestHandler implements Handler<RoutingContext> {
         return new WayfRequestHandlerCompletableImpl(delegate);
     }
 
-    private static class WayfRequestHandlerSingleImpl extends WayfRequestHandler {
-        private Function<RoutingContext, Single<?>> singleDelegate;
+    private static class WayfRequestHandlerSingleImpl<T> extends WayfRequestHandler {
+        private Function<RoutingContext, Single<T>> singleDelegate;
 
-        public WayfRequestHandlerSingleImpl(Function<RoutingContext, Single<?>> delegate) {
+        public WayfRequestHandlerSingleImpl(Function<RoutingContext, Single<T>> delegate) {
             super();
             this.singleDelegate = delegate;
         }
@@ -80,10 +82,10 @@ public abstract class WayfRequestHandler implements Handler<RoutingContext> {
         }
     }
 
-    private static class WayfRequestHandlerObservableImpl extends WayfRequestHandler {
-        private Function<RoutingContext, Observable<?>> observableDelegate;
+    private static class WayfRequestHandlerObservableImpl<T> extends WayfRequestHandler {
+        private Function<RoutingContext, Observable<T>> observableDelegate;
 
-        public WayfRequestHandlerObservableImpl(Function<RoutingContext, Observable<?>> delegate) {
+        public WayfRequestHandlerObservableImpl(Function<RoutingContext, Observable<T>> delegate) {
             super();
             this.observableDelegate = delegate;
         }
@@ -94,6 +96,7 @@ public abstract class WayfRequestHandler implements Handler<RoutingContext> {
             Single.just(event)
                     .observeOn(Schedulers.io())
                     .flatMapObservable((s_event) -> observableDelegate.apply(s_event))
+                    .toList()
                     .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
                     .subscribe(
                             (result) -> ResponseWriter.buildSuccess(event, result),
