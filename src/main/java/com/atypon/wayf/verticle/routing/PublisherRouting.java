@@ -24,6 +24,7 @@ import com.atypon.wayf.verticle.WayfRequestHandler;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -53,7 +54,7 @@ public class PublisherRouting implements RoutingProvider {
         router.route(PUBLISHER_BASE_URL + "*").handler(BodyHandler.create());
         router.post(CREATE_PUBLISHER).handler(WayfRequestHandler.single((rc) -> createPublisher(rc)));
         router.get(READ_PUBLISHER).handler(WayfRequestHandler.single((rc) -> readPublisher(rc)));
-        router.get(FILTER_PUBLISHERS).handler(WayfRequestHandler.single((rc) -> filterPublishers(rc)));
+        router.get(FILTER_PUBLISHERS).handler(WayfRequestHandler.observable((rc) -> filterPublishers(rc)));
 
     }
 
@@ -73,12 +74,12 @@ public class PublisherRouting implements RoutingProvider {
                 .flatMap((publisherId) -> publisherFacade.read(publisherId));
     }
 
-    public Single<Publisher[]> filterPublishers(RoutingContext routingContext) {
+    public Observable<Publisher> filterPublishers(RoutingContext routingContext) {
         LOG.debug("Received filter PublisherSession request");
 
         return Single.just(routingContext)
                 .map((rc) -> RequestReader.getQueryValue(rc, PUBLISHER_ID_PARAM_NAME))
-                .flatMap((idsArg) -> {
+                .flatMapObservable((idsArg) -> {
                         LOG.debug(idsArg);
                         String[] ids = idsArg.split("\\,");
                         PublisherFilter filter = new PublisherFilter();

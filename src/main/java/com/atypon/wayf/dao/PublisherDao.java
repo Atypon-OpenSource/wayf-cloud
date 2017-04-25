@@ -19,12 +19,15 @@ package com.atypon.wayf.dao;
 
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherFilter;
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 
 public interface PublisherDao {
-    Publisher create(Publisher publisher);
-    Publisher read(String id);
-    Publisher update(Publisher publisher);
-    void delete(String id);
+    Single<Publisher> create(Publisher publisher);
+    Single<Publisher> read(String id);
+    Single<Publisher> update(Publisher publisher);
+    Completable delete(String id);
 
-    Publisher[] filter(PublisherFilter filter);
+    Observable<Publisher> filter(PublisherFilter filter);
 }

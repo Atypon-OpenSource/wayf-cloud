@@ -21,10 +21,12 @@ import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
 import com.atypon.wayf.data.publisher.PublisherSession;
 import com.atypon.wayf.data.publisher.PublisherSessionFilter;
+import com.atypon.wayf.reactivex.DaoPolicies;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
@@ -69,35 +71,37 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
     }
 
     @Override
-    public PublisherSession create(PublisherSession publisherSession) {
+    public Single<PublisherSession> create(PublisherSession publisherSession) {
         LOG.debug("Creating publisher session [{}] in Neo4J", publisherSession);
 
         publisherSession.setCreatedDate(new Date());
         publisherSession.setModifiedDate(new Date());
 
-        Map<String, Object> arguments = QueryMapper.buildQueryArguments(createCypher, publisherSession);
-
-        return dbExecutor.executeQuerySelectFirst(createCypher, arguments, PublisherSession.class);
+        return Single.just(publisherSession)
+                .compose((single) -> DaoPolicies.applySingle(single))
+                .map((_publisherSession) -> QueryMapper.buildQueryArguments(createCypher, _publisherSession))
+                .map((arguments) -> dbExecutor.executeQuerySelectFirst(createCypher, arguments, PublisherSession.class));
     }
 
     @Override
-    public PublisherSession read(String id) {
-        PublisherSession session = new PublisherSession();
-        session.setId(id);
+    public Single<PublisherSession> read(String id) {
+        PublisherSession publisherSession = new PublisherSession();
+        publisherSession.setId(id);
 
-        Map<String, Object> arguments = QueryMapper.buildQueryArguments(createCypher, session);
-
-        return dbExecutor.executeQuerySelectFirst(readCypher, arguments, PublisherSession.class);
+        return Single.just(publisherSession)
+                .compose((single) -> DaoPolicies.applySingle(single))
+                .map((_publisherSession) -> QueryMapper.buildQueryArguments(readCypher, _publisherSession))
+                .map((arguments) -> dbExecutor.executeQuerySelectFirst(readCypher, arguments, PublisherSession.class));
     }
 
     @Override
-    public PublisherSession update(PublisherSession publisherSession) {
+    public Single<PublisherSession> update(PublisherSession publisherSession) {
         return null;
     }
 
     @Override
-    public void delete(String id) {
-
+    public Completable delete(String id) {
+        return Completable.complete();
     }
 
     @Override
@@ -105,23 +109,20 @@ public class PublisherSessionDaoNeo4JImpl implements PublisherSessionDao {
         LOG.debug("Adding IDP relationship");
 
         return Single.just(publisherSession)
-                .observeOn(Schedulers.io())
-                .map((o_publisherSession) -> {
-                    Map<String, Object> arguments = QueryMapper.buildQueryArguments(addIdpRelationshipCypher, publisherSession);
-
-                    return dbExecutor.executeQuerySelectFirst(addIdpRelationshipCypher, arguments, PublisherSession.class);
-                }).toCompletable();
+                .compose((single) -> DaoPolicies.applySingle(single))
+                .map((_publisherSession) -> QueryMapper.buildQueryArguments(addIdpRelationshipCypher, _publisherSession))
+                .map((arguments) -> dbExecutor.executeQuerySelectFirst(addIdpRelationshipCypher, arguments, PublisherSession.class))
+                .toCompletable();
 
     }
 
     @Override
-    public PublisherSession[] filter(PublisherSessionFilter filterCriteria) {
+    public Observable<PublisherSession> filter(PublisherSessionFilter filterCriteria) {
         LOG.debug("Filtering in Neo4J for criteria [{}]", filterCriteria);
 
-        Map<String, Object> arguments = QueryMapper.buildQueryArguments(filterCypher, filterCriteria);
-
-        List<PublisherSession> publisherSessions = dbExecutor.executeQuery(filterCypher, arguments, PublisherSession.class);
-
-        return publisherSessions.toArray(new PublisherSession[0]);
+        return Observable.just(filterCriteria)
+                .compose((observable) -> DaoPolicies.applyObservable(observable))
+                .map((_filterCriteria) -> QueryMapper.buildQueryArguments(filterCypher, filterCriteria))
+                .flatMap((arguments) -> dbExecutor.executeQuery(filterCypher, arguments, PublisherSession.class));
     }
 }

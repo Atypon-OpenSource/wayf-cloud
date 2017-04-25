@@ -17,16 +17,21 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.data.publisher.PublisherFilter;
 import com.atypon.wayf.data.publisher.PublisherStatus;
 import com.atypon.wayf.guice.WayfGuiceModule;
+import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
+import io.reactivex.Observable;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class PublisherDaoNeo4JImplTest {
+import java.util.HashMap;
+import java.util.Map;
 
+public class PublisherDaoNeo4JImplTest {
 
     @Inject
     private PublisherDaoNeo4JImpl dao;
@@ -42,12 +47,61 @@ public class PublisherDaoNeo4JImplTest {
         publisher.setName("Test Publisher");
         publisher.setStatus(PublisherStatus.ACTIVE);
 
-        Publisher createdPublisher = dao.create(publisher);
+        Publisher createdPublisher = dao.create(publisher).blockingGet();
 
         Assert.assertEquals(PublisherStatus.ACTIVE, createdPublisher.getStatus());
         Assert.assertNotNull(createdPublisher.getId());
         Assert.assertEquals("Test Publisher", createdPublisher.getName());
         Assert.assertNotNull(createdPublisher.getCreatedDate());
         Assert.assertNotNull(createdPublisher.getModifiedDate());
+    }
+
+    @Test
+    public void testRead() {
+        Publisher publisher = new Publisher();
+        publisher.setName("Test Publisher");
+        publisher.setStatus(PublisherStatus.ACTIVE);
+
+        Publisher createdPublisher = dao.create(publisher).blockingGet();
+        Publisher readPublisher = dao.read(createdPublisher.getId()).blockingGet();
+
+        Assert.assertEquals(PublisherStatus.ACTIVE, readPublisher.getStatus());
+        Assert.assertNotNull(readPublisher.getId());
+        Assert.assertEquals("Test Publisher", readPublisher.getName());
+        Assert.assertNotNull(readPublisher.getCreatedDate());
+        Assert.assertNotNull(readPublisher.getModifiedDate());
+    }
+
+    @Test
+    public void testFilter() {
+        Map<String, Publisher> publishersById = new HashMap<>();
+
+        for (int i = 0; i < 5; i++) {
+            Publisher publisher = new Publisher();
+            publisher.setName("Test Publisher " + i);
+            publisher.setStatus(PublisherStatus.ACTIVE);
+
+            Publisher createdPublisher = dao.create(publisher).blockingGet();
+            publishersById.put(createdPublisher.getId(), createdPublisher);
+        }
+
+        Assert.assertEquals(5, publishersById.keySet().size());
+
+        PublisherFilter filter = new PublisherFilter();
+        filter.setIds(Lists.newArrayList(publishersById.keySet()));
+
+        Observable<Publisher> publishers = dao.filter(filter);
+
+        Iterable<Publisher> readPublishers = publishers.blockingIterable();
+
+        for (Publisher readPublisher : readPublishers) {
+            Publisher expected = publishersById.get(readPublisher.getId());
+            Assert.assertEquals(expected.getId(), readPublisher.getId());
+            Assert.assertEquals(expected.getName(), readPublisher.getName());
+            Assert.assertEquals(expected.getStatus(), readPublisher.getStatus());
+            Assert.assertNotNull(readPublisher.getCreatedDate());
+            Assert.assertNotNull(readPublisher.getModifiedDate());
+        }
+
     }
 }

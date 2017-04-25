@@ -21,6 +21,8 @@ import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
 import com.atypon.wayf.data.IdentityProvider;
 import com.atypon.wayf.data.cache.KeyValueCache;
+import com.atypon.wayf.reactivex.DaoPolicies;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -57,37 +59,29 @@ public class IdentityProviderDaoNeo4JImpl implements IdentityProviderDao, KeyVal
     @Override
     public Single<IdentityProvider> create(IdentityProvider identityProvider) {
         return Single.just(identityProvider)
-                .observeOn(Schedulers.io())
-                .map((identityProviderToWrite) -> {
-                    Map<String, Object> args = QueryMapper.buildQueryArguments(createCypher, identityProvider);
-
-                    return dbExecutor.executeQuerySelectFirst(createCypher, args, IdentityProvider.class);
-                });
+                .compose((single) -> DaoPolicies.applySingle(single))
+                .map((_identityProvider) -> QueryMapper.buildQueryArguments(createCypher, identityProvider))
+                .map((arguments) -> dbExecutor.executeQuerySelectFirst(createCypher, arguments, IdentityProvider.class));
     }
 
     @Override
     public Single<IdentityProvider> read(String id) {
-        return Single.just(id)
-                .observeOn(Schedulers.io())
-                .map((_id) -> {
-                    IdentityProvider provider = new IdentityProvider();
-                    provider.setId(_id);
+        IdentityProvider identityProvider = new IdentityProvider();
+        identityProvider.setId(id);
 
-                    Map<String, Object> args = QueryMapper.buildQueryArguments(readCypher, provider);
-
-                    return dbExecutor.executeQuerySelectFirst(readCypher, args, IdentityProvider.class);
-                });
+        return Single.just(identityProvider)
+                .compose((single) -> DaoPolicies.applySingle(single))
+                .map((_identityProvider) -> QueryMapper.buildQueryArguments(readCypher, _identityProvider))
+                .map((arguments) -> dbExecutor.executeQuerySelectFirst(readCypher, arguments, IdentityProvider.class));
     }
 
     @Override
     public Maybe<String> get(String key) {
         return Maybe.just(key)
-                .observeOn(Schedulers.io())
-                .flatMap((keyToRead) -> {
-                    Map<String, Object> args = new HashMap<>();
-                    args.put("entityId", key);
-
-                    IdentityProvider result = dbExecutor.executeQuerySelectFirst(getByEntityIdCypher, args, IdentityProvider.class);
+                .compose((maybe) -> DaoPolicies.applyMaybe(maybe))
+                .map((_key) -> ImmutableMap.<String, Object>builder().put("entityId", key).build())
+                .flatMap((arguments) -> {
+                    IdentityProvider result = dbExecutor.executeQuerySelectFirst(getByEntityIdCypher, arguments, IdentityProvider.class);
 
                     return result == null? Maybe.empty() : Maybe.just(result.getId());
                 });

@@ -25,6 +25,7 @@ import com.atypon.wayf.verticle.WayfRequestHandler;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -64,7 +65,7 @@ public class PublisherSessionRouting implements RoutingProvider {
         router.get(READ_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> readPublisherSession(rc)));
         router.put(UPDATE_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> updatePublisherSession(rc)));
         router.put(SET_IDP_BY_PUBLISHER_ID).handler(WayfRequestHandler.completable((rc) -> addIdp(rc)));
-        router.get(FILTER_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> filter(rc)));
+        router.get(FILTER_PUBLISHER_SESSION).handler(WayfRequestHandler.observable((rc) -> filter(rc)));
 
 
         router.delete(DELETE_PUBLISHER_SESSION).handler(WayfRequestHandler.completable((rc) -> deletePublisherSession(rc)));
@@ -112,13 +113,13 @@ public class PublisherSessionRouting implements RoutingProvider {
                 .flatMapCompletable((requestPublisherSession) -> publisherSessionFacade.addIdpRelationship(requestPublisherSession));
     }
 
-    public Single<PublisherSession[]> filter(RoutingContext routingContext) {
+    public Observable<PublisherSession> filter(RoutingContext routingContext) {
         LOG.debug("Received filter PublisherSession request");
 
         return Single.just(routingContext)
                 .map((rc) -> RequestReader.getQueryValue(rc, DEVICE_ID_QUERY_PARAM))
                 .map((deviceID) -> new PublisherSessionFilter().setDeviceId(deviceID))
-                .flatMap((publisherSessionFilter) -> publisherSessionFacade.filter(publisherSessionFilter));
+                .flatMapObservable((publisherSessionFilter) -> publisherSessionFacade.filter(publisherSessionFilter));
     }
 
     public Completable deletePublisherSession(RoutingContext routingContext) {

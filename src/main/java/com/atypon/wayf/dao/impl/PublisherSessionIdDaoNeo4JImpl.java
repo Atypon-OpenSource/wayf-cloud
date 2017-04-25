@@ -20,6 +20,7 @@ import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
 import com.atypon.wayf.data.cache.KeyValueCache;
 import com.atypon.wayf.data.publisher.PublisherSession;
+import com.atypon.wayf.reactivex.DaoPolicies;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -49,16 +50,15 @@ public class PublisherSessionIdDaoNeo4JImpl implements KeyValueCache<String, Str
 
     @Override
     public Maybe<String> get(String publisherId) {
-        return Maybe.just(publisherId)
-                .observeOn(Schedulers.io())
-                .map((o_publisherId) -> {
-                        PublisherSession session = new PublisherSession();
-                        session.setLocalId(publisherId);
+        PublisherSession publisherSession = new PublisherSession();
+        publisherSession.setLocalId(publisherId);
 
-                        Map<String, Object> args = QueryMapper.buildQueryArguments(readInternalIdCypher, session);
-
-                        session = dbExecutor.executeQuerySelectFirst(readInternalIdCypher, args, PublisherSession.class);
-                        return session.getId();
+        return Maybe.just(publisherSession)
+                .compose((maybe) -> DaoPolicies.applyMaybe(maybe))
+                .map((_publisherSession) ->  QueryMapper.buildQueryArguments(readInternalIdCypher, _publisherSession))
+                .flatMap((arguments) -> {
+                        PublisherSession storedSession = dbExecutor.executeQuerySelectFirst(readInternalIdCypher, arguments, PublisherSession.class);
+                        return storedSession == null? Maybe.empty() : Maybe.just(storedSession.getId());
                 });
     }
 }

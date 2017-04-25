@@ -43,11 +43,26 @@ public class DeviceDaoNeo4JImplTest {
         Device device = new Device();
         device.setStatus(DeviceStatus.ACTIVE);
 
-        Device createdDevice = dao.create(device);
+        Device createdDevice = dao.create(device).blockingGet();
 
         Assert.assertEquals(DeviceStatus.ACTIVE, createdDevice.getStatus());
         Assert.assertNotNull(createdDevice.getId());
         Assert.assertNotNull(createdDevice.getCreatedDate());
         Assert.assertNotNull(createdDevice.getModifiedDate());
+    }
+
+    @Test
+    public void testRead() {
+        Device device = new Device();
+        device.setStatus(DeviceStatus.ACTIVE);
+
+        Device createdDevice = dao.create(device).blockingGet();
+        Device readDevice = dao.read(createdDevice.getId()).blockingGet();
+
+        Assert.assertEquals(createdDevice.getId(), readDevice.getId());
+        Assert.assertEquals(DeviceStatus.ACTIVE, readDevice.getStatus());
+        Assert.assertNotNull(readDevice.getId());
+        Assert.assertNotNull(readDevice.getCreatedDate());
+        Assert.assertNotNull(readDevice.getModifiedDate());
     }
 }

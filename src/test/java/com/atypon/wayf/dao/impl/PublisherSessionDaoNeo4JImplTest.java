@@ -59,10 +59,10 @@ public class PublisherSessionDaoNeo4JImplTest {
         publisher.setName("Test Publisher");
         publisher.setStatus(PublisherStatus.ACTIVE);
 
-        Device createdDevice = deviceDao.create(device);
+        Device createdDevice = deviceDao.create(device).blockingGet();
         Assert.assertNotNull(createdDevice.getId());
 
-        Publisher createdPublisher = publisherDao.create(publisher);
+        Publisher createdPublisher = publisherDao.create(publisher).blockingGet();
         Assert.assertNotNull(createdPublisher.getId());
 
         PublisherSession publisherSession = new PublisherSession();
@@ -73,7 +73,7 @@ public class PublisherSessionDaoNeo4JImplTest {
         publisherSession.setLastActiveDate(new Date());
         publisherSession.setStatus(PublisherSessionStatus.ACTIVE);
 
-        PublisherSession createdPublisherSession = dao.create(publisherSession);
+        PublisherSession createdPublisherSession = dao.create(publisherSession).blockingGet();
         Assert.assertEquals(PublisherSessionStatus.ACTIVE, createdPublisherSession.getStatus());
         Assert.assertNotNull(createdPublisherSession.getId());
         Assert.assertNotNull(createdPublisherSession.getCreatedDate());
