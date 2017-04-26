@@ -19,6 +19,9 @@ package com.atypon.wayf.dao.impl;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceStatus;
 import com.atypon.wayf.guice.WayfGuiceModule;
+import com.atypon.wayf.reactivex.WayfReactivexConfig;
+import com.atypon.wayf.request.RequestContext;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import org.junit.Assert;
@@ -36,6 +39,9 @@ public class DeviceDaoNeo4JImplTest {
     @Before
     public void setUp() {
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
+
+        WayfReactivexConfig.initializePlugins();
+        RequestContextAccessor.set(new RequestContext().setLimit(5).setOffset(0));
     }
 
     @Test

@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.dao.neo4j;
 
+import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.RequestContext;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.AbstractModule;
@@ -28,7 +29,6 @@ import org.junit.Test;
 import org.neo4j.driver.v1.Driver;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Neo4JExecutorTest {
@@ -45,6 +45,7 @@ public class Neo4JExecutorTest {
             }
         }).injectMembers(this);
 
+        WayfReactivexConfig.initializePlugins();
         RequestContextAccessor.set(new RequestContext().setLimit(5).setOffset(0));
     }
 

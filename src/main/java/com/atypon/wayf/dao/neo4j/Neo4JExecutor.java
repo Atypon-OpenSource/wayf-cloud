@@ -52,11 +52,11 @@ public class Neo4JExecutor {
     public <T> T executeQuerySelectFirst(String query, Map<String, Object> arguments, Class<T> returnType) {
         LOG.debug("Running statement[{}] with values[{}]", query, arguments);
 
-        List<Record> records =  execute(query, arguments);
+        List<Record> records = execute(query, arguments);
 
         if (records != null && records.size() > 0) {
             try {
-                processor.processRow(records.get(0).asMap(), returnType);
+                return processor.processRow(records.get(0).asMap(), returnType);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -77,25 +77,29 @@ public class Neo4JExecutor {
     }
 
     private List<Record> execute(String query, Map<String, Object> arguments) {
-        LOG.debug("Running statement[{}] with values[{}]", query, arguments);
 
         // Add in limit and offset arguments by default. The limit is increased by 1 so that we can see if there is
         // more data for the client to paginate
         arguments.put(LIMIT, RequestContextAccessor.get().getLimit() + 1);
         arguments.put(OFFSET, RequestContextAccessor.get().getOffset());
 
+        LOG.debug("Running statement[{}] with values[{}]", query, arguments);
+
         try (Session session = driver.session()) {
             StatementResult result = session.run(query, arguments);
 
             if (result != null && result.hasNext()) {
                 List<Record> records = result.list();
+                
+                // Check to see if there was more data to paginate over
+                if (records.size() > RequestContextAccessor.get().getLimit()) {
+                    RequestContextAccessor.get().setHasAnotherDbPage(Boolean.TRUE);
 
-                LOG.debug("Record size {} limit {}", records.size(), RequestContextAccessor.get().getLimit());
-                // Check to see if there is more data to paginate over
-                RequestContextAccessor.get().setHasAnotherDbPage(records.size() > RequestContextAccessor.get().getLimit());
-
-                // Remove the extra record
-                records.remove(records.size() - 1);
+                    // Remove the extra record
+                    records.remove(records.size() - 1);
+                } else {
+                    RequestContextAccessor.get().setHasAnotherDbPage(Boolean.FALSE);
+                }
 
                 return records;
             }
