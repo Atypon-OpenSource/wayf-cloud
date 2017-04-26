@@ -19,10 +19,18 @@ package com.atypon.wayf.request;
 import io.vertx.ext.web.RoutingContext;
 
 public class RequestContext {
+    private static final Integer DEFAULT_LIMIT = 30;
+    private static final Integer DEFAULT_OFFSET = 0;
+
+    private Integer limit = DEFAULT_LIMIT;
+    private Integer offset = DEFAULT_OFFSET;
+
     private String requestUrl;
     private boolean forceSync;
 
-    RequestContext() {
+    private Boolean hasAnotherDbPage;
+
+    public RequestContext() {
     }
 
     public static RequestContext fromRoutingContext(RoutingContext routingContext) {
@@ -32,6 +40,16 @@ public class RequestContext {
 
         String forceSyncQueryValue = RequestReader.getQueryValue(routingContext, "forceSync");
         requestContext.setForceSync(Boolean.parseBoolean(forceSyncQueryValue));
+
+        String limit = RequestReader.getQueryValue(routingContext, "limit");
+        if (limit != null) {
+            requestContext.setLimit(Integer.parseInt(limit));
+        }
+
+        String offset = RequestReader.getQueryValue(routingContext, "offset");
+        if (offset != null) {
+            requestContext.setOffset(Integer.parseInt(offset));
+        }
 
         return requestContext;
     }
@@ -54,4 +72,30 @@ public class RequestContext {
         return this;
     }
 
+    public Integer getLimit() {
+        return limit;
+    }
+
+    public RequestContext setLimit(Integer limit) {
+        this.limit = limit;
+        return this;
+    }
+
+    public Integer getOffset() {
+        return offset;
+    }
+
+    public RequestContext setOffset(Integer offset) {
+        this.offset = offset;
+        return this;
+    }
+
+    public Boolean getHasAnotherDbPage() {
+        return hasAnotherDbPage;
+    }
+
+    public RequestContext setHasAnotherDbPage(Boolean hasAnotherDbPage) {
+        this.hasAnotherDbPage = hasAnotherDbPage;
+        return this;
+    }
 }

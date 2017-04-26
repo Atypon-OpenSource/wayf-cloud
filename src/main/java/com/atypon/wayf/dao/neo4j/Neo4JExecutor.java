@@ -17,13 +17,11 @@
 package com.atypon.wayf.dao.neo4j;
 
 import com.atypon.wayf.dao.ResultSetProcessor;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Observable;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.Record;
-import org.neo4j.driver.v1.Session;
-import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.driver.v1.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +33,9 @@ import java.util.Map;
 public class Neo4JExecutor {
     private static final Logger LOG = LoggerFactory.getLogger(Neo4JExecutor.class);
 
+    public static final String LIMIT = "limit";
+    public static final String OFFSET = "offset";
+
     @Inject
     private Driver driver;
 
@@ -44,27 +45,62 @@ public class Neo4JExecutor {
         processor = new ResultSetProcessor();
     }
 
+    public Driver getDriver() {
+        return driver;
+    }
+
     public <T> T executeQuerySelectFirst(String query, Map<String, Object> arguments, Class<T> returnType) {
         LOG.debug("Running statement[{}] with values[{}]", query, arguments);
 
-        try (Session session = driver.session()) {
-            StatementResult result = session.run(query, arguments);
+        List<Record> records =  execute(query, arguments);
 
-            return (returnType != null && result.hasNext())? processor.processRow(result.next().asMap(), returnType) : null;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (records != null && records.size() > 0) {
+            try {
+                processor.processRow(records.get(0).asMap(), returnType);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
+
+        return null;
     }
 
     public <T> Observable<T> executeQuery(String query, Map<String, Object> arguments, Class<T> returnType) {
         LOG.debug("Running statement[{}] with values[{}]", query, arguments);
 
+        List<Record> records = execute(query, arguments);
 
-        try (Session session = driver.session()){
+        return records == null?
+                Observable.empty() :
+                Observable.fromIterable(records)
+                    .map((record) -> processor.processRow(record.asMap(), returnType));
+    }
+
+    private List<Record> execute(String query, Map<String, Object> arguments) {
+        LOG.debug("Running statement[{}] with values[{}]", query, arguments);
+
+        // Add in limit and offset arguments by default. The limit is increased by 1 so that we can see if there is
+        // more data for the client to paginate
+        arguments.put(LIMIT, RequestContextAccessor.get().getLimit() + 1);
+        arguments.put(OFFSET, RequestContextAccessor.get().getOffset());
+
+        try (Session session = driver.session()) {
             StatementResult result = session.run(query, arguments);
 
-            return Observable.fromIterable(result.list())
-                    .map((record) -> processor.processRow(record.asMap(), returnType));
+            if (result != null && result.hasNext()) {
+                List<Record> records = result.list();
+
+                LOG.debug("Record size {} limit {}", records.size(), RequestContextAccessor.get().getLimit());
+                // Check to see if there is more data to paginate over
+                RequestContextAccessor.get().setHasAnotherDbPage(records.size() > RequestContextAccessor.get().getLimit());
+
+                // Remove the extra record
+                records.remove(records.size() - 1);
+
+                return records;
+            }
+
+            return null;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
