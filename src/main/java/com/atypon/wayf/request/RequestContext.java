@@ -17,8 +17,12 @@
 package com.atypon.wayf.request;
 
 import io.vertx.ext.web.RoutingContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RequestContext {
+    private static final Logger LOG = LoggerFactory.getLogger(RequestContext.class);
+
     private static final Integer DEFAULT_LIMIT = 30;
     private static final Integer DEFAULT_OFFSET = 0;
 
@@ -26,9 +30,10 @@ public class RequestContext {
     private Integer offset = DEFAULT_OFFSET;
 
     private String requestUrl;
+    private String requestUri;
     private boolean forceSync;
 
-    private Boolean hasAnotherDbPage;
+    private Boolean hasAnotherDbPage = Boolean.FALSE;
 
     public RequestContext() {
     }
@@ -36,7 +41,8 @@ public class RequestContext {
     public static RequestContext fromRoutingContext(RoutingContext routingContext) {
         RequestContext requestContext = new RequestContext();
 
-        requestContext.setRequestUrl(routingContext.request().uri());
+        requestContext.setRequestUri(routingContext.request().uri());
+        requestContext.setRequestUrl(routingContext.request().absoluteURI());
 
         String forceSyncQueryValue = RequestReader.getQueryValue(routingContext, "forceSync");
         requestContext.setForceSync(Boolean.parseBoolean(forceSyncQueryValue));
@@ -60,6 +66,15 @@ public class RequestContext {
 
     public RequestContext setRequestUrl(String requestUrl) {
         this.requestUrl = requestUrl;
+        return this;
+    }
+
+    public String getRequestUri() {
+        return requestUri;
+    }
+
+    public RequestContext setRequestUri(String requestUri) {
+        this.requestUri = requestUri;
         return this;
     }
 

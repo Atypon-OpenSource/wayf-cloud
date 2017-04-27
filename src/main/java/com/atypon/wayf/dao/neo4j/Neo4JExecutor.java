@@ -90,7 +90,7 @@ public class Neo4JExecutor {
 
             if (result != null && result.hasNext()) {
                 List<Record> records = result.list();
-                
+
                 // Check to see if there was more data to paginate over
                 if (records.size() > RequestContextAccessor.get().getLimit()) {
                     RequestContextAccessor.get().setHasAnotherDbPage(Boolean.TRUE);

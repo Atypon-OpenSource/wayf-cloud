@@ -17,16 +17,19 @@
 package com.atypon.wayf.request;
 
 import com.atypon.wayf.data.ErrorResponse;
+import com.sun.javafx.fxml.builder.URLBuilder;
 import io.reactivex.Completable;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 
 /**
  * A utility class to write responses to VertX
@@ -42,10 +45,12 @@ public class ResponseWriter {
                         routingContext.response()
                                 .setStatusCode(200)
                                 .putHeader("content-type", "application/json; charset=utf-8")
+                                .putHeader("Link", getLinkHeaderValue())
                                 .end(body != null ? Json.encodePrettily(body) : ""))
                 .subscribeOn(Schedulers.io())
                 .subscribe(
-                        () -> {}, // Do nothing on success
+                        () -> {
+                        }, // Do nothing on success
                         (ex) -> routingContext.fail(ex)
                 );
     }
@@ -77,9 +82,41 @@ public class ResponseWriter {
                         .end(Json.encodePrettily(errorResponse)))
                 .subscribeOn(Schedulers.io())
                 .subscribe(
-                        () -> {},
+                        () -> {
+                        },
                         (ex) -> LOG.error("Could not write response to client", ex)
                 );
     }
 
+    protected static String getLinkHeaderValue() {
+        Boolean hasAnotherPage = RequestContextAccessor.get().getHasAnotherDbPage();
+
+        if (hasAnotherPage) {
+            int currentLimit = RequestContextAccessor.get().getLimit();
+            int currentOffset = RequestContextAccessor.get().getOffset();
+            int newOffset = currentOffset + currentLimit;
+
+            String urlStr = null;
+
+            try {
+                URL url = new URL(RequestContextAccessor.get().getRequestUrl());
+
+                urlStr = new URIBuilder(url.toURI())
+                        .setParameter("limit", String.valueOf(currentLimit))
+                        .setParameter("offset", String.valueOf(newOffset))
+                        .build()
+                        .toString();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            return new StringBuilder()
+                    .append("<")
+                    .append(urlStr)
+                    .append(">; rel=\"next\"")
+                    .toString();
+        }
+
+        return null;
+    }
 }
