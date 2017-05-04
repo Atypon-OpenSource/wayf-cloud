@@ -17,21 +17,45 @@
 package com.atypon.wayf.request;
 
 import io.vertx.ext.web.RoutingContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RequestContext {
+    private static final Logger LOG = LoggerFactory.getLogger(RequestContext.class);
+
+    private static final Integer DEFAULT_LIMIT = 30;
+    private static final Integer DEFAULT_OFFSET = 0;
+
+    private Integer limit = DEFAULT_LIMIT;
+    private Integer offset = DEFAULT_OFFSET;
+
     private String requestUrl;
+    private String requestUri;
     private boolean forceSync;
 
-    RequestContext() {
+    private Boolean hasAnotherDbPage = Boolean.FALSE;
+
+    public RequestContext() {
     }
 
     public static RequestContext fromRoutingContext(RoutingContext routingContext) {
         RequestContext requestContext = new RequestContext();
 
-        requestContext.setRequestUrl(routingContext.request().uri());
+        requestContext.setRequestUri(routingContext.request().uri());
+        requestContext.setRequestUrl(routingContext.request().absoluteURI());
 
         String forceSyncQueryValue = RequestReader.getQueryValue(routingContext, "forceSync");
         requestContext.setForceSync(Boolean.parseBoolean(forceSyncQueryValue));
+
+        String limit = RequestReader.getQueryValue(routingContext, "limit");
+        if (limit != null) {
+            requestContext.setLimit(Integer.parseInt(limit));
+        }
+
+        String offset = RequestReader.getQueryValue(routingContext, "offset");
+        if (offset != null) {
+            requestContext.setOffset(Integer.parseInt(offset));
+        }
 
         return requestContext;
     }
@@ -45,6 +69,15 @@ public class RequestContext {
         return this;
     }
 
+    public String getRequestUri() {
+        return requestUri;
+    }
+
+    public RequestContext setRequestUri(String requestUri) {
+        this.requestUri = requestUri;
+        return this;
+    }
+
     public boolean isForceSync() {
         return forceSync;
     }
@@ -54,4 +87,30 @@ public class RequestContext {
         return this;
     }
 
+    public Integer getLimit() {
+        return limit;
+    }
+
+    public RequestContext setLimit(Integer limit) {
+        this.limit = limit;
+        return this;
+    }
+
+    public Integer getOffset() {
+        return offset;
+    }
+
+    public RequestContext setOffset(Integer offset) {
+        this.offset = offset;
+        return this;
+    }
+
+    public Boolean getHasAnotherDbPage() {
+        return hasAnotherDbPage;
+    }
+
+    public RequestContext setHasAnotherDbPage(Boolean hasAnotherDbPage) {
+        this.hasAnotherDbPage = hasAnotherDbPage;
+        return this;
+    }
 }

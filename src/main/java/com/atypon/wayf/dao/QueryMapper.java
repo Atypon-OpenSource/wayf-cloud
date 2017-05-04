@@ -17,6 +17,8 @@
 package com.atypon.wayf.dao;
 
 
+import com.atypon.wayf.dao.neo4j.Neo4JExecutor;
+import com.google.common.collect.Sets;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,8 @@ import java.util.regex.Pattern;
 
 public class QueryMapper {
     private static final Logger LOG = LoggerFactory.getLogger(QueryMapper.class);
+
+    private static final Set<String> FIELD_BLACKLIST = Sets.newHashSet(Neo4JExecutor.LIMIT, Neo4JExecutor.OFFSET);
 
     private static final String DELIMITER = ".";
     private static final String REGEX_DELIMITER = "\\.";
@@ -61,7 +65,11 @@ public class QueryMapper {
 
             while (result.find()) {
                 for (int i = 1; i <= result.groupCount(); i++) {
-                    parsedQuery.add(result.group(i));
+                    String field = result.group(i);
+
+                    if (!FIELD_BLACKLIST.contains(field)) {
+                        parsedQuery.add(field);
+                    }
                 }
             }
 

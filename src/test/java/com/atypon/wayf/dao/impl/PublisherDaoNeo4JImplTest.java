@@ -20,6 +20,9 @@ import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherFilter;
 import com.atypon.wayf.data.publisher.PublisherStatus;
 import com.atypon.wayf.guice.WayfGuiceModule;
+import com.atypon.wayf.reactivex.WayfReactivexConfig;
+import com.atypon.wayf.request.RequestContext;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
@@ -39,6 +42,9 @@ public class PublisherDaoNeo4JImplTest {
     @Before
     public void setUp() {
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
+
+        WayfReactivexConfig.initializePlugins();
+        RequestContextAccessor.set(new RequestContext().setLimit(5).setOffset(0));
     }
 
     @Test
