@@ -16,19 +16,29 @@
 
 package com.atypon.wayf.dao;
 
+
 import com.atypon.wayf.data.publisher.PublisherSession;
-import com.atypon.wayf.data.publisher.PublisherSessionFilter;
-import com.atypon.wayf.data.publisher.PublisherSessionQuery;
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
-import io.reactivex.Observable;
-import io.reactivex.Single;
+import org.junit.Assert;
+import org.junit.Test;
 
-public interface PublisherSessionDao {
-    Single<PublisherSession> create(PublisherSession publisherSession);
-    Maybe<PublisherSession> read(String id);
-    Single<PublisherSession> update(PublisherSession publisherSession);
-    Completable delete(String id);
+import java.util.HashMap;
+import java.util.Map;
 
-    Observable<PublisherSession> filter(PublisherSessionFilter filterCriteria);
+public class BeanMapperTest {
+
+    @Test
+    public void testResultSetProcessor() throws Exception {
+        BeanMapper processor = new BeanMapper();
+
+        Map<String, Object> row = new HashMap<>();
+        row.put("id", "testId");
+        row.put("device.id", "testDeviceId");
+
+        PublisherSession publisherSession = processor.map(row, PublisherSession.class);
+
+        Assert.assertEquals("testId", publisherSession.getId());
+        Assert.assertEquals("testDeviceId", publisherSession.getDevice().getId());
+    }
+
+
 }
