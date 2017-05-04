@@ -22,6 +22,7 @@ import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceStatus;
 import com.atypon.wayf.data.publisher.PublisherSession;
 import com.atypon.wayf.data.publisher.PublisherSessionFilter;
+import com.atypon.wayf.data.publisher.PublisherSessionQuery;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.atypon.wayf.facade.PublisherSessionFacade;
@@ -90,7 +91,8 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     public Single<PublisherSession> read(String id) {
         return Single.just(id)
                 .observeOn(Schedulers.io())
-                .flatMap((_id) -> publisherSessionDao.read(_id));
+                .flatMapMaybe((_id) -> publisherSessionDao.read(id))
+                .toSingle();
     }
 
     @Override
@@ -116,17 +118,18 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
         LOG.debug("Adding relationship");
 
         return Single.zip(
-                        identityProviderFacade.resolve(publisherSession.getIdentityProvider()).subscribeOn(Schedulers.io()),
+                        identityProviderFacade.resolve(publisherSession.getAuthenticatedBy()).subscribeOn(Schedulers.io()),
                         resolveId(publisherSession).subscribeOn(Schedulers.io()),
 
                         (identityProvider, publisherId) -> {
-                            publisherSession.setIdentityProvider(identityProvider);
+                            publisherSession.setAuthenticatedBy(identityProvider);
                             publisherSession.setId(publisherId);
 
                             return publisherSession;
                         }
                 )
-                .flatMapCompletable(publisherSessionToPersist -> publisherSessionDao.addIdpRelationship(publisherSessionToPersist));
+                .flatMap(publisherSessionToPersist -> publisherSessionDao.update(publisherSessionToPersist))
+                .toCompletable();
     }
 
     @Override

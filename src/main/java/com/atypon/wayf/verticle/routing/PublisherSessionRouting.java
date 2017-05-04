@@ -17,11 +17,15 @@
 package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.data.IdentityProvider;
+import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.publisher.PublisherSession;
 import com.atypon.wayf.data.publisher.PublisherSessionFilter;
+import com.atypon.wayf.data.publisher.PublisherSessionQuery;
 import com.atypon.wayf.facade.PublisherSessionFacade;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Completable;
@@ -33,21 +37,26 @@ import io.vertx.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Set;
+
 @Singleton
 public class PublisherSessionRouting implements RoutingProvider {
     private static final Logger LOG = LoggerFactory.getLogger(PublisherSessionRouting.class);
 
     private static final String PUBLISHER_SESSION_BASE_URL = "/1/publisherSession";
     private static final String PUBLISHER_SESSION_ID_PARAM_NAME = "id";
+    private static final String PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME = "localId";
     private static final String DEVICE_ID_QUERY_PARAM = "device.id";
     private static final String SESSION_ID_PARAM_NAME = "sessionId";
     private static final String PUBLISHER_SESSION_ID_PARAM = ":" + PUBLISHER_SESSION_ID_PARAM_NAME;
+    private static final String PUBLISHER_SESSION_LOCAL_ID_PARAM = ":" + PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME;
     private static final String PUBLISHER_SESSION_PUBLISHER_ID_PARAM = "publisherId=:" + SESSION_ID_PARAM_NAME;
 
     private static final String CREATE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL;
     private static final String READ_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
+    private static final String READ_PUBLISHER_SESSION_BY_LOCAL_ID = PUBLISHER_SESSION_BASE_URL + "/" + PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME + "=" +  PUBLISHER_SESSION_LOCAL_ID_PARAM;
     private static final String UPDATE_PUBLISHER_SESSION_BY_PUBLISHER_ID = PUBLISHER_SESSION_BASE_URL + "/" + PUBLISHER_SESSION_PUBLISHER_ID_PARAM;
-    private static final String SET_IDP_BY_PUBLISHER_ID = UPDATE_PUBLISHER_SESSION_BY_PUBLISHER_ID + "/idp";
+    private static final String SET_IDP_BY_PUBLISHER_ID = READ_PUBLISHER_SESSION_BY_LOCAL_ID + "/identityProvider";
     private static final String UPDATE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
     private static final String DELETE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
     private static final String FILTER_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "s";
@@ -62,12 +71,11 @@ public class PublisherSessionRouting implements RoutingProvider {
     public void addRoutings(Router router) {
         router.route(PUBLISHER_SESSION_BASE_URL + "*").handler(BodyHandler.create());
         router.post(CREATE_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> createPublisherSession(rc)));
+        router.get(READ_PUBLISHER_SESSION_BY_LOCAL_ID).handler(WayfRequestHandler.single((rc) -> readPublisherSessionByLocalId(rc)));
         router.get(READ_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> readPublisherSession(rc)));
         router.put(UPDATE_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> updatePublisherSession(rc)));
         router.put(SET_IDP_BY_PUBLISHER_ID).handler(WayfRequestHandler.completable((rc) -> addIdp(rc)));
         router.get(FILTER_PUBLISHER_SESSION).handler(WayfRequestHandler.observable((rc) -> filter(rc)));
-
-
         router.delete(DELETE_PUBLISHER_SESSION).handler(WayfRequestHandler.completable((rc) -> deletePublisherSession(rc)));
     }
 
@@ -76,6 +84,19 @@ public class PublisherSessionRouting implements RoutingProvider {
 
         return Single.just(routingContext)
                 .flatMap((rc) -> RequestReader.readRequestBody(rc, PublisherSession.class))
+                .map((requestPublisherSession) -> {
+                        if (RequestContextAccessor.get().getDeviceId() != null) {
+                            LOG.debug("Setting request device");
+
+                            Device requestDevice = new Device();
+                            requestDevice.setId(RequestContextAccessor.get().getDeviceId());
+
+                            requestPublisherSession.setDevice(requestDevice);
+                        }
+
+                        return requestPublisherSession;
+                    }
+                )
                 .flatMap((requestPublisherSession) -> publisherSessionFacade.create(requestPublisherSession));
     }
 
@@ -83,8 +104,17 @@ public class PublisherSessionRouting implements RoutingProvider {
         LOG.debug("Received read PublisherSession request");
 
         return Single.just(routingContext)
-                .flatMap((rc) -> RequestReader.readPathArgument(rc, PUBLISHER_SESSION_ID_PARAM_NAME))
-                .flatMap((publisherSessionId) -> publisherSessionFacade.read(publisherSessionId));
+                .map((rc) -> RequestReader.readPathArgument(rc, PUBLISHER_SESSION_ID_PARAM_NAME))
+                .flatMap((id) -> publisherSessionFacade.read(id));
+    }
+
+    public Single<PublisherSession> readPublisherSessionByLocalId(RoutingContext routingContext) {
+        LOG.debug("Received read PublisherSession by localId request");
+
+        return Single.just(routingContext)
+                .map((rc) -> buildFilter(rc))
+                .flatMapObservable((query) -> publisherSessionFacade.filter(query))
+                .firstOrError();
     }
 
     public Single<PublisherSession> updatePublisherSession(RoutingContext routingContext) {
@@ -98,15 +128,16 @@ public class PublisherSessionRouting implements RoutingProvider {
     public Completable addIdp(RoutingContext routingContext) {
         LOG.debug("Received update PublisherSession request");
 
-        return Single.zip(
-                RequestReader.readPathArgument(routingContext, SESSION_ID_PARAM_NAME),
-                RequestReader.readRequestBody(routingContext, IdentityProvider.class),
+        return Single.just(routingContext)
+                .map((_routingContext) -> {
+                    String localId = RequestReader.readPathArgument(routingContext, PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME);
+                    IdentityProvider identityProvider = RequestReader.readRequestBody(routingContext, IdentityProvider.class).blockingGet();
 
-                (publisherId, identityProvider) -> {
-                    LOG.debug("Publisher ID[{}] Identity Provider[{}]", publisherId, identityProvider);
+                    LOG.debug("Publisher local ID[{}] Identity Provider[{}]", localId, identityProvider);
+
                     PublisherSession publisherSession = new PublisherSession();
-                    publisherSession.setLocalId(publisherId);
-                    publisherSession.setIdentityProvider(identityProvider);
+                    publisherSession.setLocalId(localId);
+                    publisherSession.setAuthenticatedBy(identityProvider);
 
                     return publisherSession;
                 })
@@ -117,8 +148,7 @@ public class PublisherSessionRouting implements RoutingProvider {
         LOG.debug("Received filter PublisherSession request");
 
         return Single.just(routingContext)
-                .map((rc) -> RequestReader.getQueryValue(rc, DEVICE_ID_QUERY_PARAM))
-                .map((deviceID) -> new PublisherSessionFilter().setDeviceId(deviceID))
+                .map((rc) -> buildFilter(rc))
                 .flatMapObservable((publisherSessionFilter) -> publisherSessionFacade.filter(publisherSessionFilter));
     }
 
@@ -126,7 +156,26 @@ public class PublisherSessionRouting implements RoutingProvider {
         LOG.debug("Received delete PublisherSession request");
 
         return Single.just(routingContext)
-                .flatMap((rc) -> RequestReader.readPathArgument(rc, PUBLISHER_SESSION_ID_PARAM_NAME))
+                .map((rc) -> RequestReader.readPathArgument(rc, PUBLISHER_SESSION_ID_PARAM_NAME))
                 .flatMapCompletable((publisherSessionId) -> publisherSessionFacade.delete(publisherSessionId));
+    }
+
+    private PublisherSessionFilter buildFilter(RoutingContext routingContext) {
+        String deviceId =  RequestReader.getQueryValue(routingContext, DEVICE_ID_QUERY_PARAM);
+
+        String concatFields = RequestReader.getQueryValue(routingContext, "fields");
+        Set<String> fields = null;
+
+        if (concatFields != null) {
+            String[] fieldArray = concatFields.split(",");
+            fields = Sets.newHashSet(fieldArray);
+        }
+
+        String id = RequestReader.readPathArgument(routingContext, PUBLISHER_SESSION_ID_PARAM_NAME);
+        String localId = RequestReader.readPathArgument(routingContext, PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME);
+
+        return new PublisherSessionFilter()
+                .setDeviceId(deviceId)
+                .setLocalId(localId);
     }
 }

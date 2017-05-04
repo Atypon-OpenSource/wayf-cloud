@@ -14,21 +14,32 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.data;
 
+import java.util.List;
 
-import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherFilter;
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
-import io.reactivex.Observable;
-import io.reactivex.Single;
+public class IdentityProviderFilter {
+    private List<String> ids;
+    private String entityId;
 
-public interface PublisherDao {
-    Single<Publisher> create(Publisher publisher);
-    Maybe<Publisher> read(String id);
-    Single<Publisher> update(Publisher publisher);
-    Completable delete(String id);
+    public IdentityProviderFilter() {
+    }
 
-    Observable<Publisher> filter(PublisherFilter filter);
+    public List<String> getIds() {
+        return ids;
+    }
+
+    public IdentityProviderFilter setIds(List<String> ids) {
+        this.ids = ids;
+        return this;
+    }
+
+    public String getEntityId() {
+        return entityId;
+    }
+
+    public IdentityProviderFilter setEntityId(String entityId) {
+        this.entityId = entityId;
+        return this;
+    }
 }
