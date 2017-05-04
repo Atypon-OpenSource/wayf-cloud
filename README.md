@@ -11,9 +11,6 @@ The wayf-cloud is accessible via a RESTful API. The inbound requests are service
 ### Reactive Back-end
 Each client request is processed asynchronously on the back-end via the use of [ReactiveX](http://reactivex.io/). ReactiveX provides a functional framework for processing requests via observable streams. Asynchronous processing and concurrency are central to the library's implmentation. This abstracts away low-level threading and concurrency issues while exposing useful hooks in deciding where to execute logic. For instance, long running IO bound work, such as database reads, can be performed in an unbounded IO threadpool. Work that is more CPU intensive can be performed in a threadpool optimized for the machine's processor. The end result is an implemantation that is concise, easy to read, and maximizes performance.
 
-### Graph Database
-Due to the organic and interconnected nature of the underlying dataset, [Neo4J](https://neo4j.com/product/) is leveraged as the persistence layer. Not only are discrete data objects stored and retrievable, the relationships between them are persisted as well. This allows for a holistic understanding of a user and their data.
-
 ## What's Next
 * Continue adding feature to fully support the system's requirements
 * Mature exsiting architectural patterns
