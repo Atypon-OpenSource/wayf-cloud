@@ -32,4 +32,12 @@ public class PublisherQuery {
         this.ids = ids;
         return this;
     }
+
+    /**
+     * Database use only
+     * @return
+     */
+    public boolean isNullIds() {
+        return ids == null;
+    }
 }

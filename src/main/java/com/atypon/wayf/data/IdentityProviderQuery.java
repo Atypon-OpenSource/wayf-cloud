@@ -42,4 +42,12 @@ public class IdentityProviderQuery {
         this.entityId = entityId;
         return this;
     }
+
+    /**
+     * Database use only
+     * @return
+     */
+    public boolean isNullIds() {
+        return ids == null;
+    }
 }
