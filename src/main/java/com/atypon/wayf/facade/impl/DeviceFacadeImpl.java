@@ -19,6 +19,7 @@ package com.atypon.wayf.facade.impl;
 import com.atypon.wayf.dao.DeviceDao;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceQuery;
+import com.atypon.wayf.data.device.DeviceStatus;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -44,6 +45,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
     public Single<Device> create(Device device) {
         LOG.debug("Creating device [{}]", device);
 
+        device.setStatus(DeviceStatus.ACTIVE);
         device.setId(UUID.randomUUID().toString());
 
         return Single.just(device)

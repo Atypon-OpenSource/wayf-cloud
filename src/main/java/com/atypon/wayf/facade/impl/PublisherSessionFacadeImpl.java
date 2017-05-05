@@ -18,10 +18,9 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.PublisherSessionDao;
 import com.atypon.wayf.data.IdentityProviderQuery;
-import com.atypon.wayf.data.cache.CascadingCache;
+import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceQuery;
-import com.atypon.wayf.data.device.DeviceStatus;
 import com.atypon.wayf.data.publisher.*;
 import com.atypon.wayf.data.publisher.session.PublisherSession;
 import com.atypon.wayf.data.publisher.session.PublisherSessionQuery;
@@ -30,18 +29,16 @@ import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.atypon.wayf.facade.PublisherFacade;
 import com.atypon.wayf.facade.PublisherSessionFacade;
 import com.atypon.wayf.reactivex.FacadePolicies;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import io.reactivex.Completable;
-import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,10 +58,6 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     private IdentityProviderFacade identityProviderFacade;
 
     @Inject
-    @Named("publisherIdCache")
-    private CascadingCache<String, String> idCache;
-
-    @Inject
     private PublisherFacade publisherFacade;
 
     public PublisherSessionFacadeImpl() {
@@ -75,68 +68,73 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
             LOG.debug("Creating institution [{}]", publisherSession);
 
             publisherSession.setId(UUID.randomUUID().toString());
-            publisherSession.setLastActiveDate(new Date());
 
-            return Single.zip(
-                            getOrCreateDevice(publisherSession.getDevice()).subscribeOn(Schedulers.io()),
-                            validatePublisherIdUniqueness(publisherSession).subscribeOn(Schedulers.io()),
+            return Single.zip(// Run some logic in parallel
+                    // Get the device on the publisher session or create a new one
+                    getOrCreateDevice(publisherSession.getDevice()).subscribeOn(Schedulers.io()),
 
-                            (device, isUnique) -> {
-                                if (!isUnique) {
-                                    throw new RuntimeException("Publisher ID must be unique");
-                                }
+                    // Ensure the localID is unique to that publisher
+                    isUniqueLocalId(publisherSession).subscribeOn(Schedulers.io()),
 
-                                LOG.debug("Setting device {}", device.getId());
-                                publisherSession.setDevice(device);
+                    (device, isUnique) -> {
+                        if (!isUnique) {
+                            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Publisher ID must be unique");
+                        }
 
-                                return publisherSession;
-                            }
-                    )
-                    .observeOn(Schedulers.io())
-                    .flatMap((o_publisherSession) -> publisherSessionDao.create(o_publisherSession));
+                        LOG.debug("Setting device {}", device.getId());
+                        publisherSession.setDevice(device);
+
+                        return publisherSession;
+                    })
+                    .compose((single) -> FacadePolicies.applySingle(single))
+                    .flatMap((_publisherSession) -> publisherSessionDao.create(_publisherSession));
     }
 
     @Override
     public Single<PublisherSession> read(PublisherSessionQuery query) {
-        return Single.just(query)
-                .flatMap((_query) -> publisherSessionDao.read(query.getId()).compose((maybe) -> FacadePolicies.http404OnEmpty(maybe)).toSingle())
+        // Read publisher session by ID
+        return publisherSessionDao.read(query.getId())
+                .compose((maybe) -> FacadePolicies.applyMaybe(maybe))
+
+                // Add in a custom exception on error
+                .compose((maybe) -> FacadePolicies.daoReadOnIdMiss(maybe))
+
+                // Ensure one element is emitted
+                .toSingle()
+
+                // Inflate the publisher session and emit it
                 .flatMap((_publisherSession) -> populate(_publisherSession, query).toSingle(() -> _publisherSession));
     }
 
     @Override
     public Single<PublisherSession> update(PublisherSession publisherSession) {
-        return Single.zip(
-                Single.just(publisherSession),
-                resolveId(publisherSession),
-
-                (o_publisherSession, o_publisherId) -> {
-                    o_publisherSession.setLocalId(o_publisherId);
-                    return o_publisherSession;
-                }
-        );
+        return publisherSessionDao.update(publisherSession);
     }
 
     @Override
     public Completable delete(String id) {
-        return null;
+        return publisherSessionDao.delete(id);
     }
 
     @Override
     public Completable addIdpRelationship(PublisherSession publisherSession) {
         LOG.debug("Adding relationship");
 
-        return Single.zip(
-                        identityProviderFacade.resolve(publisherSession.getAuthenticatedBy()).subscribeOn(Schedulers.io()),
-                        resolveId(publisherSession).subscribeOn(Schedulers.io()),
+        return Single.zip( // Do these tasks in parallel
+                // Resolve the Identity Provider to a persisted one (with an ID)
+                identityProviderFacade.resolve(publisherSession.getAuthenticatedBy()).subscribeOn(Schedulers.io()),
 
-                        (identityProvider, publisherId) -> {
-                            publisherSession.setAuthenticatedBy(identityProvider);
-                            publisherSession.setId(publisherId);
+                // Resolve the Publisher session to a persisted one (with an ID)
+                resolveForLocalId(publisherSession.getLocalId()).subscribeOn(Schedulers.io()),
 
-                            return publisherSession;
-                        }
-                )
-                .flatMap(publisherSessionToPersist -> publisherSessionDao.update(publisherSessionToPersist))
+                // Once we have resolved both, set the IDP as the authenticator
+                (identityProvider, persistedPublisherSession) -> {
+                    persistedPublisherSession.setAuthenticatedBy(identityProvider);
+                    return persistedPublisherSession;
+                })
+
+                // Save the updated Publisher Session
+                .flatMap(publisherSessionToPersist -> update(publisherSessionToPersist))
                 .toCompletable();
     }
 
@@ -147,15 +145,15 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
         return Single.just(query)
                 .observeOn(Schedulers.io())
 
-                // Fetch the PublisheSessions from the dao
+                // Fetch the PublisherSessions from the dao
                 .flatMapObservable((_filterCriteria) -> publisherSessionDao.filter(query))
 
-                // Collect the results into a Single so that we can batch the populate reads
+                // Collect the results into a Single<Iterable> so that we can batch the populate reads
                 .toList()
                 .flatMapObservable((publisherSessions) ->
 
                         // Inflate the publisher sessions via the populate call and emit them
-                        populate((List<PublisherSession>) publisherSessions, query)
+                        populate(publisherSessions, query)
                                 .toObservable()
                                 .cast(PublisherSession.class)
                                 .concatWith(Observable.fromIterable(publisherSessions)));
@@ -163,40 +161,24 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     }
 
     private Single<Device> getOrCreateDevice(Device device) {
-        if (device == null) {
-            device = new Device();
-            device.setStatus(DeviceStatus.ACTIVE);
+        if (device != null && device.getId() != null) {
+            return Single.just(device);
         }
 
-        return Maybe.concat(
-                        Observable.just(device)
-                                .filter(f_device -> f_device.getId() != null)
-                                .firstElement(),
-                        Single.just(device)
-                                .observeOn(Schedulers.io())
-                                .flatMap((o_device) -> deviceFacade.create(o_device))
-                                .toMaybe()
-                )
-                .firstOrError()
-                .doOnError((e) -> {throw new RuntimeException("Unable to get or create device");});
+        return deviceFacade.create(new Device());
     }
 
-    private Single<Boolean> validatePublisherIdUniqueness(PublisherSession publisherSession) {
-        // Some long running database job
-        return Single.just(Boolean.TRUE);
+    private Single<Boolean> isUniqueLocalId(PublisherSession publisherSession) {
+        return filter(new PublisherSessionQuery().setLocalId(publisherSession.getLocalId())) // Filter for publisher sessions with that local ID
+                .firstElement() // Get the first element
+                .isEmpty(); // Return whether or not there was an element
     }
 
 
-    private Single<String> resolveId(PublisherSession publisherSession) {
-        Preconditions.checkArgument(publisherSession.getId() != null || publisherSession.getLocalId() != null, "PublisherSession requires an ID or Publisher ID");
-
-        return Maybe.concat(
-                        publisherSession.getId() == null ?
-                                Maybe.empty() :
-                                Maybe.just(publisherSession.getId()),
-                        idCache.get(publisherSession.getLocalId())
-                )
-                .firstOrError();
+    private Single<PublisherSession> resolveForLocalId(String localId) {
+        return filter(new PublisherSessionQuery().setLocalId(localId))
+                .singleOrError()
+                .doOnError((e) -> {throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not find unique PublisherSession for local ID: " + localId);});
     }
 
     private Completable populate(PublisherSession publisherSession, PublisherSessionQuery query) {
@@ -204,14 +186,15 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     }
 
     private Completable populate(Iterable<PublisherSession> publisherSession, PublisherSessionQuery query) {
+        // Run the inflations in parallel
         return Completable.mergeArray(
-                fetchPublishers(Lists.newArrayList(publisherSession), query),
-                fetchAuthenticatedBys(publisherSession, query),
-                fetchDevices(publisherSession, query)
-        );
+                inflatePublishers(Lists.newArrayList(publisherSession), query),
+                inflateAuthenticatedBys(publisherSession, query),
+                inflateDevices(publisherSession, query)
+        ).compose((completable) -> FacadePolicies.applyCompletable(completable));
     }
 
-    private Completable fetchPublishers(Iterable<PublisherSession> publisherSessions, PublisherSessionQuery query) {
+    private Completable inflatePublishers(Iterable<PublisherSession> publisherSessions, PublisherSessionQuery query) {
         // Return as complete if publisher is not a requested field
         if (!query.getFields().contains(PublisherSessionQuery.PUBLISHER_FIELD)) {
             return Completable.complete();
@@ -238,7 +221,7 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
                 );
     }
 
-    private Completable fetchAuthenticatedBys(Iterable<PublisherSession> publisherSessions, PublisherSessionQuery query) {
+    private Completable inflateAuthenticatedBys(Iterable<PublisherSession> publisherSessions, PublisherSessionQuery query) {
         // Return as complete if authenticatedBy is not a requested field
         if (!query.getFields().contains(PublisherSessionQuery.AUTHENTICATED_BY)) {
             return Completable.complete();
@@ -265,7 +248,7 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
                 );
     }
 
-    private Completable fetchDevices(Iterable<PublisherSession> publisherSessions, PublisherSessionQuery query) {
+    private Completable inflateDevices(Iterable<PublisherSession> publisherSessions, PublisherSessionQuery query) {
         // Return as complete if device is not a requested field
         if (!query.getFields().contains(PublisherSessionQuery.DEVICE)) {
             return Completable.complete();
@@ -284,12 +267,12 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
                 .flatMapObservable((map) -> map.keySet().isEmpty()? Observable.empty() : deviceFacade.filter(new DeviceQuery().setIds(map.keySet())))
 
                 // For each identity provider returned, map it to each publisher session that had its ID
-                .flatMapCompletable((device) -> {
-                            return Observable.fromIterable(publisherSessionsByDeviceId.get(device.getId()))
-                                    .flatMapCompletable((publisherSession) ->
-                                            Completable.fromAction(() -> publisherSession.setDevice(device))
-                                    );
-                        }
+                .flatMapCompletable((device) ->
+                        Observable.fromIterable(publisherSessionsByDeviceId.get(device.getId()))
+                                .flatMapCompletable((publisherSession) ->
+                                        Completable.fromAction(() -> publisherSession.setDevice(device))
+                                )
+
                 );
     }
 }

@@ -56,7 +56,7 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
 
     @Test
     public void testCreateSessionForNewDevice() throws Exception {
-        String requestJsonString = getFileAsString("json_files/publisher_session/create_request.json");
+        String requestJsonString = setField(getFileAsString("json_files/publisher_session/create_request.json"), "$.localId", "local-id-" + UUID.randomUUID().toString());
 
         String createResponse =
                 given()
@@ -94,7 +94,7 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
 
         assertNotNull(deviceId);
 
-        String publisherSessionRequest = getFileAsString("json_files/publisher_session/create_request.json");
+        String publisherSessionRequest = setField(getFileAsString("json_files/publisher_session/create_request.json"), "$.localId", "local-id-" + UUID.randomUUID().toString());
 
         String createResponse =
                 given()
@@ -169,7 +169,7 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
 
     @Test
     public void testReadById() throws Exception {
-        String requestJsonString = getFileAsString("json_files/publisher_session/create_request.json");
+        String requestJsonString = setField(getFileAsString("json_files/publisher_session/create_request.json"), "$.localId", "local-id-" + UUID.randomUUID().toString());
 
         String createResponse =
                 given()
@@ -233,7 +233,7 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
                         .extract().response().asString();
         String identityProviderId = readField(createIdentityProviderResponse, "$.id");
 
-        String requestJsonString = getFileAsString("json_files/publisher_session/create_with_fields.json");
+        String requestJsonString = setField(getFileAsString("json_files/publisher_session/create_with_fields.json"), "$.localId", "local-id-" + UUID.randomUUID().toString());;
 
         String requestWithIdp = setField(requestJsonString, "$.authenticatedBy.id", identityProviderId);
 
@@ -339,14 +339,14 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
         String entityId = readField(createIdentityProviderResponse, "$.entityId");
         assertEquals(randomEntityId, entityId);
 
-        String addIdentityProviderRequest = getFileAsString("json_files/publisher_session/add_identity_provider.json");
+        String addIdentityProviderRequest = setField(getFileAsString("json_files/publisher_session/add_identity_provider.json"), "$.localId", localId);
         String addIdentityProviderRequestRandomEntityId = setField(addIdentityProviderRequest, "$.entityId", randomEntityId);
 
         given()
                 .contentType(ContentType.JSON)
                 .urlEncodingEnabled(false)
                 .body(addIdentityProviderRequestRandomEntityId)
-                .put("/1/publisherSession/localId=" + localId + "/identityProvider")
+                .put("/1/publisherSession/localId=" + localId + "/authenticatedBy")
          .then()
                 .statusCode(200);
 
@@ -382,7 +382,7 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
 
         assertNotNull(deviceId);
 
-        String publisherSessionRequest1 = getFileAsString("json_files/publisher_session/create_request_1.json");
+        String publisherSessionRequest1 = setField(getFileAsString("json_files/publisher_session/create_request_1.json"), "$.localId", "local-id-" + UUID.randomUUID().toString());
 
         String createResponse1 =
                 given()
@@ -398,7 +398,7 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
         // Validate that the device ID on the session was the one passed in via the header
         assertEquals(deviceId, readField(createResponse1, "$.device.id"));
 
-        String publisherSessionRequest2 = getFileAsString("json_files/publisher_session/create_request_2.json");
+        String publisherSessionRequest2 = setField(getFileAsString("json_files/publisher_session/create_request_2.json"), "$.localId", "local-id-" + UUID.randomUUID().toString());
 
         String createResponse2 =
                 given()
@@ -426,7 +426,7 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
                         .extract().response().asString();
 
         // Compare the JSON to the payload on record
-        assertJsonEquals(filterResponse, actualFilterResponse, ArrayUtils.addAll(SERVER_GENERATED_FIELDS_LIST, DEVICE_FIELDS_LIST));
+        assertJsonEquals(filterResponse, actualFilterResponse, ArrayUtils.addAll(SERVER_GENERATED_FIELDS_LIST, ArrayUtils.addAll(DEVICE_FIELDS_LIST, "$[*].localId")));
     }
 
 }

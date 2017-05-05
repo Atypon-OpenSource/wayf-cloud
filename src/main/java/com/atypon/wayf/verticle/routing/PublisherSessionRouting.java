@@ -19,7 +19,6 @@ package com.atypon.wayf.verticle.routing;
 import com.atypon.wayf.data.IdentityProvider;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.publisher.session.PublisherSession;
-import com.atypon.wayf.data.publisher.session.PublisherSessionFilter;
 import com.atypon.wayf.data.publisher.session.PublisherSessionQuery;
 import com.atypon.wayf.facade.PublisherSessionFacade;
 import com.atypon.wayf.request.RequestContextAccessor;
@@ -48,16 +47,13 @@ public class PublisherSessionRouting implements RoutingProvider {
     private static final String PUBLISHER_SESSION_ID_PARAM_NAME = "id";
     private static final String PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME = "localId";
     private static final String DEVICE_ID_QUERY_PARAM = "device.id";
-    private static final String SESSION_ID_PARAM_NAME = "sessionId";
     private static final String PUBLISHER_SESSION_ID_PARAM = ":" + PUBLISHER_SESSION_ID_PARAM_NAME;
     private static final String PUBLISHER_SESSION_LOCAL_ID_PARAM = ":" + PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME;
-    private static final String PUBLISHER_SESSION_PUBLISHER_ID_PARAM = "publisherId=:" + SESSION_ID_PARAM_NAME;
 
     private static final String CREATE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL;
     private static final String READ_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
     private static final String READ_PUBLISHER_SESSION_BY_LOCAL_ID = PUBLISHER_SESSION_BASE_URL + "/" + PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME + "=" +  PUBLISHER_SESSION_LOCAL_ID_PARAM;
-    private static final String UPDATE_PUBLISHER_SESSION_BY_PUBLISHER_ID = PUBLISHER_SESSION_BASE_URL + "/" + PUBLISHER_SESSION_PUBLISHER_ID_PARAM;
-    private static final String SET_IDP_BY_PUBLISHER_ID = READ_PUBLISHER_SESSION_BY_LOCAL_ID + "/identityProvider";
+    private static final String SET_IDP_BY_PUBLISHER_ID = READ_PUBLISHER_SESSION_BY_LOCAL_ID + "/authenticatedBy";
     private static final String UPDATE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
     private static final String DELETE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
     private static final String FILTER_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "s";
