@@ -19,8 +19,8 @@ package com.atypon.wayf.dao.impl;
 import com.atypon.wayf.dao.DbExecutor;
 import com.atypon.wayf.dao.PublisherSessionDao;
 import com.atypon.wayf.data.cache.KeyValueCache;
-import com.atypon.wayf.data.publisher.PublisherSession;
-import com.atypon.wayf.data.publisher.PublisherSessionFilter;
+import com.atypon.wayf.data.publisher.session.PublisherSession;
+import com.atypon.wayf.data.publisher.session.PublisherSessionQuery;
 import com.atypon.wayf.reactivex.DaoPolicies;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -103,10 +103,10 @@ public class PublisherSessionDaoDbImpl implements PublisherSessionDao, KeyValueC
     }
 
     @Override
-    public Observable<PublisherSession> filter(PublisherSessionFilter filterCriteria) {
-        return Observable.just(filterCriteria)
+    public Observable<PublisherSession> filter(PublisherSessionQuery query) {
+        return Observable.just(query)
                 .compose((observable) -> DaoPolicies.applyObservable(observable))
-                .flatMap((_filterCriteria) -> dbExecutor.executeSelect(filterSql, _filterCriteria, PublisherSession.class));
+                .flatMap((_query) -> dbExecutor.executeSelect(filterSql, _query, PublisherSession.class));
     }
 
     @Override
@@ -116,11 +116,11 @@ public class PublisherSessionDaoDbImpl implements PublisherSessionDao, KeyValueC
 
     @Override
     public Maybe<String> get(String publisherId) {
-        PublisherSessionFilter filter = new PublisherSessionFilter().setLocalId(publisherId);
+        PublisherSessionQuery query = new PublisherSessionQuery().setLocalId(publisherId);
 
-        return Maybe.just(filter)
+        return Maybe.just(query)
                 .compose((maybe) -> DaoPolicies.applyMaybe(maybe))
-                .flatMap((_filter) -> dbExecutor.executeSelectFirst(filterSql, _filter, PublisherSession.class))
+                .flatMap((_query) -> dbExecutor.executeSelectFirst(filterSql, _query, PublisherSession.class))
                 .map((_publisherSession) -> _publisherSession.getId());
     }
 }

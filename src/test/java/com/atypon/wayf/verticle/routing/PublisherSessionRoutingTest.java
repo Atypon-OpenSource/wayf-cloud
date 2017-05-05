@@ -16,15 +16,12 @@
 
 package com.atypon.wayf.verticle.routing;
 
-import com.atypon.wayf.data.device.Device;
 import io.restassured.http.ContentType;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.commons.lang3.ArrayUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.lang.reflect.Array;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
@@ -207,7 +204,6 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
     }
 
     @Test
-    @Ignore
     public void testReadByIdWithFields() throws Exception {
         String publisherRequest = getFileAsString("json_files/publisher_session/publisher.json");
         String publisherResponse =
@@ -222,14 +218,31 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
         String publisherId = readField(publisherResponse, "$.id");
         assertNotNull(publisherId);
 
+        String identityProviderRequest = getFileAsString("json_files/publisher_session/identity_provider.json");
+        String randomEntityId = "test-entity-" + UUID.randomUUID().toString();
+
+        String identityProviderRequestRandomEntityId = setField(identityProviderRequest, "$.entityId", randomEntityId);
+
+        String createIdentityProviderResponse =
+                given()
+                        .contentType(ContentType.JSON)
+                        .body(identityProviderRequestRandomEntityId)
+                        .post("/1/identityProvider")
+                        .then()
+                        .statusCode(200)
+                        .extract().response().asString();
+        String identityProviderId = readField(createIdentityProviderResponse, "$.id");
+
         String requestJsonString = getFileAsString("json_files/publisher_session/create_with_fields.json");
 
-        String requestWithPublisher = setField(requestJsonString, "$.publisher.id", publisherId);
+        String requestWithIdp = setField(requestJsonString, "$.authenticatedBy.id", identityProviderId);
+
+        String requestWithidpAndPublisher = setField(requestWithIdp, "$.publisher.id", publisherId);
 
         String createResponse =
                 given()
                         .contentType(ContentType.JSON)
-                        .body(requestWithPublisher)
+                        .body(requestWithidpAndPublisher)
                         .post("/1/publisherSession")
                 .then()
                         .statusCode(200)
@@ -243,7 +256,7 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
         String readByIdWithFieldsResponse =
                 given()
                         .urlEncodingEnabled(false)
-                        .queryParam("fields", "publisher")
+                        .queryParam("fields", "device,publisher,authenticatedBy")
                         .get("/1/publisherSession/" + id)
                 .then()
                         .statusCode(200)
@@ -256,11 +269,30 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
         String publisherOnSession = readField(readByIdWithFieldsResponse, "$.publisher");
         assertJsonEquals(publisherResponse, publisherOnSession, null);
 
+        String deviceId = readField(readByIdWithFieldsResponse, "$.device.id");
+        String deviceOnResponse = readField(readByIdWithFieldsResponse, "$.device");
+
+        String deviceResponse =
+                given()
+                    .get("/1/device/" + deviceId)
+                .then()
+                    .statusCode(200)
+                    .extract().response().asString();
+
+        // Make sure the device is the same as if it was read via it's own service
+        assertJsonEquals(deviceResponse, deviceOnResponse);
+
+
+        String identityProvider = readField(readByIdWithFieldsResponse, "$.authenticatedBy");
+        assertJsonEquals(createIdentityProviderResponse, identityProvider);
+
+
+
         // Ensure server generated fields come back
         assertNotNullPaths(readByIdWithFieldsResponse, SERVER_GENERATED_FIELDS);
 
         // Compare the JSON to the payload on record
-        assertJsonEquals(requestJsonString, readByIdWithFieldsResponse, ArrayUtils.addAll(SERVER_GENERATED_FIELDS, "$.publisher"));
+        assertJsonEquals(requestJsonString, readByIdWithFieldsResponse, ArrayUtils.addAll(SERVER_GENERATED_FIELDS, "$.publisher", "$.device", "$.authenticatedBy"));
     }
 
     @Test

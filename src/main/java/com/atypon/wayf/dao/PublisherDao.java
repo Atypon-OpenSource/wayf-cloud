@@ -18,7 +18,7 @@ package com.atypon.wayf.dao;
 
 
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherFilter;
+import com.atypon.wayf.data.publisher.PublisherQuery;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
@@ -30,5 +30,5 @@ public interface PublisherDao {
     Single<Publisher> update(Publisher publisher);
     Completable delete(String id);
 
-    Observable<Publisher> filter(PublisherFilter filter);
+    Observable<Publisher> filter(PublisherQuery filter);
 }

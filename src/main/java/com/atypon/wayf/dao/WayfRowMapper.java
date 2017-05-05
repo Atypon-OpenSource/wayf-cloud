@@ -41,6 +41,7 @@ public class WayfRowMapper implements RowMapper {
 
     @Override
     public Object mapRow(ResultSet resultSet, int i) throws SQLException {
+        LOG.debug("Mapping row {}", i);
         ResultSetMetaData metadata = resultSet.getMetaData();
 
         int numColumns = metadata.getColumnCount();

@@ -17,7 +17,7 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherFilter;
+import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.data.publisher.PublisherStatus;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
@@ -93,7 +93,7 @@ public class PublisherDaoDbImplTest {
 
         Assert.assertEquals(5, publishersById.keySet().size());
 
-        PublisherFilter filter = new PublisherFilter();
+        PublisherQuery filter = new PublisherQuery();
         filter.setIds(Lists.newArrayList(publishersById.keySet()));
 
         Observable<Publisher> publishers = dao.filter(filter);

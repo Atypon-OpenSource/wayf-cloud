@@ -17,7 +17,7 @@
 package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherFilter;
+import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.facade.PublisherFacade;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;
@@ -82,7 +82,7 @@ public class PublisherRouting implements RoutingProvider {
                 .flatMapObservable((idsArg) -> {
                         LOG.debug(idsArg);
                         String[] ids = idsArg.split("\\,");
-                        PublisherFilter filter = new PublisherFilter();
+                        PublisherQuery filter = new PublisherQuery();
                         filter.setIds(Lists.newArrayList(ids));
                         return  publisherFacade.filter(filter);
                     }

@@ -14,19 +14,25 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.data.device;
 
-import com.atypon.wayf.data.device.Device;
-import com.atypon.wayf.data.device.DeviceQuery;
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
-import io.reactivex.Observable;
-import io.reactivex.Single;
+import com.google.common.collect.Lists;
 
-public interface DeviceDao {
-    Single<Device> create(Device device);
-    Maybe<Device> read(String id);
-    Single<Device> update(Device device);
-    Completable delete(String id);
-    Observable<Device> filter(DeviceQuery query);
+import java.util.Collection;
+
+public class DeviceQuery {
+    private Collection<String> ids;
+
+    public DeviceQuery() {
+
+    }
+
+    public Collection<String> getIds() {
+        return Lists.newArrayList(ids);
+    }
+
+    public DeviceQuery setIds(Collection<String> ids) {
+        this.ids = ids;
+        return this;
+    }
 }

@@ -17,12 +17,12 @@
 package com.atypon.wayf.facade;
 
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherFilter;
+import com.atypon.wayf.data.publisher.PublisherQuery;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
 public interface PublisherFacade {
     Single<Publisher> create(Publisher publisher);
     Single<Publisher> read(String id);
-    Observable<Publisher> filter(PublisherFilter filter);
+    Observable<Publisher> filter(PublisherQuery filter);
 }

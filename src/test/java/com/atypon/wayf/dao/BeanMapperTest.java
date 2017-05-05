@@ -17,7 +17,7 @@
 package com.atypon.wayf.dao;
 
 
-import com.atypon.wayf.data.publisher.PublisherSession;
+import com.atypon.wayf.data.publisher.session.PublisherSession;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -19,7 +19,7 @@ package com.atypon.wayf.dao.impl;
 import com.atypon.wayf.dao.DbExecutor;
 import com.atypon.wayf.dao.IdentityProviderDao;
 import com.atypon.wayf.data.IdentityProvider;
-import com.atypon.wayf.data.IdentityProviderFilter;
+import com.atypon.wayf.data.IdentityProviderQuery;
 import com.atypon.wayf.data.cache.KeyValueCache;
 import com.atypon.wayf.reactivex.DaoPolicies;
 import com.google.inject.Inject;
@@ -27,10 +27,8 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.reactivex.Single;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Singleton
 public class IdentityProviderDaoDbImpl implements IdentityProviderDao, KeyValueCache<String, String> {
@@ -76,7 +74,7 @@ public class IdentityProviderDaoDbImpl implements IdentityProviderDao, KeyValueC
     public Maybe<String> get(String key) {
         return Maybe.just(key)
                 .compose((maybe) -> DaoPolicies.applyMaybe(maybe))
-                .map((_key) -> new IdentityProviderFilter().setEntityId(_key))
+                .map((_key) -> new IdentityProviderQuery().setEntityId(_key))
                 .flatMapObservable((arguments) -> dbExecutor.executeSelect(filterSql, arguments, IdentityProvider.class))
                 .singleElement()
                 .map((identityProvider) -> identityProvider.getId());
@@ -85,5 +83,12 @@ public class IdentityProviderDaoDbImpl implements IdentityProviderDao, KeyValueC
     @Override
     public Completable put(String key, String value) {
         return null;
+    }
+
+    @Override
+    public Observable<IdentityProvider> filter(IdentityProviderQuery query) {
+        return Single.just(query)
+                .compose((single) -> DaoPolicies.applySingle(single))
+                .flatMapObservable((_query) -> dbExecutor.executeSelect(filterSql, query, IdentityProvider.class));
     }
 }

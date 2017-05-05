@@ -19,8 +19,8 @@ package com.atypon.wayf.dao.impl;
 import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherSession;
-import com.atypon.wayf.data.publisher.PublisherSessionStatus;
+import com.atypon.wayf.data.publisher.session.PublisherSession;
+import com.atypon.wayf.data.publisher.session.PublisherSessionStatus;
 import org.junit.Assert;
 import org.junit.Test;
 

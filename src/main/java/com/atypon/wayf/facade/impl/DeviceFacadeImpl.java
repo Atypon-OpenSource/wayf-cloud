@@ -18,9 +18,11 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.DeviceDao;
 import com.atypon.wayf.data.device.Device;
+import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
@@ -56,5 +58,11 @@ public class DeviceFacadeImpl implements DeviceFacade {
                 .observeOn(Schedulers.io())
                 .flatMapMaybe((_id) -> deviceDao.read(_id))
                 .toSingle();
+    }
+
+    @Override
+    public Observable<Device> filter(DeviceQuery query) {
+        return Observable.just(query)
+                .flatMap((_query) -> deviceDao.filter(_query));
     }
 }

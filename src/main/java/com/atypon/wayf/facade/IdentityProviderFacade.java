@@ -17,11 +17,15 @@
 package com.atypon.wayf.facade;
 
 import com.atypon.wayf.data.IdentityProvider;
+import com.atypon.wayf.data.IdentityProviderQuery;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 
 public interface IdentityProviderFacade {
     Single<IdentityProvider> create(IdentityProvider identityProvider);
     Single<IdentityProvider> read(String id);
+
+    Observable<IdentityProvider> filter(IdentityProviderQuery filter);
 
     Single<IdentityProvider> resolve(IdentityProvider identityProvider);
 }

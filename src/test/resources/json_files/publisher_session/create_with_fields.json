@@ -1,0 +1,10 @@
+{
+    "localId": "test_local_id",
+    "status": "ACTIVE",
+    "publisher" : {
+        "id" : null
+    },
+    "authenticatedBy" : {
+        "id" : null
+    }
+}

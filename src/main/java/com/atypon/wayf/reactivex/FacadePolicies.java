@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.reactivex;
 
-import com.atypon.wayf.data.device.Device;
-import com.atypon.wayf.data.device.DeviceQuery;
-import io.reactivex.Completable;
+import com.atypon.wayf.data.ServiceException;
 import io.reactivex.Maybe;
-import io.reactivex.Observable;
-import io.reactivex.Single;
+import org.apache.http.HttpStatus;
 
-public interface DeviceDao {
-    Single<Device> create(Device device);
-    Maybe<Device> read(String id);
-    Single<Device> update(Device device);
-    Completable delete(String id);
-    Observable<Device> filter(DeviceQuery query);
+import java.util.NoSuchElementException;
+
+public class FacadePolicies {
+
+    public static final <T> Maybe<T> http404OnEmpty(Maybe<T> maybe) {
+        return maybe.doOnError((e) -> {
+            if (NoSuchElementException.class.isAssignableFrom(e.getClass())) {
+                throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not find element");
+            }
+
+            throw new RuntimeException(e);
+        });
+    }
 }

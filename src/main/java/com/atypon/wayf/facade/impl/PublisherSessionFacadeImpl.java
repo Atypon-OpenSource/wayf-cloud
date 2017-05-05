@@ -17,16 +17,23 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.PublisherSessionDao;
+import com.atypon.wayf.data.IdentityProviderQuery;
 import com.atypon.wayf.data.cache.CascadingCache;
 import com.atypon.wayf.data.device.Device;
+import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.device.DeviceStatus;
-import com.atypon.wayf.data.publisher.PublisherSession;
-import com.atypon.wayf.data.publisher.PublisherSessionFilter;
-import com.atypon.wayf.data.publisher.PublisherSessionQuery;
+import com.atypon.wayf.data.publisher.*;
+import com.atypon.wayf.data.publisher.session.PublisherSession;
+import com.atypon.wayf.data.publisher.session.PublisherSessionQuery;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.IdentityProviderFacade;
+import com.atypon.wayf.facade.PublisherFacade;
 import com.atypon.wayf.facade.PublisherSessionFacade;
+import com.atypon.wayf.reactivex.FacadePolicies;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -38,8 +45,7 @@ import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 @Singleton
 public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
@@ -57,6 +63,9 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     @Inject
     @Named("publisherIdCache")
     private CascadingCache<String, String> idCache;
+
+    @Inject
+    private PublisherFacade publisherFacade;
 
     public PublisherSessionFacadeImpl() {
     }
@@ -88,11 +97,10 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     }
 
     @Override
-    public Single<PublisherSession> read(String id) {
-        return Single.just(id)
-                .observeOn(Schedulers.io())
-                .flatMapMaybe((_id) -> publisherSessionDao.read(id))
-                .toSingle();
+    public Single<PublisherSession> read(PublisherSessionQuery query) {
+        return Single.just(query)
+                .flatMap((_query) -> publisherSessionDao.read(query.getId()).compose((maybe) -> FacadePolicies.http404OnEmpty(maybe)).toSingle())
+                .flatMap((_publisherSession) -> populate(_publisherSession, query).toSingle(() -> _publisherSession));
     }
 
     @Override
@@ -133,12 +141,25 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
     }
 
     @Override
-    public Observable<PublisherSession> filter(PublisherSessionFilter filterCriteria) {
-        LOG.debug("Filtering for publisher sessions with criteria [{}]", filterCriteria);
+    public Observable<PublisherSession> filter(PublisherSessionQuery query) {
+        LOG.debug("Filtering for publisher sessions with criteria [{}]", query);
 
-        return Observable.just(filterCriteria)
+        return Single.just(query)
                 .observeOn(Schedulers.io())
-                .flatMap((_filterCriteria) -> publisherSessionDao.filter(_filterCriteria));
+
+                // Fetch the PublisheSessions from the dao
+                .flatMapObservable((_filterCriteria) -> publisherSessionDao.filter(query))
+
+                // Collect the results into a Single so that we can batch the populate reads
+                .toList()
+                .flatMapObservable((publisherSessions) ->
+
+                        // Inflate the publisher sessions via the populate call and emit them
+                        populate((List<PublisherSession>) publisherSessions, query)
+                                .toObservable()
+                                .cast(PublisherSession.class)
+                                .concatWith(Observable.fromIterable(publisherSessions)));
+
     }
 
     private Single<Device> getOrCreateDevice(Device device) {
@@ -176,5 +197,99 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
                         idCache.get(publisherSession.getLocalId())
                 )
                 .firstOrError();
+    }
+
+    private Completable populate(PublisherSession publisherSession, PublisherSessionQuery query) {
+        return populate(Lists.newArrayList(publisherSession), query);
+    }
+
+    private Completable populate(Iterable<PublisherSession> publisherSession, PublisherSessionQuery query) {
+        return Completable.mergeArray(
+                fetchPublishers(Lists.newArrayList(publisherSession), query),
+                fetchAuthenticatedBys(publisherSession, query),
+                fetchDevices(publisherSession, query)
+        );
+    }
+
+    private Completable fetchPublishers(Iterable<PublisherSession> publisherSessions, PublisherSessionQuery query) {
+        // Return as complete if publisher is not a requested field
+        if (!query.getFields().contains(PublisherSessionQuery.PUBLISHER_FIELD)) {
+            return Completable.complete();
+        }
+
+        Multimap<String, PublisherSession> publisherSessionsByPublisherId = HashMultimap.create();
+
+        return Observable.fromIterable(publisherSessions)
+                // Filter out publisher sessions with no publisher
+                .filter((publisherSession) -> publisherSession.getPublisher() != null && publisherSession.getPublisher().getId() != null)
+
+                // Collect all of the publisher sessions and their publisher IDs into a map
+                .collectInto(publisherSessionsByPublisherId, (map, publisherSession) -> map.put(publisherSession.getPublisher().getId(), publisherSession))
+
+                // Fetch all of the publishers for those publisher IDs
+                .flatMapObservable((map) -> map.keySet().isEmpty()? Observable.empty() : publisherFacade.filter(new PublisherQuery().setIds(map.keySet())))
+
+                // For each publisher returned, map it to each publisher session that had its ID
+                .flatMapCompletable((publisher) ->
+                        Observable.fromIterable(publisherSessionsByPublisherId.get(publisher.getId()))
+                                .flatMapCompletable((publisherSession) ->
+                                        Completable.fromAction(() -> publisherSession.setPublisher(publisher))
+                                )
+                );
+    }
+
+    private Completable fetchAuthenticatedBys(Iterable<PublisherSession> publisherSessions, PublisherSessionQuery query) {
+        // Return as complete if authenticatedBy is not a requested field
+        if (!query.getFields().contains(PublisherSessionQuery.AUTHENTICATED_BY)) {
+            return Completable.complete();
+        }
+
+        Multimap<String, PublisherSession> publisherSessionsByIdpId = HashMultimap.create();
+
+        return Observable.fromIterable(publisherSessions)
+                // Filter out publisher sessions with no publisher
+                .filter((publisherSession) -> publisherSession.getAuthenticatedBy() != null && publisherSession.getAuthenticatedBy().getId() != null)
+
+                // Collect all of the publisher sessions and their identity provider IDs into a map
+                .collectInto(publisherSessionsByIdpId, (map, publisherSession) -> map.put(publisherSession.getAuthenticatedBy().getId(), publisherSession))
+
+                // Fetch all of the publishers for those publisher IDs
+                .flatMapObservable((map) -> map.keySet().isEmpty()? Observable.empty() : identityProviderFacade.filter(new IdentityProviderQuery().setIds(map.keySet())))
+
+                // For each identity provider returned, map it to each publisher session that had its ID
+                .flatMapCompletable((identityProvider) ->
+                        Observable.fromIterable(publisherSessionsByIdpId.get(identityProvider.getId()))
+                                .flatMapCompletable((publisherSession) ->
+                                        Completable.fromAction(() -> publisherSession.setAuthenticatedBy(identityProvider))
+                                )
+                );
+    }
+
+    private Completable fetchDevices(Iterable<PublisherSession> publisherSessions, PublisherSessionQuery query) {
+        // Return as complete if device is not a requested field
+        if (!query.getFields().contains(PublisherSessionQuery.DEVICE)) {
+            return Completable.complete();
+        }
+
+        Multimap<String, PublisherSession> publisherSessionsByDeviceId = HashMultimap.create();
+
+        return Observable.fromIterable(publisherSessions)
+                // Filter out publisher sessions with no publisher
+                .filter((publisherSession) -> publisherSession.getDevice() != null && publisherSession.getDevice().getId() != null)
+
+                // Collect all of the publisher sessions and their device IDs into a map
+                .collectInto(publisherSessionsByDeviceId, (map, publisherSession) -> map.put(publisherSession.getDevice().getId(), publisherSession))
+
+                // Fetch all of the publishers for those publisher IDs
+                .flatMapObservable((map) -> map.keySet().isEmpty()? Observable.empty() : deviceFacade.filter(new DeviceQuery().setIds(map.keySet())))
+
+                // For each identity provider returned, map it to each publisher session that had its ID
+                .flatMapCompletable((device) -> {
+                            return Observable.fromIterable(publisherSessionsByDeviceId.get(device.getId()))
+                                    .flatMapCompletable((publisherSession) ->
+                                            Completable.fromAction(() -> publisherSession.setDevice(device))
+                                    );
+                        }
+                );
     }
 }
