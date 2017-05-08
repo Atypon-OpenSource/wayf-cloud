@@ -18,9 +18,8 @@ package com.atypon.wayf.data.publisher.session;
 
 import com.atypon.wayf.data.InflationPolicy;
 
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 public class PublisherSessionQuery {
     public static final String DEVICE = "device";
@@ -30,8 +29,8 @@ public class PublisherSessionQuery {
     private String id;
 
     private String localId;
-    private String deviceId;
 
+    private Collection<String> deviceIds;
     private List<String> ids;
 
     private InflationPolicy inflationPolicy;
@@ -57,12 +56,20 @@ public class PublisherSessionQuery {
         return this;
     }
 
-    public String getDeviceId() {
-        return deviceId;
+    public Collection<String> getDeviceIds() {
+        return deviceIds;
     }
 
-    public PublisherSessionQuery setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
+    /**
+     * Database use only
+     * @return
+     */
+    public boolean isNullDeviceIds() {
+        return deviceIds == null;
+    }
+
+    public PublisherSessionQuery setDeviceIds(Collection<String> deviceIds) {
+        this.deviceIds = deviceIds;
         return this;
     }
 

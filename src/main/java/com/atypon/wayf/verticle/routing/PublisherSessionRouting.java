@@ -26,6 +26,7 @@ import com.atypon.wayf.facade.PublisherSessionFacade;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -163,21 +164,27 @@ public class PublisherSessionRouting implements RoutingProvider {
     }
 
     private PublisherSessionQuery buildQuery(RoutingContext routingContext) {
-        String deviceId =  RequestReader.getQueryValue(routingContext, DEVICE_ID_QUERY_PARAM);
+        PublisherSessionQuery sessionQuery = new PublisherSessionQuery();
+
+        String deviceIdsValue =  RequestReader.getQueryValue(routingContext, DEVICE_ID_QUERY_PARAM);
+        if (deviceIdsValue != null) {
+            String[] deviceIds = deviceIdsValue.split(",");
+            sessionQuery.setDeviceIds(Lists.newArrayList(deviceIds));
+        }
 
         InflationPolicy inflationPolicy = null;
 
         String fieldsQueryParam = RequestReader.getQueryValue(routingContext, "fields");
         if (fieldsQueryParam != null) {
-            inflationPolicy = inflationPolicyParser.parse(fieldsQueryParam);
+            sessionQuery.setInflationPolicy(inflationPolicyParser.parse(fieldsQueryParam));
         }
-        String id = RequestReader.readPathArgument(routingContext, PUBLISHER_SESSION_ID_PARAM_NAME);
-        String localId = RequestReader.readPathArgument(routingContext, PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME);
 
-        return new PublisherSessionQuery()
-                .setDeviceId(deviceId)
-                .setInflationPolicy(inflationPolicy)
-                .setId(id)
-                .setLocalId(localId);
+        String id = RequestReader.readPathArgument(routingContext, PUBLISHER_SESSION_ID_PARAM_NAME);
+        sessionQuery.setId(id);
+
+        String localId = RequestReader.readPathArgument(routingContext, PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME);
+        sessionQuery.setLocalId(localId);
+
+        return sessionQuery;
     }
 }

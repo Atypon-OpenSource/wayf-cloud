@@ -22,14 +22,26 @@ import com.google.common.collect.Lists;
 import java.util.Collection;
 
 public class DeviceQuery {
+    public static final String SESSIONS = "sessions";
+
+    private String id;
     private Collection<String> ids;
     private InflationPolicy inflationPolicy;
 
     public DeviceQuery() {
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public DeviceQuery setId(String id) {
+        this.id = id;
+        return this;
+    }
+
     public Collection<String> getIds() {
-        return Lists.newArrayList(ids);
+        return ids;
     }
 
     public DeviceQuery setIds(Collection<String> ids) {

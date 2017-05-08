@@ -196,7 +196,7 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
 
     private Completable inflatePublishers(Iterable<PublisherSession> publisherSessions, PublisherSessionQuery query) {
         // Return as complete if publisher is not a requested field
-        if (query.getInflationPolicy() != null && !query.getInflationPolicy().hasChildField(PublisherSessionQuery.PUBLISHER_FIELD)) {
+        if (query.getInflationPolicy() == null || !query.getInflationPolicy().hasChildField(PublisherSessionQuery.PUBLISHER_FIELD)) {
             return Completable.complete();
         }
 
@@ -223,7 +223,7 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
 
     private Completable inflateAuthenticatedBys(Iterable<PublisherSession> publisherSessions, PublisherSessionQuery query) {
         // Return as complete if authenticatedBy is not a requested field
-        if (query.getInflationPolicy() != null && !query.getInflationPolicy().hasChildField(PublisherSessionQuery.AUTHENTICATED_BY)) {
+        if (query.getInflationPolicy() == null || !query.getInflationPolicy().hasChildField(PublisherSessionQuery.AUTHENTICATED_BY)) {
             return Completable.complete();
         }
 
@@ -250,7 +250,7 @@ public class PublisherSessionFacadeImpl implements PublisherSessionFacade {
 
     private Completable inflateDevices(Iterable<PublisherSession> publisherSessions, PublisherSessionQuery query) {
         // Return as complete if device is not a requested field
-        if (query.getInflationPolicy() != null && !query.getInflationPolicy().hasChildField(PublisherSessionQuery.DEVICE)) {
+        if (query.getInflationPolicy() == null || !query.getInflationPolicy().hasChildField(PublisherSessionQuery.DEVICE)) {
             return Completable.complete();
         }
 

@@ -25,7 +25,7 @@ import io.reactivex.Single;
 
 public interface DeviceDao {
     Single<Device> create(Device device);
-    Maybe<Device> read(String id);
+    Maybe<Device> read(DeviceQuery query);
     Single<Device> update(Device device);
     Completable delete(String id);
     Observable<Device> filter(DeviceQuery query);
