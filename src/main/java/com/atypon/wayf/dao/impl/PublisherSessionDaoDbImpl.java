@@ -16,7 +16,7 @@
 
 package com.atypon.wayf.dao.impl;
 
-import com.atypon.wayf.dao.DbExecutor;
+import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.dao.PublisherSessionDao;
 import com.atypon.wayf.data.cache.KeyValueCache;
 import com.atypon.wayf.data.publisher.session.PublisherSession;

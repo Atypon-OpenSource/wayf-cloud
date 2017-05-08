@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.database;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,15 +28,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class WayfRowMapper implements RowMapper {
-    private static final Logger LOG = LoggerFactory.getLogger(WayfRowMapper.class);
+public class NestedFieldRowMapper implements RowMapper {
+    private static final Logger LOG = LoggerFactory.getLogger(NestedFieldRowMapper.class);
 
     private Class<?> returnType;
-    private BeanMapper beanMapper;
+    private NestedFieldBeanMapper beanMapper;
 
-    public WayfRowMapper(Class<?> returnType) {
+    public NestedFieldRowMapper(Class<?> returnType) {
         this.returnType = returnType;
-        beanMapper = new BeanMapper();
+        beanMapper = new NestedFieldBeanMapper();
     }
 
     @Override

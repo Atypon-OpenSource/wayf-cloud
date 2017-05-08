@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.database;
 
 
 import com.google.common.collect.Sets;
@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class QueryMapper {
+class QueryMapper {
     private static final Logger LOG = LoggerFactory.getLogger(QueryMapper.class);
 
     private static final Set<String> FIELD_BLACKLIST = Sets.newHashSet(DbExecutor.LIMIT, DbExecutor.OFFSET);

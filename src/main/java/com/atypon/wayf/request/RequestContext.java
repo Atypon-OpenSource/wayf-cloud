@@ -16,7 +16,6 @@
 
 package com.atypon.wayf.request;
 
-import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,47 +28,14 @@ public class RequestContext {
     private Integer limit = DEFAULT_LIMIT;
     private Integer offset = DEFAULT_OFFSET;
 
+    private String userAgent;
     private String deviceId;
     private String requestUrl;
     private String requestUri;
-    private boolean forceSync;
 
     private Boolean hasAnotherDbPage = Boolean.FALSE;
 
     public RequestContext() {
-    }
-
-    public static RequestContext fromRoutingContext(RoutingContext routingContext) {
-        RequestContext requestContext = new RequestContext();
-
-        requestContext.setRequestUri(routingContext.request().uri());
-        requestContext.setRequestUrl(routingContext.request().absoluteURI());
-
-        String forceSyncQueryValue = RequestReader.getQueryValue(routingContext, "forceSync");
-        requestContext.setForceSync(Boolean.parseBoolean(forceSyncQueryValue));
-
-        String limit = RequestReader.getQueryValue(routingContext, "limit");
-        if (limit != null && !limit.isEmpty()) {
-            LOG.debug("Found limit query param [{}]", limit);
-
-            requestContext.setLimit(Integer.parseInt(limit));
-        }
-
-        String offset = RequestReader.getQueryValue(routingContext, "offset");
-        if (offset != null && !offset.isEmpty()) {
-            LOG.debug("Found offset query param [{}]", offset);
-
-            requestContext.setOffset(Integer.parseInt(offset));
-        }
-
-        String deviceId = RequestReader.getHeaderValue(routingContext, "deviceId");
-        if (deviceId != null && !deviceId.isEmpty()) {
-            LOG.debug("Found deviceId header [{}]", deviceId);
-
-            requestContext.setDeviceId(deviceId);
-        }
-
-        return requestContext;
     }
 
     public String getRequestUrl() {
@@ -87,15 +53,6 @@ public class RequestContext {
 
     public RequestContext setRequestUri(String requestUri) {
         this.requestUri = requestUri;
-        return this;
-    }
-
-    public boolean isForceSync() {
-        return forceSync;
-    }
-
-    public RequestContext setForceSync(boolean forceSync) {
-        this.forceSync = forceSync;
         return this;
     }
 
@@ -132,6 +89,15 @@ public class RequestContext {
 
     public RequestContext setDeviceId(String deviceId) {
         this.deviceId = deviceId;
+        return this;
+    }
+
+    public String getUserAgent() {
+        return userAgent;
+    }
+
+    public RequestContext setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
         return this;
     }
 }

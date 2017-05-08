@@ -16,7 +16,7 @@
 
 package com.atypon.wayf.data.publisher;
 
-import com.atypon.wayf.data.IdentityProvider;
+import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.device.Platform;
 import com.atypon.wayf.data.user.User;
 

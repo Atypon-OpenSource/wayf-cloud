@@ -18,6 +18,7 @@ package com.atypon.wayf.verticle;
 
 import com.atypon.wayf.request.RequestContext;
 import com.atypon.wayf.request.RequestContextAccessor;
+import com.atypon.wayf.request.RequestContextFactory;
 import com.atypon.wayf.request.ResponseWriter;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -65,7 +66,7 @@ public abstract class WayfRequestHandler implements Handler<RoutingContext> {
         }
 
         public void handle(RoutingContext event) {
-            RequestContextAccessor.set(RequestContext.fromRoutingContext(event));
+            RequestContextAccessor.set(RequestContextFactory.fromRoutingContext(event));
 
             Single.just(event)
                     .observeOn(Schedulers.io())
@@ -89,7 +90,7 @@ public abstract class WayfRequestHandler implements Handler<RoutingContext> {
         }
 
         public void handle(RoutingContext event) {
-            RequestContextAccessor.set(RequestContext.fromRoutingContext(event));
+            RequestContextAccessor.set(RequestContextFactory.fromRoutingContext(event));
 
             Single.just(event)
                     .observeOn(Schedulers.io())
@@ -114,7 +115,7 @@ public abstract class WayfRequestHandler implements Handler<RoutingContext> {
         }
 
         public void handle(RoutingContext event) {
-            RequestContextAccessor.set(RequestContext.fromRoutingContext(event));
+            RequestContextAccessor.set(RequestContextFactory.fromRoutingContext(event));
 
             Single.just(event)
                     .observeOn(Schedulers.io())

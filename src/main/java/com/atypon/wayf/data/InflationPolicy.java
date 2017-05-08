@@ -14,31 +14,32 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
-
-
-import com.atypon.wayf.data.publisher.session.PublisherSession;
-import org.junit.Assert;
-import org.junit.Test;
+package com.atypon.wayf.data;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-public class BeanMapperTest {
+public class InflationPolicy {
+    private Map<String, InflationPolicy> fields;
 
-    @Test
-    public void testResultSetProcessor() throws Exception {
-        BeanMapper processor = new BeanMapper();
-
-        Map<String, Object> row = new HashMap<>();
-        row.put("id", "testId");
-        row.put("device.id", "testDeviceId");
-
-        PublisherSession publisherSession = processor.map(row, PublisherSession.class);
-
-        Assert.assertEquals("testId", publisherSession.getId());
-        Assert.assertEquals("testDeviceId", publisherSession.getDevice().getId());
+    public InflationPolicy() {
+        fields = new HashMap<>();
     }
 
+    public Set<String> getChildFields() {
+        return fields.keySet();
+    }
 
+    public InflationPolicy getChildPolicy(String child) {
+        return fields.get(child);
+    }
+
+    public void addChildPolicy(String field, InflationPolicy policy) {
+        fields.put(field, policy);
+    }
+
+    public boolean hasChildField(String childField) {
+        return fields.keySet().contains(childField);
+    }
 }

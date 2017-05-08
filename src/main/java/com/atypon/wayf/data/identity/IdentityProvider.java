@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.data.identity;
 
 import java.util.Date;
 

@@ -16,7 +16,7 @@
 
 package com.atypon.wayf.dao.impl;
 
-import com.atypon.wayf.dao.DbExecutor;
+import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.publisher.session.PublisherSession;
 import com.atypon.wayf.guice.WayfGuiceModule;

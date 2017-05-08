@@ -17,7 +17,7 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.PublisherDao;
-import com.atypon.wayf.dao.DbExecutor;
+import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.reactivex.DaoPolicies;

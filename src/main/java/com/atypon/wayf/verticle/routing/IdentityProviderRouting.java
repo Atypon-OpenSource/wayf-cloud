@@ -16,7 +16,7 @@
 
 package com.atypon.wayf.verticle.routing;
 
-import com.atypon.wayf.data.IdentityProvider;
+import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;

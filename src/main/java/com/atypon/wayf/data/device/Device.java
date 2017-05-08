@@ -26,6 +26,8 @@ public class Device {
     private String id;
     private DeviceStatus status;
 
+    private DeviceInfo info;
+
     private List<PublisherSession> sessions;
 
     private User owner;
@@ -50,6 +52,14 @@ public class Device {
 
     public void setStatus(DeviceStatus status) {
         this.status = status;
+    }
+
+    public DeviceInfo getInfo() {
+        return info;
+    }
+
+    public void setInfo(DeviceInfo info) {
+        this.info = info;
     }
 
     public List<PublisherSession> getSessions() {

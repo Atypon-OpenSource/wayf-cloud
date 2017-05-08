@@ -16,8 +16,8 @@
 
 package com.atypon.wayf.dao;
 
-import com.atypon.wayf.data.IdentityProvider;
-import com.atypon.wayf.data.IdentityProviderQuery;
+import com.atypon.wayf.data.identity.IdentityProvider;
+import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;

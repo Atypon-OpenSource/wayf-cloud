@@ -16,9 +16,8 @@
 
 package com.atypon.wayf.dao.impl;
 
-import com.atypon.wayf.dao.DbExecutor;
+import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.dao.DeviceDao;
-import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.reactivex.DaoPolicies;

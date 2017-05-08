@@ -16,6 +16,8 @@
 
 package com.atypon.wayf.data.publisher.session;
 
+import com.atypon.wayf.data.InflationPolicy;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,7 +34,7 @@ public class PublisherSessionQuery {
 
     private List<String> ids;
 
-    private Set<String> fields = new HashSet<>();
+    private InflationPolicy inflationPolicy;
 
     public PublisherSessionQuery() {
     }
@@ -64,12 +66,12 @@ public class PublisherSessionQuery {
         return this;
     }
 
-    public Set<String> getFields() {
-        return fields;
+    public InflationPolicy getInflationPolicy() {
+        return inflationPolicy;
     }
 
-    public PublisherSessionQuery setFields(Set<String> fields) {
-        this.fields = fields;
+    public PublisherSessionQuery setInflationPolicy(InflationPolicy inflationPolicy) {
+        this.inflationPolicy = inflationPolicy;
         return this;
     }
 

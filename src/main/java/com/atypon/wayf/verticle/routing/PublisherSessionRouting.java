@@ -16,7 +16,9 @@
 
 package com.atypon.wayf.verticle.routing;
 
-import com.atypon.wayf.data.IdentityProvider;
+import com.atypon.wayf.data.InflationPolicy;
+import com.atypon.wayf.data.InflationPolicyParser;
+import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.publisher.session.PublisherSession;
 import com.atypon.wayf.data.publisher.session.PublisherSessionQuery;
@@ -58,11 +60,14 @@ public class PublisherSessionRouting implements RoutingProvider {
     private static final String DELETE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
     private static final String FILTER_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "s";
 
+    @Inject
     private PublisherSessionFacade publisherSessionFacade;
 
     @Inject
-    public PublisherSessionRouting(PublisherSessionFacade publisherSessionFacade) {
-        this.publisherSessionFacade = publisherSessionFacade;
+    private InflationPolicyParser<String> inflationPolicyParser;
+
+    @Inject
+    public PublisherSessionRouting() {
     }
 
     public void addRoutings(Router router) {
@@ -160,20 +165,18 @@ public class PublisherSessionRouting implements RoutingProvider {
     private PublisherSessionQuery buildQuery(RoutingContext routingContext) {
         String deviceId =  RequestReader.getQueryValue(routingContext, DEVICE_ID_QUERY_PARAM);
 
-        String concatFields = RequestReader.getQueryValue(routingContext, "fields");
-        Set<String> fields = new HashSet<>();
+        InflationPolicy inflationPolicy = null;
 
-        if (concatFields != null) {
-            String[] fieldArray = concatFields.split(",");
-            fields = Sets.newHashSet(fieldArray);
+        String fieldsQueryParam = RequestReader.getQueryValue(routingContext, "fields");
+        if (fieldsQueryParam != null) {
+            inflationPolicy = inflationPolicyParser.parse(fieldsQueryParam);
         }
-
         String id = RequestReader.readPathArgument(routingContext, PUBLISHER_SESSION_ID_PARAM_NAME);
         String localId = RequestReader.readPathArgument(routingContext, PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME);
 
         return new PublisherSessionQuery()
                 .setDeviceId(deviceId)
-                .setFields(fields)
+                .setInflationPolicy(inflationPolicy)
                 .setId(id)
                 .setLocalId(localId);
     }

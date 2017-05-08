@@ -16,15 +16,16 @@
 
 package com.atypon.wayf.data.device;
 
+import com.atypon.wayf.data.InflationPolicy;
 import com.google.common.collect.Lists;
 
 import java.util.Collection;
 
 public class DeviceQuery {
     private Collection<String> ids;
+    private InflationPolicy inflationPolicy;
 
     public DeviceQuery() {
-
     }
 
     public Collection<String> getIds() {
@@ -42,5 +43,14 @@ public class DeviceQuery {
      */
     public boolean isNullIds() {
         return ids == null;
+    }
+
+    public InflationPolicy getInflationPolicy() {
+        return inflationPolicy;
+    }
+
+    public DeviceQuery setInflationPolicy(InflationPolicy inflationPolicy) {
+        this.inflationPolicy = inflationPolicy;
+        return this;
     }
 }

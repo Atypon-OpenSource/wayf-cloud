@@ -17,8 +17,8 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.IdentityProviderDao;
-import com.atypon.wayf.data.IdentityProvider;
-import com.atypon.wayf.data.IdentityProviderQuery;
+import com.atypon.wayf.data.identity.IdentityProvider;
+import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import com.atypon.wayf.data.cache.CascadingCache;
 import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.google.inject.Inject;

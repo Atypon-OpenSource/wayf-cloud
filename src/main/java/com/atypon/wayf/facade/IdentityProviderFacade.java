@@ -16,8 +16,8 @@
 
 package com.atypon.wayf.facade;
 
-import com.atypon.wayf.data.IdentityProvider;
-import com.atypon.wayf.data.IdentityProviderQuery;
+import com.atypon.wayf.data.identity.IdentityProvider;
+import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
