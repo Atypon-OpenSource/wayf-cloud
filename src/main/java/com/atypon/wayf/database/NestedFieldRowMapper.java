@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class NestedFieldRowMapper implements RowMapper {
+class NestedFieldRowMapper implements RowMapper {
     private static final Logger LOG = LoggerFactory.getLogger(NestedFieldRowMapper.class);
 
     private Class<?> returnType;

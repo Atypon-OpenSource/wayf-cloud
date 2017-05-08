@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-public class NestedFieldBeanMapper {
+class NestedFieldBeanMapper {
     private static final Logger LOG = LoggerFactory.getLogger(NestedFieldBeanMapper.class);
 
     private static final String DELIMITER = ".";
