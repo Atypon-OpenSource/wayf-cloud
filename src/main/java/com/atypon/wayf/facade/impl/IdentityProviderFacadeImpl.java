@@ -50,8 +50,6 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     @Override
     public Single<IdentityProvider> create(IdentityProvider identityProvider) {
         identityProvider.setId(UUID.randomUUID().toString());
-        identityProvider.setCreatedDate(new Date());
-        identityProvider.setModifiedDate(new Date());
 
         return Single.just(identityProvider)
                 .flatMap(o_identityProvider -> identityProviderDao.create(o_identityProvider));

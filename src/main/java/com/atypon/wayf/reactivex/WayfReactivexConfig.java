@@ -32,6 +32,5 @@ public class WayfReactivexConfig {
 
         RxJavaPlugins.setScheduleHandler((runnable) -> new WayfRunnable(runnable));
         RxJavaAssemblyTracking.enable();
-
     }
 }

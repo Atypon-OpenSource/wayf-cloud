@@ -1,0 +1,5 @@
+{
+  "name": "Test IDP",
+  "entityId": "test-idp-entity-id",
+  "federationId": "test-federation-id"
+}

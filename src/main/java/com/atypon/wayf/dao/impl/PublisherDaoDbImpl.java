@@ -71,8 +71,6 @@ public class PublisherDaoDbImpl implements PublisherDao {
         LOG.debug("Creating publisher [{}] in the DB", publisher);
 
         publisher.setId(UUID.randomUUID().toString());
-        publisher.setCreatedDate(new Date());
-        publisher.setModifiedDate(new Date());
 
         return Single.just(publisher)
                 .compose((single) -> DaoPolicies.applySingle(single))

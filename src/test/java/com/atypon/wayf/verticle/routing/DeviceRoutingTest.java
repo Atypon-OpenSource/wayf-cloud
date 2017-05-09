@@ -17,13 +17,10 @@
 package com.atypon.wayf.verticle.routing;
 
 import io.restassured.http.ContentType;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import static io.restassured.RestAssured.given;
-@RunWith(VertxUnitRunner.class)
 
 public class DeviceRoutingTest extends BaseHttpTest {
 

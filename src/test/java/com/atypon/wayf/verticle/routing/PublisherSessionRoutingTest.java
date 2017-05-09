@@ -28,35 +28,16 @@ import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-@RunWith(VertxUnitRunner.class)
 public class PublisherSessionRoutingTest extends BaseHttpTest {
-    private static final String[] SERVER_GENERATED_FIELDS = {
-            "$.id",
-            "$.createdDate",
-            "$.modifiedDate",
-            "$.lastActiveDate"
-    };
-
-    private static final String[] SERVER_GENERATED_FIELDS_LIST = {
-            "$[*].id",
-            "$[*].createdDate",
-            "$[*].modifiedDate",
-            "$[*].lastActiveDate"
-    };
-
-    private static final String[] DEVICE_FIELDS = {
-            "$.device.id",
-            "$.device"
-    };
-
-    private static final String[] DEVICE_FIELDS_LIST = {
-            "$[*].device.id",
-            "$[*].device"
-    };
+    private static final String ID_FIELD = "$.id";
+    private static final String LOCAL_ID_FIELD = "$.localId";
 
     @Test
     public void testCreateSessionForNewDevice() throws Exception {
-        String requestJsonString = setField(getFileAsString("json_files/publisher_session/create_request.json"), "$.localId", "local-id-" + UUID.randomUUID().toString());
+        String requestJsonString = getFileAsString("json_files/publisher_session/create_request.json");
+        String uniqueLocalId  = "local-id-" + UUID.randomUUID().toString();
+
+        requestJsonString = setField(requestJsonString, LOCAL_ID_FIELD, uniqueLocalId);
 
         String createResponse =
                 given()
@@ -67,14 +48,20 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
                     .statusCode(200)
                     .extract().response().asString();
 
-        // Validate that the server generated fields
-        assertNotNullPaths(createResponse, SERVER_GENERATED_FIELDS);
+        String[] createResponseGeneratedFields = {
+                "$.id",
+                "$.createdDate",
+                "$.lastActiveDate",
+                "$.device.id",
+                "$.device"
+        };
 
-        // validate that we have a device ID
-        assertNotNullPaths(createResponse, DEVICE_FIELDS);
+        // Validate that the server generated fields
+        assertNotNullPaths(createResponse, createResponseGeneratedFields);
+
 
         // Compare the JSON to the payload on record
-        assertJsonEquals(requestJsonString, createResponse, ArrayUtils.addAll(SERVER_GENERATED_FIELDS, "$.device"));
+        assertJsonEquals(requestJsonString, createResponse, createResponseGeneratedFields);
     }
 
     @Test
@@ -90,11 +77,14 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
                         .statusCode(200)
                         .extract().response().asString();
 
-        String deviceId = readField(deviceResponse, "$.id");
+        String deviceId = readField(deviceResponse, ID_FIELD);
 
         assertNotNull(deviceId);
 
-        String publisherSessionRequest = setField(getFileAsString("json_files/publisher_session/create_request.json"), "$.localId", "local-id-" + UUID.randomUUID().toString());
+        String publisherSessionRequest = getFileAsString("json_files/publisher_session/create_request.json");
+        String uniqueLocalId  = "local-id-" + UUID.randomUUID().toString();
+
+        publisherSessionRequest = setField(publisherSessionRequest, LOCAL_ID_FIELD, uniqueLocalId);
 
         String createResponse =
                 given()
@@ -106,70 +96,80 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
                         .statusCode(200)
                         .extract().response().asString();
 
+        String[] createResponseGeneratedFields = {
+                "$.id",
+                "$.createdDate",
+                "$.lastActiveDate",
+                "$.device.id",
+                "$.device"
+        };
 
         // Validate that the server generated fields
-        assertNotNullPaths(createResponse, SERVER_GENERATED_FIELDS);
+        assertNotNullPaths(createResponse, createResponseGeneratedFields);
 
-        // Validate that we have a device ID
-        assertNotNullPaths(createResponse, DEVICE_FIELDS);
 
         // Validate that the device ID on the session was the one passed in via the header
         assertEquals(deviceId, readField(createResponse, "$.device.id"));
 
         // Compare the JSON to the payload on record
-        assertJsonEquals(publisherSessionRequest, createResponse, ArrayUtils.addAll(SERVER_GENERATED_FIELDS, "$.device"));
+        assertJsonEquals(publisherSessionRequest, createResponse, createResponseGeneratedFields);
     }
 
     @Test
     public void testReadByLocalId() throws Exception {
         String requestJsonString = getFileAsString("json_files/publisher_session/create_request.json");
+        String uniqueLocalId  = "local-id-" + UUID.randomUUID().toString();
 
-        // Generate a random localId
-        String randomLocalId = "local-id-" + UUID.randomUUID().toString();
-
-        // Update the local ID to our randomly generated one
-        String requestJsonWithRandomLocalId = setField(requestJsonString, "$.localId", randomLocalId);
+        requestJsonString = setField(requestJsonString, LOCAL_ID_FIELD, uniqueLocalId);
 
         String createResponse =
                 given()
                         .contentType(ContentType.JSON)
-                        .body(requestJsonWithRandomLocalId)
+                        .body(requestJsonString)
                         .post("/1/publisherSession")
                 .then()
                         .statusCode(200)
                         .extract().response().asString();
 
-        String id = readField(createResponse, "$.id");
+        String id = readField(createResponse, ID_FIELD);
 
         // Assert that we were assigned an ID for our local id
         assertNotNull(id);
-        assertEquals(randomLocalId, readField(createResponse, "$.localId"));
+        assertEquals(uniqueLocalId, readField(createResponse, LOCAL_ID_FIELD));
 
         String readByLocalIdResponse =
                 given()
                         .urlEncodingEnabled(false)
-                        .get("/1/publisherSession/localId=" + randomLocalId)
+                        .get("/1/publisherSession/localId=" + uniqueLocalId)
                 .then()
                         .statusCode(200)
                         .extract().response().asString();
 
         // Ensure the IDs are correct
-        assertEquals(id, readField(readByLocalIdResponse,"$.id"));
-        assertEquals(randomLocalId, readField(readByLocalIdResponse,"$.localId"));
+        assertEquals(id, readField(readByLocalIdResponse, ID_FIELD));
 
+        assertEquals(uniqueLocalId, readField(readByLocalIdResponse,LOCAL_ID_FIELD));
 
+        String[] createResponseGeneratedFields = {
+                "$.id",
+                "$.createdDate",
+                "$.lastActiveDate",
+                "$.device.id",
+                "$.device"
+        };
         // Ensure server generated fields come back
-        assertNotNullPaths(readByLocalIdResponse, SERVER_GENERATED_FIELDS);
-
-        assertNotNullPaths(readByLocalIdResponse, DEVICE_FIELDS);
+        assertNotNullPaths(readByLocalIdResponse, createResponseGeneratedFields);
 
         // Compare the JSON to the payload on record
-        assertJsonEquals(requestJsonWithRandomLocalId, readByLocalIdResponse, ArrayUtils.addAll(SERVER_GENERATED_FIELDS, DEVICE_FIELDS));
+        assertJsonEquals(requestJsonString, readByLocalIdResponse, createResponseGeneratedFields);
     }
 
     @Test
     public void testReadById() throws Exception {
-        String requestJsonString = setField(getFileAsString("json_files/publisher_session/create_request.json"), "$.localId", "local-id-" + UUID.randomUUID().toString());
+        String requestJsonString = getFileAsString("json_files/publisher_session/create_request.json");
+        String uniqueLocalId  = "local-id-" + UUID.randomUUID().toString();
+
+        requestJsonString = setField(requestJsonString, LOCAL_ID_FIELD, uniqueLocalId);
 
         String createResponse =
                 given()
@@ -181,7 +181,7 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
                         .extract().response().asString();
 
 
-        String id = readField(createResponse, "$.id");
+        String id = readField(createResponse, ID_FIELD);
 
         assertNotNull(id);
 
@@ -194,18 +194,37 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
                         .extract().response().asString();
 
         // Ensure the server gave us the ID we requested
-        assertEquals(id, readField(readByIdResponse, "$.id"));
+        assertEquals(id, readField(readByIdResponse, ID_FIELD));
+
+
+        String[] createResponseGeneratedFields = {
+                "$.id",
+                "$.createdDate",
+                "$.lastActiveDate",
+                "$.device.id",
+                "$.device"
+        };
+
+        String[] compareJsonBlacklist = {
+                "$.id",
+                "$.createdDate",
+                "$.lastActiveDate",
+                "$.device.id",
+                "$.device"
+        };
 
         // Ensure server generated fields come back
-        assertNotNullPaths(readByIdResponse, SERVER_GENERATED_FIELDS);
+        assertNotNullPaths(readByIdResponse, createResponseGeneratedFields);
 
         // Compare the JSON to the payload on record
-        assertJsonEquals(requestJsonString, readByIdResponse, ArrayUtils.addAll(SERVER_GENERATED_FIELDS, DEVICE_FIELDS));
+        assertJsonEquals(requestJsonString, readByIdResponse, createResponseGeneratedFields);
+        assertJsonEquals(requestJsonString, readByIdResponse, compareJsonBlacklist);
     }
 
     @Test
     public void testReadByIdWithFields() throws Exception {
         String publisherRequest = getFileAsString("json_files/publisher_session/publisher.json");
+
         String publisherResponse =
                 given()
                         .contentType(ContentType.JSON)
@@ -215,41 +234,45 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
                         .statusCode(200)
                         .extract().response().asString();
 
-        String publisherId = readField(publisherResponse, "$.id");
+        String publisherId = readField(publisherResponse, ID_FIELD);
         assertNotNull(publisherId);
 
         String identityProviderRequest = getFileAsString("json_files/publisher_session/identity_provider.json");
         String randomEntityId = "test-entity-" + UUID.randomUUID().toString();
 
-        String identityProviderRequestRandomEntityId = setField(identityProviderRequest, "$.entityId", randomEntityId);
+        identityProviderRequest = setField(identityProviderRequest, "$.entityId", randomEntityId);
 
         String createIdentityProviderResponse =
                 given()
                         .contentType(ContentType.JSON)
-                        .body(identityProviderRequestRandomEntityId)
+                        .body(identityProviderRequest)
                         .post("/1/identityProvider")
                         .then()
                         .statusCode(200)
                         .extract().response().asString();
-        String identityProviderId = readField(createIdentityProviderResponse, "$.id");
 
-        String requestJsonString = setField(getFileAsString("json_files/publisher_session/create_with_fields.json"), "$.localId", "local-id-" + UUID.randomUUID().toString());;
+        String identityProviderId = readField(createIdentityProviderResponse, ID_FIELD);
 
-        String requestWithIdp = setField(requestJsonString, "$.authenticatedBy.id", identityProviderId);
+        String requestJsonString = getFileAsString("json_files/publisher_session/create_with_fields.json");
+        String uniqueLocalId  = "local-id-" + UUID.randomUUID().toString();
 
-        String requestWithidpAndPublisher = setField(requestWithIdp, "$.publisher.id", publisherId);
+        requestJsonString = setField(requestJsonString, LOCAL_ID_FIELD, uniqueLocalId);
+
+        requestJsonString = setField(requestJsonString, "$.authenticatedBy.id", identityProviderId);
+
+        requestJsonString = setField(requestJsonString, "$.publisher.id", publisherId);
 
         String createResponse =
                 given()
                         .contentType(ContentType.JSON)
-                        .body(requestWithidpAndPublisher)
+                        .body(requestJsonString)
                         .post("/1/publisherSession")
                 .then()
                         .statusCode(200)
                         .extract().response().asString();
 
 
-        String id = readField(createResponse, "$.id");
+        String id = readField(createResponse, ID_FIELD);
 
         assertNotNull(id);
 
@@ -263,7 +286,7 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
                         .extract().response().asString();
 
         // Ensure the server gave us the ID we requested
-        assertEquals(id, readField(readByIdWithFieldsResponse, "$.id"));
+        assertEquals(id, readField(readByIdWithFieldsResponse, ID_FIELD));
 
         // Get the publisher from the response and verify that it matches the one that was created
         String publisherOnSession = readField(readByIdWithFieldsResponse, "$.publisher");
@@ -287,37 +310,60 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
         assertJsonEquals(createIdentityProviderResponse, identityProvider);
 
 
+        String[] createResponseGeneratedFields = {
+                "$.id",
+                "$.createdDate",
+                "$.lastActiveDate",
+                "$.device.id",
+                "$.device"
+        };
 
+        String[] compareJsonBlacklist = {
+                "$.id",
+                "$.createdDate",
+                "$.lastActiveDate",
+                "$.publisher",
+                "$.device",
+                "$.authenticatedBy"
+        };
         // Ensure server generated fields come back
-        assertNotNullPaths(readByIdWithFieldsResponse, SERVER_GENERATED_FIELDS);
+        assertNotNullPaths(readByIdWithFieldsResponse, createResponseGeneratedFields);
 
         // Compare the JSON to the payload on record
-        assertJsonEquals(requestJsonString, readByIdWithFieldsResponse, ArrayUtils.addAll(SERVER_GENERATED_FIELDS, "$.publisher", "$.device", "$.authenticatedBy"));
+        assertJsonEquals(requestJsonString, readByIdWithFieldsResponse, compareJsonBlacklist);
     }
 
     @Test
     public void testAddIdp() {
         String requestJsonString = getFileAsString("json_files/publisher_session/create_request.json");
         // Generate a random localId
-        String randomLocalId = "local-id-" + UUID.randomUUID().toString();
+        String uniqueLocalId = "local-id-" + UUID.randomUUID().toString();
 
         // Update the local ID to our randomly generated one
-        String requestJsonWithRandomLocalId = setField(requestJsonString, "$.localId", randomLocalId);
+        requestJsonString= setField(requestJsonString, LOCAL_ID_FIELD, uniqueLocalId);
 
         String createSessionResponse =
                 given()
                         .contentType(ContentType.JSON)
-                        .body(requestJsonWithRandomLocalId)
+                        .body(requestJsonString)
                         .post("/1/publisherSession")
                  .then()
                         .statusCode(200)
                         .extract().response().asString();
 
-        // Validate that the server generated fields
-        assertNotNullPaths(createSessionResponse, SERVER_GENERATED_FIELDS);
+        String[] createResponseGeneratedFields = {
+                "$.id",
+                "$.createdDate",
+                "$.lastActiveDate",
+                "$.device.id",
+                "$.device"
+        };
 
-        String localId = readField(createSessionResponse, "$.localId");
-        assertEquals(randomLocalId, localId);
+        // Validate that the server generated fields
+        assertNotNullPaths(createSessionResponse, createResponseGeneratedFields);
+
+        String localId = readField(createSessionResponse, LOCAL_ID_FIELD);
+        assertEquals(uniqueLocalId, localId);
 
         String identityProviderRequest = getFileAsString("json_files/publisher_session/identity_provider.json");
         String randomEntityId = "test-entity-" + UUID.randomUUID().toString();
@@ -333,19 +379,22 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
                         .statusCode(200)
                         .extract().response().asString();
 
-        String idpId = readField(createIdentityProviderResponse, "$.id");
+        String idpId = readField(createIdentityProviderResponse, ID_FIELD);
         assertNotNull(idpId);
 
         String entityId = readField(createIdentityProviderResponse, "$.entityId");
         assertEquals(randomEntityId, entityId);
 
-        String addIdentityProviderRequest = setField(getFileAsString("json_files/publisher_session/add_identity_provider.json"), "$.localId", localId);
-        String addIdentityProviderRequestRandomEntityId = setField(addIdentityProviderRequest, "$.entityId", randomEntityId);
+        String addIdentityProviderRequest = getFileAsString("json_files/publisher_session/add_identity_provider.json");
+
+        addIdentityProviderRequest = setField(addIdentityProviderRequest, LOCAL_ID_FIELD, uniqueLocalId);
+
+        addIdentityProviderRequest= setField(addIdentityProviderRequest, "$.entityId", randomEntityId);
 
         given()
                 .contentType(ContentType.JSON)
                 .urlEncodingEnabled(false)
-                .body(addIdentityProviderRequestRandomEntityId)
+                .body(addIdentityProviderRequest)
                 .put("/1/publisherSession/localId=" + localId + "/authenticatedBy")
          .then()
                 .statusCode(200);
@@ -354,7 +403,7 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
                 given()
                         .urlEncodingEnabled(false)
                         .queryParam("fields", "identityProvider")
-                        .get("/1/publisherSession/localId=" + randomLocalId)
+                        .get("/1/publisherSession/localId=" + uniqueLocalId)
                 .then()
                         .statusCode(200)
                         .extract().response().asString();
@@ -378,11 +427,14 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
                         .statusCode(200)
                         .extract().response().asString();
 
-        String deviceId = readField(deviceResponse, "$.id");
+        String deviceId = readField(deviceResponse, ID_FIELD);
 
         assertNotNull(deviceId);
 
-        String publisherSessionRequest1 = setField(getFileAsString("json_files/publisher_session/create_request_1.json"), "$.localId", "local-id-" + UUID.randomUUID().toString());
+        String publisherSessionRequest1 = getFileAsString("json_files/publisher_session/create_request_1.json");
+        String uniqueLocalId = "local-id-" + UUID.randomUUID().toString();
+
+        publisherSessionRequest1 = setField(publisherSessionRequest1, LOCAL_ID_FIELD, uniqueLocalId);
 
         String createResponse1 =
                 given()
@@ -398,7 +450,10 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
         // Validate that the device ID on the session was the one passed in via the header
         assertEquals(deviceId, readField(createResponse1, "$.device.id"));
 
-        String publisherSessionRequest2 = setField(getFileAsString("json_files/publisher_session/create_request_2.json"), "$.localId", "local-id-" + UUID.randomUUID().toString());
+        String publisherSessionRequest2 = getFileAsString("json_files/publisher_session/create_request_2.json");
+        String uniqueLocalId2 = "local-id-" + UUID.randomUUID().toString();
+
+        publisherSessionRequest2 = setField(publisherSessionRequest2, LOCAL_ID_FIELD, uniqueLocalId2);
 
         String createResponse2 =
                 given()
@@ -425,8 +480,19 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
                         .statusCode(200)
                         .extract().response().asString();
 
+
+        String[] compareJsonBlacklist = {
+                "$[*].id",
+                "$[*].createdDate",
+                "$[*].modifiedDate",
+                "$[*].lastActiveDate",
+                "$[*].localId",
+                "$[*].device.id",
+                "$[*].device"
+        };
+
         // Compare the JSON to the payload on record
-        assertJsonEquals(filterResponse, actualFilterResponse, ArrayUtils.addAll(SERVER_GENERATED_FIELDS_LIST, ArrayUtils.addAll(DEVICE_FIELDS_LIST, "$[*].localId")));
+        assertJsonEquals(filterResponse, actualFilterResponse, compareJsonBlacklist);
     }
 
 }
