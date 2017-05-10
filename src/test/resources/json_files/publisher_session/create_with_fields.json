@@ -5,6 +5,7 @@
         "id" : null
     },
     "authenticatedBy" : {
-        "id" : null
+        "id" : null,
+        "type": null
     }
 }

@@ -39,19 +39,36 @@ CREATE TABLE `device` (
 --
 
 DROP TABLE IF EXISTS `identity_provider`;
+
+DROP TABLE IF EXISTS `saml_entity`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `identity_provider` (
+CREATE TABLE `saml_entity` (
   `_id` int(11) NOT NULL AUTO_INCREMENT,
   `id` varchar(36) NOT NULL,
-  `name` varchar(50) NOT NULL,
   `entity_id` varchar(50) NOT NULL,
   `federation_id` varchar(50) NOT NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`_id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+DROP TABLE IF EXISTS `open_athens_entity`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `open_athens_entity` (
+  `_id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` varchar(36) NOT NULL,
+  `entity_id` varchar(50) NOT NULL,
+  `scope` varchar(50) NOT NULL,
+  `organization_id` varchar(50) NOT NULL,
+  `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`_id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

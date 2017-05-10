@@ -18,7 +18,6 @@ package com.atypon.wayf.verticle.routing;
 
 import io.restassured.http.ContentType;
 import org.junit.Test;
-import org.junit.experimental.theories.suppliers.TestedOn;
 
 import static io.restassured.RestAssured.given;
 

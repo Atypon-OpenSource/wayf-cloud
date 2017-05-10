@@ -16,13 +16,26 @@
 
 package com.atypon.wayf.data.identity;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import java.util.Date;
 
+import static com.fasterxml.jackson.annotation.JsonTypeInfo.*;
+
+@JsonTypeInfo(
+        use = Id.NAME,
+        include = As.PROPERTY,
+        property = "type",
+        visible = true)
+@JsonSubTypes({
+        @Type(value = OpenAthensEntity.class, name = "OPEN_ATHENS"),
+        @Type(value = SamlEntity.class, name = "SAML")
+})
 public class IdentityProvider {
     private String id;
-    private String name;
     private String entityId;
-    private String federationId;
 
     private Date createdDate;
     private Date modifiedDate;
@@ -34,18 +47,6 @@ public class IdentityProvider {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getEntityId() {
         return entityId;
     }
@@ -54,12 +55,8 @@ public class IdentityProvider {
         this.entityId = entityId;
     }
 
-    public String getFederationId() {
-        return federationId;
-    }
-
-    public void setFederationId(String federationId) {
-        this.federationId = federationId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Date getCreatedDate() {
@@ -76,5 +73,9 @@ public class IdentityProvider {
 
     public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
+    }
+
+    public IdentityProviderType getType() {
+        return null;
     }
 }

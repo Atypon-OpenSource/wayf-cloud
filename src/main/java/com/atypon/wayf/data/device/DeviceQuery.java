@@ -17,7 +17,6 @@
 package com.atypon.wayf.data.device;
 
 import com.atypon.wayf.data.InflationPolicy;
-import com.google.common.collect.Lists;
 
 import java.util.Collection;
 

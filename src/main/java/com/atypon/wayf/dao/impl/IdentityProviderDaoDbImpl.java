@@ -30,25 +30,20 @@ import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
-@Singleton
-public class IdentityProviderDaoDbImpl implements IdentityProviderDao, KeyValueCache<String, String> {
+public class IdentityProviderDaoDbImpl implements IdentityProviderDao {
 
-    @Inject
-    @Named("identity-provider.dao.db.create")
     private String createSql;
-
-    @Inject
-    @Named("identity-provider.dao.db.read")
     private String readSql;
-
-    @Inject
-    @Named("identity-provider.dao.db.filter")
     private String filterSql;
-
-    @Inject
     private DbExecutor dbExecutor;
+    private Class<? extends IdentityProvider> resultClass;
 
-    public IdentityProviderDaoDbImpl() {
+    public IdentityProviderDaoDbImpl(String createSql, String readSql, String filterSql, DbExecutor dbExecutor, Class<? extends IdentityProvider> resultClass) {
+        this.createSql = createSql;
+        this.readSql = readSql;
+        this.filterSql = filterSql;
+        this.dbExecutor = dbExecutor;
+        this.resultClass = resultClass;
     }
 
     @Override
@@ -62,33 +57,17 @@ public class IdentityProviderDaoDbImpl implements IdentityProviderDao, KeyValueC
 
     @Override
     public Maybe<IdentityProvider> read(String id) {
-        IdentityProvider identityProvider = new IdentityProvider();
-        identityProvider.setId(id);
+        IdentityProviderQuery query = new IdentityProviderQuery().setId(id);
 
-        return Single.just(identityProvider)
+        return Single.just(query)
                 .compose((single) -> DaoPolicies.applySingle(single))
-                .flatMapMaybe((_identityProvider) -> dbExecutor.executeSelectFirst(readSql, _identityProvider, IdentityProvider.class));
-    }
-
-    @Override
-    public Maybe<String> get(String key) {
-        return Maybe.just(key)
-                .compose((maybe) -> DaoPolicies.applyMaybe(maybe))
-                .map((_key) -> new IdentityProviderQuery().setEntityId(_key))
-                .flatMapObservable((arguments) -> dbExecutor.executeSelect(filterSql, arguments, IdentityProvider.class))
-                .singleElement()
-                .map((identityProvider) -> identityProvider.getId());
-    }
-
-    @Override
-    public Completable put(String key, String value) {
-        return null;
+                .flatMapMaybe((_query) -> dbExecutor.executeSelectFirst(readSql, _query, resultClass));
     }
 
     @Override
     public Observable<IdentityProvider> filter(IdentityProviderQuery query) {
         return Single.just(query)
                 .compose((single) -> DaoPolicies.applySingle(single))
-                .flatMapObservable((_query) -> dbExecutor.executeSelect(filterSql, query, IdentityProvider.class));
+                .flatMapObservable((_query) -> dbExecutor.executeSelect(filterSql, query, resultClass));
     }
 }

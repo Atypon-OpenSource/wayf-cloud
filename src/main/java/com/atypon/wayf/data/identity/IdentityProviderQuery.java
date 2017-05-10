@@ -19,10 +19,20 @@ package com.atypon.wayf.data.identity;
 import java.util.Collection;
 
 public class IdentityProviderQuery {
+    private String id;
     private Collection<String> ids;
     private String entityId;
 
     public IdentityProviderQuery() {
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public IdentityProviderQuery setId(String id) {
+        this.id = id;
+        return this;
     }
 
     public Collection<String> getIds() {

@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.facade;
+package com.atypon.wayf.data.identity;
 
-import com.atypon.wayf.data.cache.KeyValueCache;
-import com.atypon.wayf.data.identity.IdentityProvider;
-import com.atypon.wayf.data.identity.IdentityProviderQuery;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-
-public interface IdentityProviderFacade extends KeyValueCache<String, String> {
-    Single<IdentityProvider> create(IdentityProvider identityProvider);
-    Single<IdentityProvider> read(String id);
-
-    Observable<IdentityProvider> filter(IdentityProviderQuery filter);
-
-    Single<IdentityProvider> resolve(IdentityProvider identityProvider);
+public enum IdentityProviderType {
+    SAML,
+    OPEN_ATHENS,
+    OAUTH
 }

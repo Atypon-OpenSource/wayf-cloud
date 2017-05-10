@@ -252,6 +252,7 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
                         .extract().response().asString();
 
         String identityProviderId = readField(createIdentityProviderResponse, ID_FIELD);
+        String identityProviderType = readField(createIdentityProviderResponse, "$.type");
 
         String requestJsonString = getFileAsString("json_files/publisher_session/create_with_fields.json");
         String uniqueLocalId  = "local-id-" + UUID.randomUUID().toString();
@@ -259,6 +260,7 @@ public class PublisherSessionRoutingTest extends BaseHttpTest {
         requestJsonString = setField(requestJsonString, LOCAL_ID_FIELD, uniqueLocalId);
 
         requestJsonString = setField(requestJsonString, "$.authenticatedBy.id", identityProviderId);
+        requestJsonString = setField(requestJsonString, "$.authenticatedBy.type", identityProviderType);
 
         requestJsonString = setField(requestJsonString, "$.publisher.id", publisherId);
 

@@ -23,6 +23,10 @@ import com.atypon.wayf.dao.redis.impl.RedisDaoDefaultImpl;
 import com.atypon.wayf.data.InflationPolicyParser;
 import com.atypon.wayf.data.InflationPolicyParserQueryParamImpl;
 import com.atypon.wayf.data.cache.CascadingCache;
+import com.atypon.wayf.data.identity.IdentityProviderType;
+import com.atypon.wayf.data.identity.OpenAthensEntity;
+import com.atypon.wayf.data.identity.SamlEntity;
+import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.facade.impl.*;
 import com.google.inject.*;
@@ -36,6 +40,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class WayfGuiceModule extends AbstractModule {
@@ -44,13 +50,14 @@ public class WayfGuiceModule extends AbstractModule {
     @Override
     protected void configure() {
         try {
+            Module module = this;
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
             Properties properties = new Properties();
             properties.load(classLoader.getResourceAsStream("dao/publisher-session-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/publisher-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/device-dao-db.properties"));
-            properties.load(classLoader.getResourceAsStream("dao/identity-provider-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/open-athens-entity-dao-db.properties"));
 
             Names.bindProperties(binder(), properties);
 
@@ -64,7 +71,6 @@ public class WayfGuiceModule extends AbstractModule {
             bind(PublisherDao.class).to(PublisherDaoDbImpl.class);
 
             bind(IdentityProviderFacade.class).to(IdentityProviderFacadeImpl.class);
-            bind(IdentityProviderDao.class).to(IdentityProviderDaoDbImpl.class);
 
             bind(new TypeLiteral<InflationPolicyParser<String>>(){}).to(InflationPolicyParserQueryParamImpl.class);
 
@@ -75,42 +81,6 @@ public class WayfGuiceModule extends AbstractModule {
             bind(RedisDao.class)
                     .annotatedWith(Names.named("identityProviderRedisDao"))
                     .toProvider(() -> new RedisDaoDefaultImpl("IDENTITY_PROVIDER"));
-
-            bind(Driver.class).toProvider(() -> GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "test")));
-
-            bind(new TypeLiteral<CascadingCache<String, String>>(){})
-                    .annotatedWith(Names.named("publisherIdCache"))
-                    .toProvider(new Provider<CascadingCache<String, String>>() {
-                        @Inject
-                        @Named("publisherIdRedisDao")
-                        private RedisDao l1;
-
-                        @Inject
-                        private PublisherSessionDaoDbImpl l2;
-
-                        @Override
-                        public CascadingCache<String, String> get() {
-                            Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
-                            return new CascadingCache(l1, l2);
-                        }
-                    });
-
-            bind(new TypeLiteral<CascadingCache<String, String>>(){})
-                    .annotatedWith(Names.named("identityProviderCache"))
-                    .toProvider(new Provider<CascadingCache<String, String>>() {
-                        @Inject
-                        @Named("identityProviderRedisDao")
-                        private RedisDao l1;
-
-                        @Inject
-                        private IdentityProviderDaoDbImpl l2;
-
-                        @Override
-                        public CascadingCache<String, String> get() {
-                            Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
-                            return new CascadingCache(l1, l2);
-                        }
-                    });
 
             BasicDataSource dataSource = new BasicDataSource();
 
@@ -128,5 +98,53 @@ public class WayfGuiceModule extends AbstractModule {
             LOG.error("Error initializing Guice", e);
             throw new RuntimeException(e);
         }
+    }
+
+    @Provides @Named("samlEntity")
+    public IdentityProviderDao provideSamlEntityDao(DbExecutor dbExecutor) throws Exception {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+        Properties properties = new Properties();
+        properties.load(classLoader.getResourceAsStream("dao/saml-entity-dao-db.properties"));
+
+        return new IdentityProviderDaoDbImpl(properties.getProperty("saml-entity.dao.db.create"),
+                properties.getProperty("saml-entity.dao.db.read"),
+                properties.getProperty("saml-entity.dao.db.filter"),
+                dbExecutor,
+                SamlEntity.class);
+    }
+
+    @Provides @Named("openAthensEntity")
+    public IdentityProviderDao provideOpenAthensEntityDao(DbExecutor dbExecutor) throws Exception {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+        Properties properties = new Properties();
+
+        properties.load(classLoader.getResourceAsStream("dao/open-athens-entity-dao-db.properties"));
+
+        return new IdentityProviderDaoDbImpl(properties.getProperty("open-athens-entity.dao.db.create"),
+                properties.getProperty("open-athens-entity.dao.db.read"),
+                properties.getProperty("open-athens-entity.dao.db.filter"),
+                dbExecutor,
+                OpenAthensEntity.class);
+    }
+
+    @Provides @Named("identityProviderDaoMap")
+    public Map<IdentityProviderType, IdentityProviderDao> provideIdentityProviderDaoMap(@Named("samlEntity") IdentityProviderDao samlDao, @Named("openAthensEntity") IdentityProviderDao openAthensDao) {
+        Map<IdentityProviderType, IdentityProviderDao> daoMap = new HashMap<>();
+        daoMap.put(IdentityProviderType.SAML, samlDao);
+        daoMap.put(IdentityProviderType.OPEN_ATHENS, openAthensDao);
+
+        return daoMap;
+    }
+
+    @Provides @Named("publisherIdCache")
+    public CascadingCache<String, String> providePublisherIdCache(@Named("publisherIdRedisDao") RedisDao l1, PublisherSessionDaoDbImpl l2) {
+        return new CascadingCache(l1, l2);
+    }
+
+    @Provides @Named("identityProviderCache")
+    public CascadingCache<String, String> provideIdentityProviderCache(@Named("identityProviderRedisDao") RedisDao l1, IdentityProviderFacade l2) {
+        return new CascadingCache(l1, l2);
     }
 }

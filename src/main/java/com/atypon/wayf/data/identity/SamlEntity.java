@@ -14,19 +14,29 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.facade;
+package com.atypon.wayf.data.identity;
 
-import com.atypon.wayf.data.cache.KeyValueCache;
-import com.atypon.wayf.data.identity.IdentityProvider;
-import com.atypon.wayf.data.identity.IdentityProviderQuery;
-import io.reactivex.Observable;
-import io.reactivex.Single;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public interface IdentityProviderFacade extends KeyValueCache<String, String> {
-    Single<IdentityProvider> create(IdentityProvider identityProvider);
-    Single<IdentityProvider> read(String id);
+public class SamlEntity extends IdentityProvider {
 
-    Observable<IdentityProvider> filter(IdentityProviderQuery filter);
+    private String federationId;
 
-    Single<IdentityProvider> resolve(IdentityProvider identityProvider);
+    public SamlEntity() {
+        super();
+    }
+
+    @Override
+    @JsonIgnore
+    public IdentityProviderType getType() {
+        return IdentityProviderType.SAML;
+    }
+
+    public String getFederationId() {
+        return federationId;
+    }
+
+    public void setFederationId(String federationId) {
+        this.federationId = federationId;
+    }
 }
