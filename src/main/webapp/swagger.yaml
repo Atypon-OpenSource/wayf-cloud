@@ -258,7 +258,7 @@ paths:
       tags:
         - Identity Provider
       summary: Alert the wayf-cloud of a recent authentication
-      description: Update the wayf-cloud of a recent authentication with an identity provider and a device. In this case, the Device is resolved via a Publisher's localId. If the IdentityProvider specified was not previously known for this devices, it will be stored in the device.ids list. A new PublisherSession entry will be added for the publisher that is authenticated on the call.
+      description: Update the wayf-cloud of a recent authentication with an IdentityProvider and a device. In this case, the Device is resolved via a Publisher's localId. The PublisherSession assocaited with the authenticated Publisher and the specified localId will have its authenticateBy field updated. If the IdentityProvider specified was not previously known for this device, it will be added the device.ids list.
       operationId: addIdentityProviderForDevice
       produces:
         - application/xml
@@ -284,7 +284,7 @@ paths:
       tags:
         - Publisher Session
       summary: Create a new PublisherSession
-      description: ''
+      description: Create a new PublisherSession. The invoking is required to specify a "localId" value that is unique across all of their PublisherSessions. If a "deviceId" field is populated in the cookie header, this will be automatically set as the device on the request. If no "deviceId" is present, the server will create a new Device and set that as the "device." The "publisher" field is populated based upon the currently authenticated publisher.
       operationId: createPublisherSession
       consumes:
         - application/json
