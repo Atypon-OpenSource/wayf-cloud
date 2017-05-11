@@ -1,479 +1,507 @@
-swagger: "2.0"
+swagger: '2.0'
 info:
-  description: "This is the server portion of the WAYF system. For
-information about the latest builds, solution overview, or the source code
-visit https://github.com/atypon/wayf-cloud"
-  version: "Development Beta"
-  title: "WAYF Cloud"
+  description: >-
+    This is the server portion of the WAYF system. For information about the
+    latest builds, solution overview, or the source code visit
+    https://github.com/atypon/wayf-cloud
+  version: Development Beta
+  title: WAYF Cloud
   contact:
-    email: "mmason@atypon.com"
+    email: mmason@atypon.com
   license:
-    name: "Apache 2.0"
-    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "localhost:8080"
-basePath: "/"
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+host: 'localhost:8080'
+basePath: /
 tags:
-- name: "Device"
-  description: "A representation of a user's device that accesses the wayf-cloud"
+  - name: Device
+    description: A representation of a user's device that accesses the wayf-cloud
 schemes:
-- "http"
+  - http
 paths:
   /1/device:
     post:
       tags:
-      - "Device"
-      summary: "Create a new device"
-      description: ""
-      operationId: "createDevice"
+        - Device
+      summary: Create a new device
+      description: ''
+      operationId: createDevice
       consumes:
-      - "application/json"
-      - "application/xml"
+        - application/json
+        - application/xml
       produces:
-      - "application/xml"
-      - "application/json"
+        - application/xml
+        - application/json
       parameters:
-      - in: "body"
-        name: "body"
-        description: "Device information to be stored"
-        required: true
-        schema:
-          $ref: "#/definitions/Device"
+        - in: body
+          name: body
+          description: Device information to be stored
+          required: true
+          schema:
+            $ref: '#/definitions/Device'
       responses:
-        201:
-          description: "Information sucessessfully saved"
-  /1/device/{id}:
+        '201':
+          description: Information sucessessfully saved
+  '/1/device/{id}':
     get:
       tags:
-      - "Device"
-      summary: "Read a device by it's unique ID"
-      description: "Multiple status values can be provided with comma separated strings"
-      operationId: "readDevice"
+        - Device
+      summary: Read a device by it's unique ID
+      description: Multiple status values can be provided with comma separated strings
+      operationId: readDevice
       produces:
-      - "application/xml"
-      - "application/json"
+        - application/xml
+        - application/json
       parameters:
-      - name: "id"
-        in: "path"
-        description: "The unique device ID set by the wayf-cloud and stored in a cookie"
-        required: true
-        type: "string"
-        format: "uuid"
-      - name: "fields"
-        in: "query"
-        description: "The child object fields to return"
-        required: false
-        type: array
-        items:
+        - name: id
+          in: path
+          description: The unique device ID set by the wayf-cloud and stored in a cookie
+          required: true
           type: string
-          enum:
-            - sessions
+          format: uuid
+        - name: fields
+          in: query
+          description: The child object fields to return
+          required: false
+          type: array
+          items:
+            type: string
+            enum:
+              - sessions
       responses:
-        200:
-          description: "Successful operation"
+        '200':
+          description: Successful operation
           schema:
-            type: "object"
+            type: object
             items:
-              $ref: "#/definitions/Device"
-        404:
-          description: "No devices found for specified ID"
+              $ref: '#/definitions/Device'
+        '404':
+          description: No devices found for specified ID
   /1/devices:
     get:
       tags:
-      - "Device"
-      summary: "Find devices that match a set of criteria"
-      description: "Multiple values may be specified by a comma separated list"
-      operationId: "filterDevices"
+        - Device
+      summary: Find devices that match a set of criteria
+      description: Multiple values may be specified by a comma separated list
+      operationId: filterDevices
       produces:
-      - "application/xml"
-      - "application/json"
+        - application/xml
+        - application/json
       parameters:
-      - name: "deviceIds"
-        in: "query"
-        description: "Device IDs to filter by"
-        required: true
-        type: "array"
-        items:
-          type: "string"
-          format: "uuid"
-        collectionFormat: "csv"
-      - name: "fields"
-        in: "query"
-        description: "The child object fields to return"
-        required: false
-        type: "array"
-        items:
-          type: "string"
-          enum:
-          - "sessions"
-        collectionFormat: "csv"
+        - name: deviceIds
+          in: query
+          description: Device IDs to filter by
+          required: true
+          type: array
+          items:
+            type: string
+            format: uuid
+          collectionFormat: csv
+        - name: fields
+          in: query
+          description: The child object fields to return
+          required: false
+          type: array
+          items:
+            type: string
+            enum:
+              - sessions
+          collectionFormat: csv
       responses:
-        200:
-          description: "Successful operation"
+        '200':
+          description: Successful operation
           schema:
-            type: "array"
+            type: array
             items:
-              $ref: "#/definitions/Device"
+              $ref: '#/definitions/Device'
   /1/publisher:
     post:
       tags:
-      - "Publisher"
-      summary: "Creates a new publisher"
-      description: "Creates a new publisher on the wayf-cloud"
-      operationId: "createPublisher"
+        - Publisher
+      summary: Creates a new publisher
+      description: Creates a new publisher on the wayf-cloud
+      operationId: createPublisher
       consumes:
-      - "application/xml"
-      - "application/json"
+        - application/xml
+        - application/json
       produces:
-      - "application/xml"
-      - "application/json"
+        - application/xml
+        - application/json
       responses:
-        200:
-          description: "successful operation"
+        '200':
+          description: successful operation
           schema:
-            $ref: "#/definitions/Publisher"
-  /1/publisher/{id}:
+            $ref: '#/definitions/Publisher'
+  '/1/publisher/{id}':
     get:
       tags:
-      - "Publisher"
-      summary: "Read a publisher's data"
-      description: "Read a publisher's data"
-      operationId: "readPublisher"
+        - Publisher
+      summary: Read a publisher's data
+      description: Read a publisher's data
+      operationId: readPublisher
       produces:
-      - "application/xml"
-      - "application/json"
+        - application/xml
+        - application/json
       parameters:
-      - name: "id"
-        in: "path"
-        description: "ID of publisher to read"
-        required: true
-        type: "string"
-        format: "uuid"
+        - name: id
+          in: path
+          description: ID of publisher to read
+          required: true
+          type: string
+          format: uuid
       responses:
-        200:
-          description: "successful operation"
+        '200':
+          description: successful operation
           schema:
-            type: "array"
+            type: array
             items:
-              $ref: "#/definitions/Publisher"
+              $ref: '#/definitions/Publisher'
   /1/publishers:
     get:
       tags:
-      - "Publisher"
-      summary: "Search for publishers based upon some criteria"
-      description: "Search for publishers based upon some criteria"
-      operationId: "filterPublisher"
+        - Publisher
+      summary: Search for publishers based upon some criteria
+      description: Search for publishers based upon some criteria
+      operationId: filterPublisher
       produces:
-      - "application/xml"
-      - "application/json"
+        - application/xml
+        - application/json
       parameters:
-      - name: "ids"
-        in: "query"
-        description: "The publisher IDs to search for"
-        required: true
-        type: "array"
-        items:
-          type: "string"
-          format: "uuid"
+        - name: ids
+          in: query
+          description: The publisher IDs to search for
+          required: true
+          type: array
+          items:
+            type: string
+            format: uuid
       responses:
-        200:
-          description: "An array of publishers that match the search criteria"
+        '200':
+          description: An array of publishers that match the search criteria
           schema:
-            $ref: "#/definitions/Publisher"
+            $ref: '#/definitions/Publisher'
   /1/identityProvider:
     post:
       tags:
-      - "Identity Provider"
-      summary: "Create a new Identity Provider"
-      description: ""
-      operationId: "createIdentityProvider"
+        - Identity Provider
+      summary: Create a new Identity Provider
+      description: ''
+      operationId: createIdentityProvider
       consumes:
-      - "application/json"
-      - "application/xml"
+        - application/json
+        - application/xml
       produces:
-      - "application/xml"
-      - "application/json"
+        - application/xml
+        - application/json
       parameters:
-      - in: "body"
-        name: "body"
-        description: "Identity Provider information to be stored"
-        required: true
-        schema:
-          $ref: "#/definitions/IdentityProvider"
-      responses:
-        201:
-          description: "Successful operation"
+        - in: body
+          name: body
+          description: Identity Provider information to be stored
+          required: true
           schema:
-            $ref: "#/definitions/IdentityProvider"
-  /1/identityProvider/{id}:
+            $ref: '#/definitions/IdentityProvider'
+      responses:
+        '201':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/IdentityProvider'
+  '/1/identityProvider/{id}':
     get:
       tags:
-      - "Identity Provider"
-      summary: "Read an Identity Provider by it's unique ID"
-      operationId: "readIdentityProvider"
+        - Identity Provider
+      summary: Read an Identity Provider by it's unique ID
+      operationId: readIdentityProvider
       produces:
-      - "application/xml"
-      - "application/json"
+        - application/xml
+        - application/json
       parameters:
-      - name: "id"
-        in: "path"
-        description: "The unique Identity Provider ID set by the wayf-cloud"
-        required: true
-        type: "string"
-        format: "uuid"
+        - name: id
+          in: path
+          description: The unique Identity Provider ID set by the wayf-cloud
+          required: true
+          type: string
+          format: uuid
       responses:
-        200:
-          description: "Successful operation"
+        '200':
+          description: Successful operation
           schema:
-            $ref: "#/definitions/IdentityProvider"
-        404:
-          description: "No Identity Providers found for specified ID"
+            $ref: '#/definitions/IdentityProvider'
+        '404':
+          description: No Identity Providers found for specified ID
+  '/1/device/session.localId={localId}/idps':
+    get:
+      tags:
+        - Identity Provider
+      summary: Get IdentityProviders previously authenticated with.
+      description: Fetch a list of IdentityProviders a Device has previously authenticated with. In this case, the Device is resolved via a Publisher's localId.
+      operationId: identityProvidersByLocalId
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: localId
+          in: path
+          description: The localId used by a publisher to identify a device
+          required: true
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Succesful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/IdentityProvider'
+        '404':
+          description: No devices found for the localId
+    post:
+      tags:
+        - Identity Provider
+      summary: Alert the wayf-cloud of a recent authentication
+      description: Update the wayf-cloud of a recent authentication with an identity provider and a device. In this case, the Device is resolved via a Publisher's localId. If the IdentityProvider specified was not previously known for this devices, it will be stored in the device.ids list. A new PublisherSession entry will be added for the publisher that is authenticated on the call.
+      operationId: addIdentityProviderForDevice
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: localId
+          in: path
+          description: The localId used by a publisher to identify a device
+          required: true
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Succesful operation
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/IdentityProvider'
+        '404':
+          description: No devices found for the localId
   /1/publisherSession:
     post:
       tags:
-      - "Publisher Session"
-      summary: "Create a new PublisherSession"
-      description: ""
-      operationId: "createPublisherSession"
+        - Publisher Session
+      summary: Create a new PublisherSession
+      description: ''
+      operationId: createPublisherSession
       consumes:
-      - "application/json"
-      - "application/xml"
+        - application/json
+        - application/xml
       produces:
-      - "application/xml"
-      - "application/json"
+        - application/xml
+        - application/json
       parameters:
-      - in: "body"
-        name: "body"
-        description: "PublisherSession information to be stored"
-        required: true
-        schema:
-          $ref: "#/definitions/PublisherSession"
-      responses:
-        201:
-          description: "Successful operation"
+        - in: body
+          name: body
+          description: PublisherSession information to be stored
+          required: true
           schema:
-            $ref: "#/definitions/PublisherSession"
-  /1/publisherSession/{id}:
+            $ref: '#/definitions/PublisherSession'
+      responses:
+        '201':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/PublisherSession'
+  '/1/publisherSession/{id}':
     get:
       tags:
-      - "Publisher Session"
-      summary: "Read a PublisherSession by it's unique wayf ID"
-      operationId: "readPublisherSession"
+        - Publisher Session
+      summary: Read a PublisherSession by it's unique wayf ID
+      operationId: readPublisherSession
       produces:
-      - "application/xml"
-      - "application/json"
+        - application/xml
+        - application/json
       parameters:
-      - name: "id"
-        in: "path"
-        description: "The unique PublisherSession ID set by the wayf-cloud"
-        required: true
-        type: "string"
-        format: "uuid"
-      - name: "fields"
-        in: "query"
-        description: "The optional child properties to fully inflate"
-        required: false
-        type: "array"
-        items:
-          type: "string"
-          enum:
-          - "device"
-          - "publisher"
-          - "authenticatedBy"
-        collectionFormat: "csv"
+        - name: id
+          in: path
+          description: The unique PublisherSession ID set by the wayf-cloud
+          required: true
+          type: string
+          format: uuid
+        - name: fields
+          in: query
+          description: The optional child properties to fully inflate
+          required: false
+          type: array
+          items:
+            type: string
+            enum:
+              - device
+              - publisher
+              - authenticatedBy
+          collectionFormat: csv
       responses:
-        200:
-          description: "Successful operation"
+        '200':
+          description: Successful operation
           schema:
-            $ref: "#/definitions/PublisherSession"
-        404:
-          description: "No PublisherSessions found for specified ID"
+            $ref: '#/definitions/PublisherSession'
+        '404':
+          description: No PublisherSessions found for specified ID
     put:
       tags:
-      - "Publisher Session"
-      summary: "Update the PublisherSession"
-      description: ""
-      operationId: "updatePublisherSession"
+        - Publisher Session
+      summary: Update the PublisherSession
+      description: ''
+      operationId: updatePublisherSession
       consumes:
-      - "application/json"
-      - "application/xml"
+        - application/json
+        - application/xml
       produces:
-      - "application/xml"
-      - "application/json"
+        - application/xml
+        - application/json
       parameters:
-      - in: "body"
-        name: "body"
-        description: "The updated PublisherSession"
-        required: true
-        schema:
-          $ref: "#/definitions/PublisherSession"
-      - name: "id"
-        in: "path"
-        description: "The unique publisher session local ID set by the wayf cloud"
-        required: true
-        type: "string"
-        format: "uuid"
-      responses:
-        201:
-          description: "Successful operation"
+        - in: body
+          name: body
+          description: The updated PublisherSession
+          required: true
           schema:
-            $ref: "#/definitions/PublisherSession"
-  /1/publisherSession/localId={localId}:
+            $ref: '#/definitions/PublisherSession'
+        - name: id
+          in: path
+          description: The unique publisher session local ID set by the wayf cloud
+          required: true
+          type: string
+          format: uuid
+      responses:
+        '201':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/PublisherSession'
+  '/1/publisherSession/localId={localId}':
     get:
       tags:
-      - "Publisher Session"
-      summary: "Read a PublisherSession by it's publisher specified local ID"
-      operationId: "readPublisherSessionByLocalId"
+        - Publisher Session
+      summary: Read a PublisherSession by it's publisher specified local ID
+      operationId: readPublisherSessionByLocalId
       produces:
-      - "application/xml"
-      - "application/json"
+        - application/xml
+        - application/json
       parameters:
-      - name: "localId"
-        in: "path"
-        description: "The unique publisher session local ID set by the publisher"
-        required: true
-        type: "string"
-      - name: "fields"
-        in: "query"
-        description: "The optional child properties to fully inflate"
-        required: false
-        type: "array"
-        items:
-          type: "string"
-          enum:
-          - "device"
-          - "publisher"
-          - "authenticatedBy"
-        collectionFormat: "csv"
+        - name: localId
+          in: path
+          description: The unique publisher session local ID set by the publisher
+          required: true
+          type: string
+        - name: fields
+          in: query
+          description: The optional child properties to fully inflate
+          required: false
+          type: array
+          items:
+            type: string
+            enum:
+              - device
+              - publisher
+              - authenticatedBy
+          collectionFormat: csv
       responses:
-        200:
-          description: "Successful operation"
+        '200':
+          description: Successful operation
           schema:
-            $ref: "#/definitions/PublisherSession"
-        404:
-          description: "No PublisherSessions found for specified ID"
-  /1/publisherSession/localId={localId}/authenticatedBy:
-    put:
-      tags:
-      - "Publisher Session"
-      summary: "Set the IdentityProvider that authenticated a PublisherSession"
-      description: ""
-      operationId: "setIdpOnPublisherSession"
-      consumes:
-      - "application/json"
-      - "application/xml"
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "The IdentityProvider to set on the PublisherSession. One of [id|entityId] is requred."
-        required: true
-        schema:
-          $ref: "#/definitions/IdentityProvider"
-      - name: "localId"
-        in: "path"
-        description: "The unique publisher session local ID set by the publisher"
-        required: true
-        type: "string"
-      responses:
-        201:
-          description: "Successful operation"
-          schema:
-            $ref: "#/definitions/PublisherSession"
+            $ref: '#/definitions/PublisherSession'
+        '404':
+          description: No PublisherSessions found for specified ID
   /1/publisherSessions:
     get:
       tags:
-      - "Publisher Session"
-      summary: "Query for PublisherSession values that match a set of criteria"
-      operationId: "filterPublisherSession"
+        - Publisher Session
+      summary: Query for PublisherSession values that match a set of criteria
+      operationId: filterPublisherSession
       produces:
-      - "application/xml"
-      - "application/json"
+        - application/xml
+        - application/json
       parameters:
-      - name: "ids"
-        in: "query"
-        description: "The unique PublisherSession IDs set by the wayf-cloud"
-        required: false
-        type: "array"
-        items:
-          type: "string"
-          format: "uuid"
-        collectionFormat: "csv"
-      - name: "deviceIds"
-        in: "query"
-        description: "The unique Device IDs set by the wayf-cloud"
-        required: false
-        type: "array"
-        items:
-          type: "string"
-          format: "uuid"
-        collectionFormat: "csv"
-      - name: "fields"
-        in: "query"
-        description: "The optional child properties to fully inflate"
-        required: false
-        type: "array"
-        items:
-          type: "string"
-          enum:
-          - "device"
-          - "publisher"
-          - "authenticatedBy"
-        collectionFormat: "csv"
+        - name: ids
+          in: query
+          description: The unique PublisherSession IDs set by the wayf-cloud
+          required: false
+          type: array
+          items:
+            type: string
+            format: uuid
+          collectionFormat: csv
+        - name: deviceIds
+          in: query
+          description: The unique Device IDs set by the wayf-cloud
+          required: false
+          type: array
+          items:
+            type: string
+            format: uuid
+          collectionFormat: csv
+        - name: fields
+          in: query
+          description: The optional child properties to fully inflate
+          required: false
+          type: array
+          items:
+            type: string
+            enum:
+              - device
+              - publisher
+              - authenticatedBy
+          collectionFormat: csv
       responses:
-        200:
-          description: "Successful operation"
+        '200':
+          description: Successful operation
           schema:
-            type: "array"
+            type: array
             items:
-              $ref: "#/definitions/PublisherSession"
-        404:
-          description: "No PublisherSessions found for specified ID"
+              $ref: '#/definitions/PublisherSession'
+        '404':
+          description: No PublisherSessions found for specified ID
 definitions:
   Device:
-    type: "object"
+    type: object
     properties:
       id:
-        type: "string"
-        format: "uuid"
+        type: string
+        format: uuid
       status:
-        type: "string"
-        description: "Device Status"
+        type: string
+        description: Device Status
         enum:
-        - "ACTIVE"
+          - ACTIVE
       info:
         $ref: '#/definitions/DeviceInfo'
+      idps:
+        type: array
+        items:
+          $ref: '#/definitions/IdentityProvider'
       sessions:
-        $ref: '#/definitions/PublisherSession'
+        type: array
+        items:
+          $ref: '#/definitions/PublisherSession'
       createdDate:
-        type: "string"
-        format: "date-time"
+        type: string
+        format: date-time
       modifiedDate:
-        type: "string"
-        format: "date-time"
+        type: string
+        format: date-time
     xml:
-      name: "Device"
+      name: Device
   DeviceInfo:
-    type: "object"
+    type: object
     properties:
       userAgent:
-        type: "string"
+        type: string
     xml:
-      name: "DeviceInfo"
+      name: DeviceInfo
   PublisherSession:
-    type: "object"
+    type: object
     properties:
       id:
-        type: "string"
-        format: "uuid"
+        type: string
+        format: uuid
       localId:
-        type: "string"
-        description: "Publisher specified unique ID"
+        type: string
+        description: Publisher specified unique ID
       status:
-        type: "string"
+        type: string
         enum:
-        - "ACTIVE"
+          - ACTIVE
       device:
         $ref: '#/definitions/Device'
       authenticatedBy:
@@ -481,63 +509,62 @@ definitions:
       publisher:
         $ref: '#/definitions/Publisher'
       lastActiveDate:
-        type: "string"
-        format: "date-time"
+        type: string
+        format: date-time
       createdDate:
-        type: "string"
-        format: "date-time"
+        type: string
+        format: date-time
       modifiedDate:
-        type: "string"
-        format: "date-time"
+        type: string
+        format: date-time
     xml:
-      name: "PublisherSession"
+      name: PublisherSession
   Publisher:
-    type: "object"
+    type: object
     properties:
       id:
-        type: "string"
-        format: "uuid"
+        type: string
+        format: uuid
       status:
-        type: "string"
+        type: string
         enum:
-        - "ACTIVE"
+          - ACTIVE
       name:
-        type: "string"
+        type: string
       createdDate:
-        type: "string"
-        format: "date-time"
+        type: string
+        format: date-time
       modifiedDate:
-        type: "string"
-        format: "date-time"
+        type: string
+        format: date-time
     xml:
-      name: "Publisher"
+      name: Publisher
   IdentityProvider:
-    type: "object"
     discriminator: type
-    required:
-      - type
+    required: type
+    type: object
     properties:
       id:
-        type: "string"
-        format: "uuid"
-      entityId:
-        type: "string"
+        type: string
+        format: uuid
       type:
-        type: "string"
+        type: string
         enum:
-        - "SAML"
-        - "OPEN_ATHENS"
-        - "OAUTH"
+          - SAML
+          - OPEN_ATHEN
+          - OAUTH
+      entityId:
+        type: string
       createdDate:
-        type: "string"
-        format: "date-time"
+        type: string
+        format: date-time
       modifiedDate:
-        type: "string"
-        format: "date-time"
+        type: string
+        format: date-time
     xml:
-      name: "IdentityProvider"
+      name: IdentityProvider
   SamlEntity:
-    description: "A saml entity"
+    description: A saml entity
     type: object
     allOf:
       - $ref: '#/definitions/IdentityProvider'
@@ -548,9 +575,9 @@ definitions:
           type:
             type: string
             enum:
-            - "SAML"
+            - SAML
   OpenAthensEntity:
-    description: "An OpenAthens entity"
+    description: An OpenAthens entity
     type: object
     allOf:
       - $ref: '#/definitions/IdentityProvider'
@@ -563,4 +590,4 @@ definitions:
           type:
             type: string
             enum:
-            - "OPEN_ATHENS"
+            - OPEN_ATHENS
