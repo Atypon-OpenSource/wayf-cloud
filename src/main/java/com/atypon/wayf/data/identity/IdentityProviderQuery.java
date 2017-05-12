@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.data.identity;
 
-import java.util.List;
+import java.util.Collection;
 
-public class IdentityProviderFilter {
-    private List<String> ids;
+public class IdentityProviderQuery {
+    private Collection<String> ids;
     private String entityId;
 
-    public IdentityProviderFilter() {
+    public IdentityProviderQuery() {
     }
 
-    public List<String> getIds() {
+    public Collection<String> getIds() {
         return ids;
     }
 
-    public IdentityProviderFilter setIds(List<String> ids) {
+    public IdentityProviderQuery setIds(Collection<String> ids) {
         this.ids = ids;
         return this;
     }
@@ -38,8 +38,16 @@ public class IdentityProviderFilter {
         return entityId;
     }
 
-    public IdentityProviderFilter setEntityId(String entityId) {
+    public IdentityProviderQuery setEntityId(String entityId) {
         this.entityId = entityId;
         return this;
+    }
+
+    /**
+     * Database use only
+     * @return
+     */
+    public boolean isNullIds() {
+        return ids == null;
     }
 }

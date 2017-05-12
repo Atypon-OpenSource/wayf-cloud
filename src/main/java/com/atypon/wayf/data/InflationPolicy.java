@@ -14,26 +14,32 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data.publisher;
+package com.atypon.wayf.data;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-public class PublisherFilter {
-    private String[] ids;
+public class InflationPolicy {
+    private Map<String, InflationPolicy> fields;
 
-    public PublisherFilter() {
+    public InflationPolicy() {
+        fields = new HashMap<>();
     }
 
-    public String[] getIds() {
-        return ids;
+    public Set<String> getChildFields() {
+        return fields.keySet();
     }
 
-    public PublisherFilter setIds(String[] ids) {
-        this.ids = ids;
-        return this;
+    public InflationPolicy getChildPolicy(String child) {
+        return fields.get(child);
     }
 
-    public PublisherFilter setIds(List<String> ids) {
-        return setIds(ids.toArray(new String[0]));
+    public void addChildPolicy(String field, InflationPolicy policy) {
+        fields.put(field, policy);
+    }
+
+    public boolean hasChildField(String childField) {
+        return fields.keySet().contains(childField);
     }
 }

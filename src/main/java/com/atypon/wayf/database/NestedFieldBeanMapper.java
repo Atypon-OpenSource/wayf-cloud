@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.database;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConvertUtilsBean;
@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-public class BeanMapper {
-    private static final Logger LOG = LoggerFactory.getLogger(BeanMapper.class);
+class NestedFieldBeanMapper {
+    private static final Logger LOG = LoggerFactory.getLogger(NestedFieldBeanMapper.class);
 
     private static final String DELIMITER = ".";
     private static final String REGEX_DELIMITER = "\\.";

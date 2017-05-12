@@ -17,7 +17,7 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherFilter;
+import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.data.publisher.PublisherStatus;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
@@ -59,7 +59,6 @@ public class PublisherDaoDbImplTest {
         Assert.assertNotNull(createdPublisher.getId());
         Assert.assertEquals("Test Publisher", createdPublisher.getName());
         Assert.assertNotNull(createdPublisher.getCreatedDate());
-        Assert.assertNotNull(createdPublisher.getModifiedDate());
     }
 
     @Test
@@ -75,7 +74,6 @@ public class PublisherDaoDbImplTest {
         Assert.assertNotNull(readPublisher.getId());
         Assert.assertEquals("Test Publisher", readPublisher.getName());
         Assert.assertNotNull(readPublisher.getCreatedDate());
-        Assert.assertNotNull(readPublisher.getModifiedDate());
     }
 
     @Test
@@ -93,7 +91,7 @@ public class PublisherDaoDbImplTest {
 
         Assert.assertEquals(5, publishersById.keySet().size());
 
-        PublisherFilter filter = new PublisherFilter();
+        PublisherQuery filter = new PublisherQuery();
         filter.setIds(Lists.newArrayList(publishersById.keySet()));
 
         Observable<Publisher> publishers = dao.filter(filter);
@@ -106,7 +104,6 @@ public class PublisherDaoDbImplTest {
             Assert.assertEquals(expected.getName(), readPublisher.getName());
             Assert.assertEquals(expected.getStatus(), readPublisher.getStatus());
             Assert.assertNotNull(readPublisher.getCreatedDate());
-            Assert.assertNotNull(readPublisher.getModifiedDate());
         }
 
     }

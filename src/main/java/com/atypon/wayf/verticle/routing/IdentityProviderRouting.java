@@ -16,20 +16,16 @@
 
 package com.atypon.wayf.verticle.routing;
 
-import com.atypon.wayf.data.IdentityProvider;
-import com.atypon.wayf.data.publisher.PublisherSession;
+import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.facade.IdentityProviderFacade;
-import com.atypon.wayf.facade.PublisherSessionFacade;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
-import org.apache.commons.collections.map.IdentityMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

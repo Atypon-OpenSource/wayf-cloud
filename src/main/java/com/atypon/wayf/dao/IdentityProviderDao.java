@@ -16,13 +16,15 @@
 
 package com.atypon.wayf.dao;
 
-import com.atypon.wayf.data.IdentityProvider;
+import com.atypon.wayf.data.identity.IdentityProvider;
+import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 
 public interface IdentityProviderDao {
 
     Single<IdentityProvider> create(IdentityProvider identityProvider);
     Maybe<IdentityProvider> read(String id);
-
+    Observable<IdentityProvider> filter(IdentityProviderQuery query);
 }

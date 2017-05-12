@@ -3,5 +3,8 @@
     "status": "ACTIVE",
     "publisher" : {
         "id" : null
+    },
+    "authenticatedBy" : {
+        "id" : null
     }
 }

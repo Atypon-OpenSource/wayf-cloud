@@ -22,6 +22,7 @@ import io.reactivex.Completable;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,11 +49,10 @@ public class ResponseWriter {
                                 .setStatusCode(200)
                                 .putHeader("content-type", "application/json; charset=utf-8")
                                 .putHeader("Link", getLinkHeaderValue())
-                                .end(body != null ? Json.encodePrettily(body) : ""))
+                                .end(body != null ? Json.encodePrettily(body) : StringUtils.EMPTY))
                 .subscribeOn(Schedulers.io())
                 .subscribe(
-                        () -> {
-                        }, // Do nothing on success
+                        () -> {}, // Do nothing on success
                         (ex) -> routingContext.fail(ex)
                 );
     }
@@ -84,8 +84,7 @@ public class ResponseWriter {
                         .end(Json.encodePrettily(errorResponse)))
                 .subscribeOn(Schedulers.io())
                 .subscribe(
-                        () -> {
-                        },
+                        () -> {},
                         (ex) -> LOG.error("Could not write response to client", ex)
                 );
     }
@@ -119,8 +118,6 @@ public class ResponseWriter {
                     .toString();
         }
 
-        return "";
+        return StringUtils.EMPTY;
     }
-
-
 }

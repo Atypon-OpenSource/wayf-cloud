@@ -16,15 +16,17 @@
 
 package com.atypon.wayf.verticle.routing;
 
-import com.atypon.wayf.data.IdentityProvider;
+import com.atypon.wayf.data.InflationPolicy;
+import com.atypon.wayf.data.InflationPolicyParser;
+import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.device.Device;
-import com.atypon.wayf.data.publisher.PublisherSession;
-import com.atypon.wayf.data.publisher.PublisherSessionFilter;
-import com.atypon.wayf.data.publisher.PublisherSessionQuery;
+import com.atypon.wayf.data.publisher.session.PublisherSession;
+import com.atypon.wayf.data.publisher.session.PublisherSessionQuery;
 import com.atypon.wayf.facade.PublisherSessionFacade;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -37,6 +39,7 @@ import io.vertx.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Singleton
@@ -47,25 +50,25 @@ public class PublisherSessionRouting implements RoutingProvider {
     private static final String PUBLISHER_SESSION_ID_PARAM_NAME = "id";
     private static final String PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME = "localId";
     private static final String DEVICE_ID_QUERY_PARAM = "device.id";
-    private static final String SESSION_ID_PARAM_NAME = "sessionId";
     private static final String PUBLISHER_SESSION_ID_PARAM = ":" + PUBLISHER_SESSION_ID_PARAM_NAME;
     private static final String PUBLISHER_SESSION_LOCAL_ID_PARAM = ":" + PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME;
-    private static final String PUBLISHER_SESSION_PUBLISHER_ID_PARAM = "publisherId=:" + SESSION_ID_PARAM_NAME;
 
     private static final String CREATE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL;
     private static final String READ_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
     private static final String READ_PUBLISHER_SESSION_BY_LOCAL_ID = PUBLISHER_SESSION_BASE_URL + "/" + PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME + "=" +  PUBLISHER_SESSION_LOCAL_ID_PARAM;
-    private static final String UPDATE_PUBLISHER_SESSION_BY_PUBLISHER_ID = PUBLISHER_SESSION_BASE_URL + "/" + PUBLISHER_SESSION_PUBLISHER_ID_PARAM;
-    private static final String SET_IDP_BY_PUBLISHER_ID = READ_PUBLISHER_SESSION_BY_LOCAL_ID + "/identityProvider";
+    private static final String SET_IDP_BY_PUBLISHER_ID = READ_PUBLISHER_SESSION_BY_LOCAL_ID + "/authenticatedBy";
     private static final String UPDATE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
     private static final String DELETE_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "/" +  PUBLISHER_SESSION_ID_PARAM;
     private static final String FILTER_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "s";
 
+    @Inject
     private PublisherSessionFacade publisherSessionFacade;
 
     @Inject
-    public PublisherSessionRouting(PublisherSessionFacade publisherSessionFacade) {
-        this.publisherSessionFacade = publisherSessionFacade;
+    private InflationPolicyParser<String> inflationPolicyParser;
+
+    @Inject
+    public PublisherSessionRouting() {
     }
 
     public void addRoutings(Router router) {
@@ -104,15 +107,15 @@ public class PublisherSessionRouting implements RoutingProvider {
         LOG.debug("Received read PublisherSession request");
 
         return Single.just(routingContext)
-                .map((rc) -> RequestReader.readPathArgument(rc, PUBLISHER_SESSION_ID_PARAM_NAME))
-                .flatMap((id) -> publisherSessionFacade.read(id));
+                .map((rc) -> buildQuery(routingContext))
+                .flatMap((query) -> publisherSessionFacade.read(query));
     }
 
     public Single<PublisherSession> readPublisherSessionByLocalId(RoutingContext routingContext) {
         LOG.debug("Received read PublisherSession by localId request");
 
         return Single.just(routingContext)
-                .map((rc) -> buildFilter(rc))
+                .map((rc) -> buildQuery(rc))
                 .flatMapObservable((query) -> publisherSessionFacade.filter(query))
                 .firstOrError();
     }
@@ -148,7 +151,7 @@ public class PublisherSessionRouting implements RoutingProvider {
         LOG.debug("Received filter PublisherSession request");
 
         return Single.just(routingContext)
-                .map((rc) -> buildFilter(rc))
+                .map((rc) -> buildQuery(rc))
                 .flatMapObservable((publisherSessionFilter) -> publisherSessionFacade.filter(publisherSessionFilter));
     }
 
@@ -160,22 +163,28 @@ public class PublisherSessionRouting implements RoutingProvider {
                 .flatMapCompletable((publisherSessionId) -> publisherSessionFacade.delete(publisherSessionId));
     }
 
-    private PublisherSessionFilter buildFilter(RoutingContext routingContext) {
-        String deviceId =  RequestReader.getQueryValue(routingContext, DEVICE_ID_QUERY_PARAM);
+    private PublisherSessionQuery buildQuery(RoutingContext routingContext) {
+        PublisherSessionQuery sessionQuery = new PublisherSessionQuery();
 
-        String concatFields = RequestReader.getQueryValue(routingContext, "fields");
-        Set<String> fields = null;
+        String deviceIdsValue =  RequestReader.getQueryValue(routingContext, DEVICE_ID_QUERY_PARAM);
+        if (deviceIdsValue != null) {
+            String[] deviceIds = deviceIdsValue.split(",");
+            sessionQuery.setDeviceIds(Lists.newArrayList(deviceIds));
+        }
 
-        if (concatFields != null) {
-            String[] fieldArray = concatFields.split(",");
-            fields = Sets.newHashSet(fieldArray);
+        InflationPolicy inflationPolicy = null;
+
+        String fieldsQueryParam = RequestReader.getQueryValue(routingContext, "fields");
+        if (fieldsQueryParam != null) {
+            sessionQuery.setInflationPolicy(inflationPolicyParser.parse(fieldsQueryParam));
         }
 
         String id = RequestReader.readPathArgument(routingContext, PUBLISHER_SESSION_ID_PARAM_NAME);
-        String localId = RequestReader.readPathArgument(routingContext, PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME);
+        sessionQuery.setId(id);
 
-        return new PublisherSessionFilter()
-                .setDeviceId(deviceId)
-                .setLocalId(localId);
+        String localId = RequestReader.readPathArgument(routingContext, PUBLISHER_SESSION_LOCAL_ID_PARAM_NAME);
+        sessionQuery.setLocalId(localId);
+
+        return sessionQuery;
     }
 }

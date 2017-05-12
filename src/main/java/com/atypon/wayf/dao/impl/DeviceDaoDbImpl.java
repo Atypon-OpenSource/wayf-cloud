@@ -16,16 +16,17 @@
 
 package com.atypon.wayf.dao.impl;
 
-import com.atypon.wayf.dao.DbExecutor;
 import com.atypon.wayf.dao.DeviceDao;
-import com.atypon.wayf.dao.QueryMapper;
 import com.atypon.wayf.data.device.Device;
+import com.atypon.wayf.data.device.DeviceQuery;
+import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.reactivex.DaoPolicies;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,10 @@ public class DeviceDaoDbImpl implements DeviceDao {
     private String deleteSql;
 
     @Inject
+    @Named("device.dao.db.filter")
+    private String filterSql;
+
+    @Inject
     private DbExecutor dbExecutor;
 
     public DeviceDaoDbImpl() {
@@ -68,18 +73,16 @@ public class DeviceDaoDbImpl implements DeviceDao {
         return Single.just(device)
                 .compose((single) -> DaoPolicies.applySingle(single))
                 .flatMap((_device) -> dbExecutor.executeUpdate(createSql, device))
-                .flatMapMaybe((genId) -> read(device.getId()))
+                .flatMapMaybe((genId) -> read(new DeviceQuery().setId(device.getId())))
                 .toSingle();
     }
 
     @Override
-    public Maybe<Device> read(String id) {
-        Device device = new Device();
-        device.setId(id);
+    public Maybe<Device> read(DeviceQuery query) {
 
-        return Single.just(device)
+        return Single.just(query)
                 .compose((single) -> DaoPolicies.applySingle(single))
-                .flatMapMaybe((_device) -> dbExecutor.executeSelectFirst(readSql, _device, Device.class));
+                .flatMapMaybe((_query) -> dbExecutor.executeSelectFirst(readSql, _query, Device.class));
     }
 
     @Override
@@ -93,5 +96,13 @@ public class DeviceDaoDbImpl implements DeviceDao {
         args.put("id", id);
 
         return Completable.fromSingle(dbExecutor.executeUpdate(deleteSql, args))
-                .compose((completable) -> DaoPolicies.applyCompletable(completable));    }
+                .compose((completable) -> DaoPolicies.applyCompletable(completable));
+    }
+
+    @Override
+    public Observable<Device> filter(DeviceQuery query) {
+        return Single.just(query)
+                .compose((single) -> DaoPolicies.applySingle(single))
+                .flatMapObservable((_query) -> dbExecutor.executeSelect(filterSql, _query, Device.class));
+    }
 }

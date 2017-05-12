@@ -17,7 +17,7 @@
 package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherFilter;
+import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.facade.PublisherFacade;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;
@@ -38,6 +38,7 @@ public class PublisherRouting implements RoutingProvider {
 
     private static final String PUBLISHER_BASE_URL = "/1/publisher";
     private static final String PUBLISHER_ID_PARAM_NAME = "id";
+    private static final String PUBLISHER_IDS_PARAM_NAME = "ids";
     private static final String PUBLISHER_ID_PARAM = ":" + PUBLISHER_ID_PARAM_NAME;
 
     private static final String CREATE_PUBLISHER = PUBLISHER_BASE_URL;
@@ -78,11 +79,11 @@ public class PublisherRouting implements RoutingProvider {
         LOG.debug("Received filter PublisherSession request");
 
         return Single.just(routingContext)
-                .map((rc) -> RequestReader.getQueryValue(rc, PUBLISHER_ID_PARAM_NAME))
+                .map((rc) -> RequestReader.getQueryValue(rc, PUBLISHER_IDS_PARAM_NAME))
                 .flatMapObservable((idsArg) -> {
                         LOG.debug(idsArg);
-                        String[] ids = idsArg.split("\\,");
-                        PublisherFilter filter = new PublisherFilter();
+                        String[] ids = idsArg.split(",");
+                        PublisherQuery filter = new PublisherQuery();
                         filter.setIds(Lists.newArrayList(ids));
                         return  publisherFacade.filter(filter);
                     }

@@ -20,6 +20,8 @@ import com.atypon.wayf.dao.*;
 import com.atypon.wayf.dao.impl.*;
 import com.atypon.wayf.dao.redis.RedisDao;
 import com.atypon.wayf.dao.redis.impl.RedisDaoDefaultImpl;
+import com.atypon.wayf.data.InflationPolicyParser;
+import com.atypon.wayf.data.InflationPolicyParserQueryParamImpl;
 import com.atypon.wayf.data.cache.CascadingCache;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.facade.impl.*;
@@ -63,6 +65,8 @@ public class WayfGuiceModule extends AbstractModule {
 
             bind(IdentityProviderFacade.class).to(IdentityProviderFacadeImpl.class);
             bind(IdentityProviderDao.class).to(IdentityProviderDaoDbImpl.class);
+
+            bind(new TypeLiteral<InflationPolicyParser<String>>(){}).to(InflationPolicyParserQueryParamImpl.class);
 
             bind(RedisDao.class)
                     .annotatedWith(Names.named("publisherIdRedisDao"))

@@ -16,19 +16,21 @@
 
 package com.atypon.wayf.reactivex;
 
+import hu.akarnokd.rxjava2.debug.RxJavaAssemblyTracking;
 import io.reactivex.plugins.RxJavaPlugins;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A class to manage any configurations required for the ReactiveX library/.
+ * A class to manage any configurations required for the ReactiveX library.
  */
 public class WayfReactivexConfig {
     private static final Logger LOG = LoggerFactory.getLogger(WayfReactivexConfig.class);
 
     public static void initializePlugins() {
-        LOG.debug("Initializing reactivex plugins");
+        LOG.debug("Initializing ReactiveX plugins");
 
         RxJavaPlugins.setScheduleHandler((runnable) -> new WayfRunnable(runnable));
+        RxJavaAssemblyTracking.enable();
     }
 }

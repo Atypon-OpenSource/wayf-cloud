@@ -17,13 +17,16 @@
 package com.atypon.wayf.dao;
 
 import com.atypon.wayf.data.device.Device;
+import com.atypon.wayf.data.device.DeviceQuery;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 
 public interface DeviceDao {
     Single<Device> create(Device device);
-    Maybe<Device> read(String id);
+    Maybe<Device> read(DeviceQuery query);
     Single<Device> update(Device device);
     Completable delete(String id);
+    Observable<Device> filter(DeviceQuery query);
 }

@@ -16,7 +16,7 @@
 
 package com.atypon.wayf.data.device;
 
-import com.atypon.wayf.data.publisher.PublisherSession;
+import com.atypon.wayf.data.publisher.session.PublisherSession;
 import com.atypon.wayf.data.user.User;
 
 import java.util.Date;
@@ -25,6 +25,8 @@ import java.util.List;
 public class Device {
     private String id;
     private DeviceStatus status;
+
+    private DeviceInfo info;
 
     private List<PublisherSession> sessions;
 
@@ -50,6 +52,14 @@ public class Device {
 
     public void setStatus(DeviceStatus status) {
         this.status = status;
+    }
+
+    public DeviceInfo getInfo() {
+        return info;
+    }
+
+    public void setInfo(DeviceInfo info) {
+        this.info = info;
     }
 
     public List<PublisherSession> getSessions() {

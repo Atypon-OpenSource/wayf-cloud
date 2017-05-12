@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.database;
 
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
@@ -61,7 +61,7 @@ public class DbExecutor {
 
         LOG.debug("Running query [{}] with values [{}]", query, arguments);
 
-        return Observable.fromIterable(namedParameterJdbcTemplate.query(query, arguments, new WayfRowMapper(returnType)));
+        return Observable.fromIterable(namedParameterJdbcTemplate.query(query, arguments, new NestedFieldRowMapper(returnType)));
     }
 
     public Single<Integer> executeUpdate(String query, Object arguments) {

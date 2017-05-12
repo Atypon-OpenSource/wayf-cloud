@@ -17,13 +17,15 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.IdentityProviderDao;
-import com.atypon.wayf.data.IdentityProvider;
+import com.atypon.wayf.data.identity.IdentityProvider;
+import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import com.atypon.wayf.data.cache.CascadingCache;
 import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
@@ -48,8 +50,6 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     @Override
     public Single<IdentityProvider> create(IdentityProvider identityProvider) {
         identityProvider.setId(UUID.randomUUID().toString());
-        identityProvider.setCreatedDate(new Date());
-        identityProvider.setModifiedDate(new Date());
 
         return Single.just(identityProvider)
                 .flatMap(o_identityProvider -> identityProviderDao.create(o_identityProvider));
@@ -84,5 +84,11 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
                                 .cast(IdentityProvider.class)
                 )
                 .firstOrError();
+    }
+
+    @Override
+    public Observable<IdentityProvider> filter(IdentityProviderQuery query) {
+        return Observable.just(query)
+                .flatMap((_query) -> identityProviderDao.filter(_query));
     }
 }

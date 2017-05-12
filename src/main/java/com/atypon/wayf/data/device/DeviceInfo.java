@@ -17,43 +17,16 @@
 package com.atypon.wayf.data.device;
 
 public class DeviceInfo {
-    private String browserName;
-    private String browserVersion;
-    private String osName;
-    private String osVersion;
+    private String userAgent;
 
     public DeviceInfo() {
     }
 
-    public String getBrowserName() {
-        return browserName;
+    public String getUserAgent() {
+        return userAgent;
     }
 
-    public void setBrowserName(String browserName) {
-        this.browserName = browserName;
-    }
-
-    public String getBrowserVersion() {
-        return browserVersion;
-    }
-
-    public void setBrowserVersion(String browserVersion) {
-        this.browserVersion = browserVersion;
-    }
-
-    public String getOsName() {
-        return osName;
-    }
-
-    public void setOsName(String osName) {
-        this.osName = osName;
-    }
-
-    public String getOsVersion() {
-        return osVersion;
-    }
-
-    public void setOsVersion(String osVersion) {
-        this.osVersion = osVersion;
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
     }
 }

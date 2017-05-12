@@ -16,40 +16,28 @@
 
 package com.atypon.wayf.data.publisher;
 
-import java.util.List;
+import java.util.Collection;
 
-public class PublisherSessionFilter {
-    private List<String> ids;
-    private String deviceId;
-    private String localId;
+public class PublisherQuery {
+    private Collection<String> ids;
 
-    public PublisherSessionFilter() {
+    public PublisherQuery() {
     }
 
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public PublisherSessionFilter setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
-        return this;
-    }
-
-    public List<String> getIds() {
+    public Collection<String> getIds() {
         return ids;
     }
 
-    public PublisherSessionFilter setIds(List<String> ids) {
+    public PublisherQuery setIds(Collection<String> ids) {
         this.ids = ids;
         return this;
     }
 
-    public String getLocalId() {
-        return localId;
-    }
-
-    public PublisherSessionFilter setLocalId(String localId) {
-        this.localId = localId;
-        return this;
+    /**
+     * Database use only
+     * @return
+     */
+    public boolean isNullIds() {
+        return ids == null;
     }
 }

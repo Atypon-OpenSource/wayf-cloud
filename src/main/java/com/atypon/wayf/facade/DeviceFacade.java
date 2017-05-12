@@ -17,9 +17,13 @@
 package com.atypon.wayf.facade;
 
 import com.atypon.wayf.data.device.Device;
+import com.atypon.wayf.data.device.DeviceQuery;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 
 public interface DeviceFacade {
     Single<Device> create(Device device);
-    Single<Device> read(String id);
+    Single<Device> read(DeviceQuery query);
+
+    Observable<Device> filter(DeviceQuery query);
 }

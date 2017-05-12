@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.database;
 
 
-import com.atypon.wayf.data.publisher.PublisherSession;
+import com.atypon.wayf.data.publisher.session.PublisherSession;
+import com.atypon.wayf.database.NestedFieldBeanMapper;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,7 +29,7 @@ public class BeanMapperTest {
 
     @Test
     public void testResultSetProcessor() throws Exception {
-        BeanMapper processor = new BeanMapper();
+        NestedFieldBeanMapper processor = new NestedFieldBeanMapper();
 
         Map<String, Object> row = new HashMap<>();
         row.put("id", "testId");

@@ -18,7 +18,8 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.PublisherDao;
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherFilter;
+import com.atypon.wayf.data.publisher.PublisherQuery;
+import com.atypon.wayf.data.publisher.PublisherStatus;
 import com.atypon.wayf.facade.PublisherFacade;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -36,8 +37,8 @@ public class PublisherFacadeImpl implements PublisherFacade {
 
     @Override
     public Single<Publisher> create(Publisher publisher) {
-        return Single.just(publisher)
-                .flatMap((_publisher) -> publisherDao.create(_publisher));
+        publisher.setStatus(PublisherStatus.ACTIVE);
+        return publisherDao.create(publisher);
     }
 
     @Override
@@ -48,7 +49,7 @@ public class PublisherFacadeImpl implements PublisherFacade {
     }
 
     @Override
-    public Observable<Publisher> filter(PublisherFilter filter) {
+    public Observable<Publisher> filter(PublisherQuery filter) {
         return Single.just(filter)
                 .flatMapObservable((_filter) -> publisherDao.filter(_filter));
     }

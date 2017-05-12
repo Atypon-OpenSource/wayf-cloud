@@ -16,12 +16,16 @@
 
 package com.atypon.wayf.verticle.routing;
 
+import com.atypon.wayf.data.InflationPolicyParser;
 import com.atypon.wayf.data.device.Device;
+import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandler;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -41,18 +45,22 @@ public class DeviceRoutingProvider implements RoutingProvider {
     private static final String READ_DEVICE = DEVICE_BASE_URL + "/" +  DEVICE_ID_PARAM;
     private static final String UPDATE_DEVICE = DEVICE_BASE_URL + "/" +  DEVICE_ID_PARAM;
     private static final String DELETE_DEVICE = DEVICE_BASE_URL + "/" +  DEVICE_ID_PARAM;
+    private static final String FILTER_DEVICE = DEVICE_BASE_URL + "s";
 
+    @Inject
     private DeviceFacade deviceFacade;
 
     @Inject
-    public DeviceRoutingProvider(DeviceFacade deviceFacade) {
-        this.deviceFacade = deviceFacade;
+    private InflationPolicyParser<String> inflationPolicyParser;
+
+    public DeviceRoutingProvider() {
     }
 
     public void addRoutings(Router router) {
         router.route(DEVICE_BASE_URL + "*").handler(BodyHandler.create());
         router.post(CREATE_DEVICE).handler(WayfRequestHandler.single((rc) -> createDevice(rc)));
         router.get(READ_DEVICE).handler(WayfRequestHandler.single((rc) -> readDevice(rc)));
+        router.get(FILTER_DEVICE).handler(WayfRequestHandler.observable((rc) -> filterDevice(rc)));
     }
 
     public Single<Device> createDevice(RoutingContext routingContext) {
@@ -67,7 +75,33 @@ public class DeviceRoutingProvider implements RoutingProvider {
         LOG.debug("Received read Device request");
 
         return Single.just(routingContext)
-                .map((rc) -> RequestReader.readPathArgument(rc, DEVICE_ID_PARAM_NAME))
-                .flatMap((deviceId) -> deviceFacade.read(deviceId));
+                .flatMap((deviceId) -> deviceFacade.read(buildQuery(routingContext)));
+    }
+
+    public Observable<Device> filterDevice(RoutingContext routingContext) {
+        LOG.debug("Received read Device request");
+
+        return deviceFacade.filter(buildQuery(routingContext));
+    }
+
+    private DeviceQuery buildQuery(RoutingContext routingContext) {
+        DeviceQuery query = new DeviceQuery();
+
+        String fields = RequestReader.getQueryValue(routingContext, "fields");
+        if (fields != null) {
+            query.setInflationPolicy(inflationPolicyParser.parse(fields));
+        }
+
+        String id = RequestReader.readPathArgument(routingContext, DEVICE_ID_PARAM_NAME);
+        query.setId(id);
+
+        String ids = RequestReader.getQueryValue(routingContext, "ids");
+        if (ids != null) {
+            String[] idArray = ids.split(",");
+            query.setIds(Lists.newArrayList(idArray));
+        }
+
+        return query;
+
     }
 }

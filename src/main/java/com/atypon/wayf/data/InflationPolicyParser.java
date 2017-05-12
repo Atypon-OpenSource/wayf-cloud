@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data.publisher;
+package com.atypon.wayf.data;
 
-public enum PublisherSessionStatus {
-    ACTIVE,
-    DISABLED
+public interface InflationPolicyParser<I> {
+    InflationPolicy parse(I input);
 }

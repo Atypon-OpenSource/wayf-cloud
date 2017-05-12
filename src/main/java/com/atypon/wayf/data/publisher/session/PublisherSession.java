@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data.publisher;
+package com.atypon.wayf.data.publisher.session;
 
-import com.atypon.wayf.data.IdentityProvider;
+import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.device.Device;
+import com.atypon.wayf.data.publisher.Publisher;
 
 import java.util.Date;
 

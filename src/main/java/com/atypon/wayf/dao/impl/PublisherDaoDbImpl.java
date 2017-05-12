@@ -17,9 +17,9 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.PublisherDao;
-import com.atypon.wayf.dao.DbExecutor;
+import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherFilter;
+import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.reactivex.DaoPolicies;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -71,8 +71,6 @@ public class PublisherDaoDbImpl implements PublisherDao {
         LOG.debug("Creating publisher [{}] in the DB", publisher);
 
         publisher.setId(UUID.randomUUID().toString());
-        publisher.setCreatedDate(new Date());
-        publisher.setModifiedDate(new Date());
 
         return Single.just(publisher)
                 .compose((single) -> DaoPolicies.applySingle(single))
@@ -108,7 +106,7 @@ public class PublisherDaoDbImpl implements PublisherDao {
     }
 
     @Override
-    public Observable<Publisher> filter(PublisherFilter filter) {
+    public Observable<Publisher> filter(PublisherQuery filter) {
         return Observable.just(filter)
                 .compose((observable) -> DaoPolicies.applyObservable(observable))
                 .flatMap((_filter) -> dbExecutor.executeSelect(filterSql, _filter, Publisher.class));

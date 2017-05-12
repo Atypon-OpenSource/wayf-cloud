@@ -17,6 +17,7 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.data.device.Device;
+import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.device.DeviceStatus;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
@@ -62,7 +63,7 @@ public class DeviceDaoDbImplTest {
         device.setStatus(DeviceStatus.ACTIVE);
 
         Device createdDevice = dao.create(device).blockingGet();
-        Device readDevice = dao.read(createdDevice.getId()).blockingGet();
+        Device readDevice = dao.read(new DeviceQuery().setId(createdDevice.getId())).blockingGet();
 
         Assert.assertEquals(createdDevice.getId(), readDevice.getId());
         Assert.assertEquals(DeviceStatus.ACTIVE, readDevice.getStatus());
