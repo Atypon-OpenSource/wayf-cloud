@@ -14,37 +14,36 @@ info:
 host: 'localhost:8080'
 basePath: /
 tags:
+  - name: End User Actions
+    description: Endpoints that enable an end user to administer and view their data in the wayf-cloud. All of these endpoints will require the X-Device-Id header to be set.
+  - name: Publisher Actions
+    description: A set of endpoints that allow a publisher to update and read device data by a localId. These endpoints require the publisher's API token be set in the authorization header.
+  - name: Administrative Actions
+    description: The portion of the API that allows administrators to maintain the wayf-cloud.
   - name: Device
-    description: A representation of a user's device that accesses the wayf-cloud
+  - name: Publisher
+  - name: Session
+  - name: Identity Provider
 schemes:
   - http
+securityDefinitions:
+  DeviceIdHeader:
+    type: apiKey
+    in: header
+    name: X-Device-Id
+  PublisherKey:
+    type: apiKey
+    in: header
+    name: Authorization
+  AdministratorKey:
+    type: apiKey
+    in: header
+    name: Authorization
 paths:
-  /1/device:
-    post:
-      tags:
-        - Device
-      summary: Create a new device
-      description: ''
-      operationId: createDevice
-      consumes:
-        - application/json
-        - application/xml
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          description: Device information to be stored
-          required: true
-          schema:
-            $ref: '#/definitions/Device'
-      responses:
-        '201':
-          description: Information sucessessfully saved
-  '/1/device/{id}':
+  '/1/mydevice':
     get:
       tags:
+        - End User Actions
         - Device
       summary: Read a device by it's unique ID
       description: Multiple status values can be provided with comma separated strings
@@ -53,12 +52,6 @@ paths:
         - application/xml
         - application/json
       parameters:
-        - name: id
-          in: path
-          description: The unique device ID set by the wayf-cloud and stored in a cookie
-          required: true
-          type: string
-          format: uuid
         - name: fields
           in: query
           description: The child object fields to return
@@ -77,9 +70,12 @@ paths:
               $ref: '#/definitions/Device'
         '404':
           description: No devices found for specified ID
+      security:
+        - DeviceIdHeader: []
   /1/devices:
     get:
       tags:
+        - Administrative Actions
         - Device
       summary: Find devices that match a set of criteria
       description: Multiple values may be specified by a comma separated list
@@ -107,6 +103,8 @@ paths:
             enum:
               - sessions
           collectionFormat: csv
+      security:
+        - AdministratorKey: []
       responses:
         '200':
           description: Successful operation
@@ -117,6 +115,7 @@ paths:
   /1/publisher:
     post:
       tags:
+        - Administrative Actions
         - Publisher
       summary: Creates a new publisher
       description: Creates a new publisher on the wayf-cloud
@@ -127,12 +126,40 @@ paths:
       produces:
         - application/xml
         - application/json
+      security:
+        - AdministratorKey: []
       responses:
         '200':
           description: successful operation
           schema:
             $ref: '#/definitions/Publisher'
   '/1/publisher/{id}':
+    put:
+      tags:
+        - Administrative Actions
+        - Publisher
+      summary: Update a publisher's data
+      description: Update a publisher's data
+      operationId: updatePublisher
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of publisher to read
+          required: true
+          type: string
+          format: uuid
+      security:
+        - AdministratorKey: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Publisher'
     get:
       tags:
         - Publisher
@@ -149,6 +176,8 @@ paths:
           required: true
           type: string
           format: uuid
+      security:
+        - AdministratorKey: []
       responses:
         '200':
           description: successful operation
@@ -159,6 +188,7 @@ paths:
   /1/publishers:
     get:
       tags:
+        - Administrative Actions
         - Publisher
       summary: Search for publishers based upon some criteria
       description: Search for publishers based upon some criteria
@@ -175,6 +205,8 @@ paths:
           items:
             type: string
             format: uuid
+      security:
+        - AdministratorKey: []
       responses:
         '200':
           description: An array of publishers that match the search criteria
@@ -183,6 +215,7 @@ paths:
   /1/identityProvider:
     post:
       tags:
+        - Administrative Actions
         - Identity Provider
       summary: Create a new Identity Provider
       description: ''
@@ -228,9 +261,10 @@ paths:
             $ref: '#/definitions/IdentityProvider'
         '404':
           description: No Identity Providers found for specified ID
-  '/1/device/session.localId={localId}/idps':
+  '/1/device/{localId}/idpHistory':
     get:
       tags:
+        - Publisher Actions
         - Identity Provider
       summary: Get IdentityProviders previously authenticated with.
       description: Fetch a list of IdentityProviders a Device has previously authenticated with. In this case, the Device is resolved via a Publisher's localId.
@@ -245,20 +279,27 @@ paths:
           required: true
           type: string
           format: uuid
+      security:
+        - PublisherKey: []
       responses:
         '200':
           description: Succesful operation
           schema:
             type: array
+            xml:
+              wrapped: false
+              name: IdentityProviderUsages
             items:
-              $ref: '#/definitions/IdentityProvider'
+              $ref: '#/definitions/IdentityProviderUsage'
         '404':
           description: No devices found for the localId
+  '/1/device/{localId}/idpHistory/entity':
     post:
       tags:
+        - Publisher Actions
         - Identity Provider
       summary: Alert the wayf-cloud of a recent authentication
-      description: Update the wayf-cloud of a recent authentication with an IdentityProvider and a device. In this case, the Device is resolved via a Publisher's localId. The PublisherSession assocaited with the authenticated Publisher and the specified localId will have its authenticateBy field updated. If the IdentityProvider specified was not previously known for this device, it will be added the device.ids list.
+      description: Update the wayf-cloud of a recent authentication with an IdentityProvider and a device. In this case, the Device is resolved via a Publisher's localId. The Session assocaited with the authenticated Publisher and the specified localId will have its authenticateBy field updated. If the IdentityProvider specified was not previously known for this device, it will be added the device.ids list.
       operationId: addIdentityProviderForDevice
       produces:
         - application/xml
@@ -274,18 +315,34 @@ paths:
         '200':
           description: Succesful operation
           schema:
-            type: object
-            items:
-              $ref: '#/definitions/IdentityProvider'
+            $ref: '#/definitions/IdentityProvider'
         '404':
           description: No devices found for the localId
-  /1/publisherSession:
+  /1/mydevice/idpHistory/entity/{id}:
+    delete:
+      tags:
+        - End User Actions
+        - Identity Provider
+      summary: Remove IdentityProvider from list of available authentication mechanisms
+      description: Invalidate all sessions that used the specified IdentityProvider as their authentication source. This will prevent the entity from coming back in on the device's idpHistory field
+      parameters:
+        - name: id
+          in: path
+          description: The IdentityProvider's ID
+          required: true
+          type: string
+          format: uuid
+      responses:
+        '204':
+          description: IdentityProvider successfully forgotton
+  /1/session:
     post:
       tags:
-        - Publisher Session
-      summary: Create a new PublisherSession
-      description: Create a new PublisherSession. The invoking is required to specify a "localId" value that is unique across all of their PublisherSessions. If a "deviceId" field is populated in the cookie header, this will be automatically set as the device on the request. If no "deviceId" is present, the server will create a new Device and set that as the "device." The "publisher" field is populated based upon the currently authenticated publisher.
-      operationId: createPublisherSession
+        - Administrative Actions
+        - Session
+      summary: Create a new Session
+      description: Create a new Session. The invoking is required to specify a "localId" value that is unique across all of their Sessions. If a "deviceId" field is populated in the cookie header, this will be automatically set as the device on the request. If no "deviceId" is present, the server will create a new Device and set that as the "device." The "publisher" field is populated based upon the currently authenticated publisher.
+      operationId: createSession
       consumes:
         - application/json
         - application/xml
@@ -295,28 +352,30 @@ paths:
       parameters:
         - in: body
           name: body
-          description: PublisherSession information to be stored
+          description: Session information to be stored
           required: true
           schema:
-            $ref: '#/definitions/PublisherSession'
+            $ref: '#/definitions/Session'
+      security:
+        - PublisherKey: []
       responses:
         '201':
           description: Successful operation
           schema:
-            $ref: '#/definitions/PublisherSession'
-  '/1/publisherSession/{id}':
+            $ref: '#/definitions/Session'
+  '/1/session/{id}':
     get:
       tags:
-        - Publisher Session
-      summary: Read a PublisherSession by it's unique wayf ID
-      operationId: readPublisherSession
+        - Session
+      summary: Read a Session by it's unique wayf ID
+      operationId: readSession
       produces:
         - application/xml
         - application/json
       parameters:
         - name: id
           in: path
-          description: The unique PublisherSession ID set by the wayf-cloud
+          description: The unique Session ID set by the wayf-cloud
           required: true
           type: string
           format: uuid
@@ -336,15 +395,15 @@ paths:
         '200':
           description: Successful operation
           schema:
-            $ref: '#/definitions/PublisherSession'
+            $ref: '#/definitions/Session'
         '404':
-          description: No PublisherSessions found for specified ID
+          description: No Sessions found for specified ID
     put:
       tags:
-        - Publisher Session
-      summary: Update the PublisherSession
+        - Session
+      summary: Update the Session
       description: ''
-      operationId: updatePublisherSession
+      operationId: updateSession
       consumes:
         - application/json
         - application/xml
@@ -354,10 +413,10 @@ paths:
       parameters:
         - in: body
           name: body
-          description: The updated PublisherSession
+          description: The updated Session
           required: true
           schema:
-            $ref: '#/definitions/PublisherSession'
+            $ref: '#/definitions/Session'
         - name: id
           in: path
           description: The unique publisher session local ID set by the wayf cloud
@@ -368,54 +427,20 @@ paths:
         '201':
           description: Successful operation
           schema:
-            $ref: '#/definitions/PublisherSession'
-  '/1/publisherSession/localId={localId}':
+            $ref: '#/definitions/Session'
+  /1/sessions:
     get:
       tags:
-        - Publisher Session
-      summary: Read a PublisherSession by it's publisher specified local ID
-      operationId: readPublisherSessionByLocalId
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - name: localId
-          in: path
-          description: The unique publisher session local ID set by the publisher
-          required: true
-          type: string
-        - name: fields
-          in: query
-          description: The optional child properties to fully inflate
-          required: false
-          type: array
-          items:
-            type: string
-            enum:
-              - device
-              - publisher
-              - authenticatedBy
-          collectionFormat: csv
-      responses:
-        '200':
-          description: Successful operation
-          schema:
-            $ref: '#/definitions/PublisherSession'
-        '404':
-          description: No PublisherSessions found for specified ID
-  /1/publisherSessions:
-    get:
-      tags:
-        - Publisher Session
-      summary: Query for PublisherSession values that match a set of criteria
-      operationId: filterPublisherSession
+        - Session
+      summary: Query for Session values that match a set of criteria
+      operationId: filterSession
       produces:
         - application/xml
         - application/json
       parameters:
         - name: ids
           in: query
-          description: The unique PublisherSession IDs set by the wayf-cloud
+          description: The unique Session IDs set by the wayf-cloud
           required: false
           type: array
           items:
@@ -449,9 +474,9 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/PublisherSession'
+              $ref: '#/definitions/Session'
         '404':
-          description: No PublisherSessions found for specified ID
+          description: No Sessions found for specified ID
 definitions:
   Device:
     type: object
@@ -466,14 +491,14 @@ definitions:
           - ACTIVE
       info:
         $ref: '#/definitions/DeviceInfo'
-      idps:
+      idpHistory:
         type: array
         items:
           $ref: '#/definitions/IdentityProvider'
       sessions:
         type: array
         items:
-          $ref: '#/definitions/PublisherSession'
+          $ref: '#/definitions/Session'
       createdDate:
         type: string
         format: date-time
@@ -489,7 +514,7 @@ definitions:
         type: string
     xml:
       name: DeviceInfo
-  PublisherSession:
+  Session:
     type: object
     properties:
       id:
@@ -518,7 +543,7 @@ definitions:
         type: string
         format: date-time
     xml:
-      name: PublisherSession
+      name: Session
   Publisher:
     type: object
     properties:
@@ -541,12 +566,15 @@ definitions:
       name: Publisher
   IdentityProvider:
     discriminator: type
-    required: type
+    required:
+      - type
+      - entityId
     type: object
     properties:
       id:
         type: string
         format: uuid
+        readOnly: true
       type:
         type: string
         enum:
@@ -558,9 +586,11 @@ definitions:
       createdDate:
         type: string
         format: date-time
+        readOnly: true
       modifiedDate:
         type: string
         format: date-time
+        readOnly: true
     xml:
       name: IdentityProvider
   SamlEntity:
@@ -591,3 +621,16 @@ definitions:
             type: string
             enum:
             - OPEN_ATHENS
+  IdentityProviderUsage:
+    type: object
+    properties:
+      lastActiveDate:
+        type: string
+        format: date-time
+      frequency:
+        type: number
+        description: "The frequency of which this IdentityProvider is used. The frequency is determined as a percentage of how often this was used in comparison to the last 50 logins. For example, 40 uses in the last 50 authentications would used a frequency of 80.0"
+      entity:
+        $ref: '#/definitions/IdentityProvider'
+    xml:
+      name: IdentityProviderUsage
