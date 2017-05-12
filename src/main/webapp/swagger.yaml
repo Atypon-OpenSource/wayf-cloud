@@ -19,7 +19,7 @@ tags:
   - name: Publisher Actions
     description: A set of endpoints that allow a publisher to update and read device data by a localId. These endpoints require the publisher's API token be set in the authorization header.
   - name: Administrative Actions
-    description: The portion of the API that allows administrators to maintain the wayf-cloud.
+    description: The portion of the API that allows administrators to maintain the wayf-cloud. A user must have a known administrator API token set in the Authorization header to access this functionality.
   - name: Device
   - name: Publisher
   - name: Session
@@ -128,6 +128,13 @@ paths:
         - application/json
       security:
         - AdministratorKey: []
+      parameters:
+        - in: body
+          name: body
+          description: Publishser information to be stored
+          required: true
+          schema:
+            $ref: '#/definitions/Publisher'
       responses:
         '200':
           description: successful operation
@@ -233,6 +240,8 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/IdentityProvider'
+      security:
+        - AdministratorKey: []
       responses:
         '201':
           description: Successful operation
@@ -254,6 +263,9 @@ paths:
           required: true
           type: string
           format: uuid
+      security:
+        - AdministratorKey: []
+        - PublisherKey: []
       responses:
         '200':
           description: Successful operation
@@ -311,6 +323,8 @@ paths:
           required: true
           type: string
           format: uuid
+      security:
+        - PublisherKey: []
       responses:
         '200':
           description: Succesful operation
@@ -332,6 +346,8 @@ paths:
           required: true
           type: string
           format: uuid
+      security:
+        - DeviceIdHeader: []
       responses:
         '204':
           description: IdentityProvider successfully forgotton
@@ -391,6 +407,9 @@ paths:
               - publisher
               - authenticatedBy
           collectionFormat: csv
+      security:
+        - AdministratorKey: []
+        - PublisherKey: []
       responses:
         '200':
           description: Successful operation
@@ -423,6 +442,9 @@ paths:
           required: true
           type: string
           format: uuid
+      security:
+        - AdministratorKey: []
+        - PublisherKey: []
       responses:
         '201':
           description: Successful operation
@@ -468,6 +490,9 @@ paths:
               - publisher
               - authenticatedBy
           collectionFormat: csv
+      security:
+        - AdministratorKey: []
+        - PublisherKey: []
       responses:
         '200':
           description: Successful operation
@@ -478,12 +503,36 @@ paths:
         '404':
           description: No Sessions found for specified ID
 definitions:
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+      phoneNumber:
+        type: string
+      createdDate:
+        type: string
+        format: date-time
+        readOnly: true
+      modifiedDate:
+        type: string
+        format: date-time
+        readOnly: true
   Device:
     type: object
     properties:
       id:
         type: string
         format: uuid
+        readOnly: true
       status:
         type: string
         description: Device Status
@@ -502,9 +551,11 @@ definitions:
       createdDate:
         type: string
         format: date-time
+        readOnly: true
       modifiedDate:
         type: string
         format: date-time
+        readOnly: true
     xml:
       name: Device
   DeviceInfo:
@@ -520,6 +571,7 @@ definitions:
       id:
         type: string
         format: uuid
+        readOnly: true
       localId:
         type: string
         description: Publisher specified unique ID
@@ -533,35 +585,61 @@ definitions:
         $ref: '#/definitions/IdentityProvider'
       publisher:
         $ref: '#/definitions/Publisher'
-      lastActiveDate:
-        type: string
-        format: date-time
       createdDate:
         type: string
         format: date-time
+        readOnly: true
       modifiedDate:
         type: string
         format: date-time
+        readOnly: true
     xml:
       name: Session
+  PublisherRegistration:
+    type: object
+    properties:
+      status:
+        type: string
+        enum:
+          - PENDING
+          - ACTIVE
+          - DENIED
+          - REVOKED
+          - SUSPENDED
+          - TERMINATED
+      applicationDate:
+        type: string
+        format: date-time
+      approvalDate:
+        type: string
+        format: date-time
+      contact:
+        $ref: '#/definitions/User'
   Publisher:
     type: object
     properties:
       id:
         type: string
         format: uuid
+        readOnly: true
       status:
         type: string
         enum:
           - ACTIVE
       name:
         type: string
+      admin:
+        $ref: '#/definitions/User'
+      registration:
+        $ref: '#/definitions/PublisherRegistration'
       createdDate:
         type: string
         format: date-time
+        readOnly: true
       modifiedDate:
         type: string
         format: date-time
+        readOnly: true
     xml:
       name: Publisher
   IdentityProvider:
@@ -627,9 +705,11 @@ definitions:
       lastActiveDate:
         type: string
         format: date-time
+        readOnly: true
       frequency:
         type: number
         description: "The frequency of which this IdentityProvider is used. The frequency is determined as a percentage of how often this was used in comparison to the last 50 logins. For example, 40 uses in the last 50 authentications would used a frequency of 80.0"
+        readOnly: true
       entity:
         $ref: '#/definitions/IdentityProvider'
     xml:
