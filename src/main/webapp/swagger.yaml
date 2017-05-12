@@ -192,6 +192,18 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Publisher'
+    delete:
+      tags:
+        - Publisher
+        - Administrative Actions
+      summary: Remove a publisher from the wayf-cloud
+      description: Remove a publisher from the wayf-cloud
+      security:
+        - AdministratorKey: []
+      responses:
+        '202':
+          description: Success
+
   /1/publishers:
     get:
       tags:
