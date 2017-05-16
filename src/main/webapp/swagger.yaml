@@ -4,7 +4,7 @@ info:
     This is the server portion of the WAYF system. For information about the
     latest builds, solution overview, or the source code visit
     https://github.com/atypon/wayf-cloud
-  version: Development Beta
+  version: "DevelopmentBeta"
   title: WAYF Cloud
   contact:
     email: mmason@atypon.com
@@ -60,7 +60,8 @@ paths:
           items:
             type: string
             enum:
-              - sessions
+              - activity
+              - entity
       responses:
         '200':
           description: Successful operation
@@ -154,10 +155,16 @@ paths:
       parameters:
         - name: id
           in: path
-          description: ID of publisher to read
+          description: ID of publisher to update
           required: true
           type: string
           format: uuid
+        - in: body
+          name: body
+          description: Publishser information to be stored
+          required: true
+          schema:
+            $ref: '#/definitions/Publisher'
       security:
         - AdministratorKey: []
       responses:
@@ -224,6 +231,12 @@ paths:
           items:
             type: string
             format: uuid
+        - name: codes
+          in: query
+          description: The publisher codes to search for
+          type: string
+          items:
+            type: string
       security:
         - AdministratorKey: []
       responses:
@@ -335,6 +348,12 @@ paths:
           required: true
           type: string
           format: uuid
+        - in: body
+          name: body
+          description: The identity provider used by the user
+          required: true
+          schema:
+            $ref: '#/definitions/IdentityProvider'
       security:
         - PublisherKey: []
       responses:
@@ -587,10 +606,6 @@ definitions:
       localId:
         type: string
         description: Publisher specified unique ID
-      status:
-        type: string
-        enum:
-          - ACTIVE
       device:
         $ref: '#/definitions/Device'
       authenticatedBy:
@@ -634,16 +649,16 @@ definitions:
         type: string
         format: uuid
         readOnly: true
+      code:
+        type: string
       status:
         type: string
         enum:
           - ACTIVE
       name:
         type: string
-      admin:
+      contact:
         $ref: '#/definitions/User'
-      registration:
-        $ref: '#/definitions/PublisherRegistration'
       createdDate:
         type: string
         format: date-time
@@ -658,7 +673,6 @@ definitions:
     discriminator: type
     required:
       - type
-      - entityId
     type: object
     properties:
       id:
@@ -689,7 +703,11 @@ definitions:
     allOf:
       - $ref: '#/definitions/IdentityProvider'
       - type: object
+        required:
+          - entityId
         properties:
+          entityId:
+            type: string
           federationId:
             type: string
           type:
@@ -702,7 +720,12 @@ definitions:
     allOf:
       - $ref: '#/definitions/IdentityProvider'
       - type: object
+        required:
+          - entityId
+          - organizationId
         properties:
+          entityId:
+            type: string
           scope:
             type: string
           organizationId:
@@ -711,6 +734,22 @@ definitions:
             type: string
             enum:
             - OPEN_ATHENS
+  OauthEntity:
+    type: object
+    allOf:
+      - $ref: '#/definitions/IdentityProvider'
+      - type: object
+        required:
+          - provider
+        properties:
+          provider:
+            type: string
+            enum:
+            - FACEBOOK
+            - GOOGLE
+            - TWITTER
+            - LINKED_IN
+            - ORCID
   IdentityProviderUsage:
     type: object
     properties:
