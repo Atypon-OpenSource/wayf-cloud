@@ -298,7 +298,32 @@ paths:
             $ref: '#/definitions/IdentityProvider'
         '404':
           description: No Identity Providers found for specified ID
-  '/1/device/{localId}/idpHistory':
+  '/1/device/{localId}':
+    patch:
+      tags:
+        - Publisher Actions
+        - Device
+      summary: Associate the user's device with a publisher by a localId
+      description: Associate the user's device with a publisher by a localId. This behaves the same whether this is the device's first time with the publisher or a return visit. This will log the activity as a DeviceActivity object on the device.
+      operationId: createLocalIdOrAddActivity
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: localId
+          in: path
+          description: The localId used by a publisher to identify a device
+          required: true
+          type: string
+          format: uuid
+      security:
+        - PublisherKey: []
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Device'
+  '/1/device/{localId}/history':
     get:
       tags:
         - Publisher Actions
@@ -330,7 +355,7 @@ paths:
               $ref: '#/definitions/IdentityProviderUsage'
         '404':
           description: No devices found for the localId
-  '/1/device/{localId}/idpHistory/entity':
+  '/1/device/{localId}/history/idp':
     post:
       tags:
         - Publisher Actions
@@ -363,7 +388,7 @@ paths:
             $ref: '#/definitions/IdentityProvider'
         '404':
           description: No devices found for the localId
-  /1/mydevice/idpHistory/entity/{id}:
+  /1/mydevice/history/idp/{id}:
     delete:
       tags:
         - End User Actions
@@ -382,118 +407,43 @@ paths:
       responses:
         '204':
           description: IdentityProvider successfully forgotton
-  /1/session:
-    post:
+  /1/device/{localId}/history/idp/{id}:
+    delete:
       tags:
-        - Administrative Actions
-        - Session
-      summary: Create a new Session
-      description: Create a new Session. The invoking is required to specify a "localId" value that is unique across all of their Sessions. If a "deviceId" field is populated in the cookie header, this will be automatically set as the device on the request. If no "deviceId" is present, the server will create a new Device and set that as the "device." The "publisher" field is populated based upon the currently authenticated publisher.
-      operationId: createSession
-      consumes:
-        - application/json
-        - application/xml
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          description: Session information to be stored
-          required: true
-          schema:
-            $ref: '#/definitions/Session'
-      security:
-        - PublisherKey: []
-      responses:
-        '201':
-          description: Successful operation
-          schema:
-            $ref: '#/definitions/Session'
-  '/1/session/{id}':
-    get:
-      tags:
-        - Session
-      summary: Read a Session by it's unique wayf ID
-      operationId: readSession
-      produces:
-        - application/xml
-        - application/json
+        - Publisher Actions
+        - Identity Provider
+      summary: Remove IdentityProvider from list of available authentication mechanisms
+      description: Invalidate all sessions that used the specified IdentityProvider as their authentication source. This will prevent the entity from coming back in on the device's idpHistory field
       parameters:
         - name: id
           in: path
-          description: The unique Session ID set by the wayf-cloud
+          description: The IdentityProvider's ID
           required: true
           type: string
           format: uuid
-        - name: fields
-          in: query
-          description: The optional child properties to fully inflate
-          required: false
-          type: array
-          items:
-            type: string
-            enum:
-              - device
-              - publisher
-              - authenticatedBy
-          collectionFormat: csv
-      security:
-        - AdministratorKey: []
-        - PublisherKey: []
-      responses:
-        '200':
-          description: Successful operation
-          schema:
-            $ref: '#/definitions/Session'
-        '404':
-          description: No Sessions found for specified ID
-    put:
-      tags:
-        - Session
-      summary: Update the Session
-      description: ''
-      operationId: updateSession
-      consumes:
-        - application/json
-        - application/xml
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          description: The updated Session
-          required: true
-          schema:
-            $ref: '#/definitions/Session'
-        - name: id
+        - name: localId
           in: path
-          description: The unique publisher session local ID set by the wayf cloud
+          description: The local ID  assigned by the publisher
           required: true
           type: string
-          format: uuid
       security:
-        - AdministratorKey: []
-        - PublisherKey: []
+        - DeviceIdHeader: []
       responses:
-        '201':
-          description: Successful operation
-          schema:
-            $ref: '#/definitions/Session'
-  /1/sessions:
+        '204':
+          description: IdentityProvider successfully forgotton
+  /1/activity:
     get:
       tags:
-        - Session
+        - Device Access Activity
       summary: Query for Session values that match a set of criteria
       operationId: filterSession
       produces:
         - application/xml
         - application/json
       parameters:
-        - name: ids
+        - name: localIds
           in: query
-          description: The unique Session IDs set by the wayf-cloud
+          description: The localIds set by the publisher
           required: false
           type: array
           items:
@@ -530,7 +480,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Session'
+              $ref: '#/definitions/DeviceAccess'
         '404':
           description: No Sessions found for specified ID
 definitions:
@@ -571,14 +521,14 @@ definitions:
           - ACTIVE
       info:
         $ref: '#/definitions/DeviceInfo'
-      idpHistory:
+      history:
         type: array
         items:
-          $ref: '#/definitions/IdentityProvider'
-      sessions:
+          $ref: '#/definitions/IdentityProviderUsage'
+      activity:
         type: array
         items:
-          $ref: '#/definitions/Session'
+          $ref: '#/definitions/DeviceAccess'
       createdDate:
         type: string
         format: date-time
@@ -596,7 +546,7 @@ definitions:
         type: string
     xml:
       name: DeviceInfo
-  Session:
+  DeviceAccess:
     type: object
     properties:
       id:
@@ -608,10 +558,16 @@ definitions:
         description: Publisher specified unique ID
       device:
         $ref: '#/definitions/Device'
-      authenticatedBy:
+      identityProvider:
         $ref: '#/definitions/IdentityProvider'
       publisher:
         $ref: '#/definitions/Publisher'
+      type:
+        type: string
+        enum:
+          - REMOVE_IDP
+          - READ_IDP_HISTORY
+          - ADD_IDP
       createdDate:
         type: string
         format: date-time
@@ -759,9 +715,9 @@ definitions:
         readOnly: true
       frequency:
         type: number
-        description: "The frequency of which this IdentityProvider is used. The frequency is determined as a percentage of how often this was used in comparison to the last 50 logins. For example, 40 uses in the last 50 authentications would used a frequency of 80.0"
+        description: "The frequency of which this IdentityProvider is used. The frequency is determined as a percentage of how often this was used in comparison to the last 50 logins. For example, 40 uses in the last 50 authentications would result in a frequency of 80.0"
         readOnly: true
-      entity:
+      idp:
         $ref: '#/definitions/IdentityProvider'
     xml:
       name: IdentityProviderUsage
