@@ -35,7 +35,7 @@ import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
         @Type(value = SamlEntity.class, name = "SAML"),
         @Type(value = OauthEntity.class, name = "OAUTH")
 })
-public abstract class IdentityProvider {
+public class IdentityProvider {
     private Long id;
 
     private Date createdDate;
@@ -68,5 +68,7 @@ public abstract class IdentityProvider {
         this.modifiedDate = modifiedDate;
     }
 
-    public abstract IdentityProviderType getType();
+    public IdentityProviderType getType() {
+        return null;
+    }
 }

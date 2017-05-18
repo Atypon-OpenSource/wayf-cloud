@@ -52,7 +52,7 @@ public class WayfGuiceModule extends AbstractModule {
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
             Properties properties = new Properties();
-            properties.load(classLoader.getResourceAsStream("dao/publisher-session-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/device-access-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/publisher-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/device-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/open-athens-entity-dao-db.properties"));

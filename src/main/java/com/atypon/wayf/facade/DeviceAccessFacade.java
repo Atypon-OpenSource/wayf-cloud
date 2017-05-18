@@ -25,8 +25,7 @@ import io.reactivex.Single;
 public interface DeviceAccessFacade {
     Single<DeviceAccess> create(DeviceAccess publisherSession);
     Single<DeviceAccess> read(DeviceAccessQuery query);
-    Single<DeviceAccess> update(DeviceAccess publisherSession);
-    Completable delete(Long id);
+
     Observable<DeviceAccess> filter(DeviceAccessQuery query);
 
     Completable addIdpRelationship(DeviceAccess publisherSession);

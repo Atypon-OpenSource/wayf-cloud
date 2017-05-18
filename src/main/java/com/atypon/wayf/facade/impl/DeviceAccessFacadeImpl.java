@@ -103,16 +103,6 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
     }
 
     @Override
-    public Single<DeviceAccess> update(DeviceAccess deviceAccess) {
-        return deviceAccessDao.update(deviceAccess);
-    }
-
-    @Override
-    public Completable delete(Long id) {
-        return deviceAccessDao.delete(id);
-    }
-
-    @Override
     public Completable addIdpRelationship(DeviceAccess deviceAccess) {
         LOG.debug("Adding relationship");
 
@@ -130,7 +120,7 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
                 })
 
                 // Save the updated Publisher Session
-                .flatMap(deviceAccessToPersist -> update(deviceAccessToPersist))
+               // .flatMap(deviceAccessToPersist -> update(deviceAccessToPersist))
                 .toCompletable();
     }
 
