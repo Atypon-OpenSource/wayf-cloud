@@ -23,28 +23,28 @@ import java.util.Collection;
 public class DeviceQuery {
     public static final String SESSIONS = "sessions";
 
-    private String id;
-    private Collection<String> ids;
+    private String globalId;
+    private Collection<String> globalIds;
     private InflationPolicy inflationPolicy;
 
     public DeviceQuery() {
     }
 
-    public String getId() {
-        return id;
+    public String getGlobalId() {
+        return globalId;
     }
 
-    public DeviceQuery setId(String id) {
-        this.id = id;
+    public DeviceQuery setGlobalId(String globalId) {
+        this.globalId = globalId;
         return this;
     }
 
-    public Collection<String> getIds() {
-        return ids;
+    public Collection<String> getGlobalIds() {
+        return globalIds;
     }
 
-    public DeviceQuery setIds(Collection<String> ids) {
-        this.ids = ids;
+    public DeviceQuery setGlobalIds(Collection<String> globalIds) {
+        this.globalIds = globalIds;
         return this;
     }
 
@@ -52,8 +52,8 @@ public class DeviceQuery {
      * Database use only
      * @return
      */
-    public boolean isNullIds() {
-        return ids == null;
+    public boolean isNullGlobalIds() {
+        return globalIds == null;
     }
 
     public InflationPolicy getInflationPolicy() {

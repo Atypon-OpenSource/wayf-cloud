@@ -68,12 +68,10 @@ public class DeviceDaoDbImpl implements DeviceDao {
     public Single<Device> create(Device device) {
         LOG.debug("Creating device [{}] in the DB", device);
 
-        device.setId(UUID.randomUUID().toString());
-
         return Single.just(device)
                 .compose((single) -> DaoPolicies.applySingle(single))
                 .flatMap((_device) -> dbExecutor.executeUpdate(createSql, device))
-                .flatMapMaybe((genId) -> read(new DeviceQuery().setId(device.getId())))
+                .flatMapMaybe((genId) -> read(new DeviceQuery().setGlobalId(device.getGlobalId())))
                 .toSingle();
     }
 

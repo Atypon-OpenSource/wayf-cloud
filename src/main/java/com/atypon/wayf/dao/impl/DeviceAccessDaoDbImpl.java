@@ -16,11 +16,11 @@
 
 package com.atypon.wayf.dao.impl;
 
-import com.atypon.wayf.database.DbExecutor;
-import com.atypon.wayf.dao.PublisherSessionDao;
+import com.atypon.wayf.dao.DeviceAccessDao;
 import com.atypon.wayf.data.cache.KeyValueCache;
-import com.atypon.wayf.data.publisher.session.PublisherSession;
-import com.atypon.wayf.data.publisher.session.PublisherSessionQuery;
+import com.atypon.wayf.data.device.access.DeviceAccess;
+import com.atypon.wayf.data.device.access.DeviceAccessQuery;
+import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.reactivex.DaoPolicies;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -36,8 +36,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Singleton
-public class PublisherSessionDaoDbImpl implements PublisherSessionDao, KeyValueCache<String, String> {
-    private static Logger LOG = LoggerFactory.getLogger(com.atypon.wayf.dao.impl.PublisherSessionDaoDbImpl.class);
+public class DeviceAccessDaoDbImpl implements DeviceAccessDao, KeyValueCache<String, Long> {
+    private static Logger LOG = LoggerFactory.getLogger(com.atypon.wayf.dao.impl.DeviceAccessDaoDbImpl.class);
 
     @Inject
     @Named("publisher-session.dao.db.create")
@@ -62,39 +62,39 @@ public class PublisherSessionDaoDbImpl implements PublisherSessionDao, KeyValueC
     @Inject
     private DbExecutor dbExecutor;
 
-    public PublisherSessionDaoDbImpl() {
+    public DeviceAccessDaoDbImpl() {
     }
 
     @Override
-    public Single<PublisherSession> create(PublisherSession publisherSession) {
-        return Single.just(publisherSession)
+    public Single<DeviceAccess> create(DeviceAccess deviceAccess) {
+        return Single.just(deviceAccess)
                 .compose((single) -> DaoPolicies.applySingle(single))
-                .flatMap((_publisherSession) -> dbExecutor.executeUpdate(createSql, publisherSession))
-                .flatMapMaybe((genId) -> read(publisherSession.getId()))
+                .flatMap((_deviceAccess) -> dbExecutor.executeUpdate(createSql, deviceAccess))
+                .flatMapMaybe((genId) -> read(deviceAccess.getId()))
                 .toSingle();
     }
 
     @Override
-    public Maybe<PublisherSession> read(String id) {
-        PublisherSession session = new PublisherSession();
+    public Maybe<DeviceAccess> read(Long id) {
+        DeviceAccess session = new DeviceAccess();
         session.setId(id);
 
         return Maybe.just(session)
                 .compose((maybe) -> DaoPolicies.applyMaybe(maybe))
-                .flatMap((_session) -> dbExecutor.executeSelectFirst(readSql, _session, PublisherSession.class));
+                .flatMap((_session) -> dbExecutor.executeSelectFirst(readSql, _session, DeviceAccess.class));
     }
 
     @Override
-    public Single<PublisherSession> update(PublisherSession publisherSession) {
-        return Single.just(publisherSession)
+    public Single<DeviceAccess> update(DeviceAccess deviceAccess) {
+        return Single.just(deviceAccess)
                 .compose((single) -> DaoPolicies.applySingle(single))
-                .flatMap((_publisherSession) -> dbExecutor.executeUpdate(updateSql, publisherSession))
-                .flatMapMaybe((genId) -> read(publisherSession.getId()))
+                .flatMap((_deviceAccess) -> dbExecutor.executeUpdate(updateSql, deviceAccess))
+                .flatMapMaybe((genId) -> read(deviceAccess.getId()))
                 .toSingle();
     }
 
     @Override
-    public Completable delete(String id) {
+    public Completable delete(Long id) {
         Map<String, Object> args = new HashMap<>();
         args.put("id", id);
 
@@ -103,24 +103,24 @@ public class PublisherSessionDaoDbImpl implements PublisherSessionDao, KeyValueC
     }
 
     @Override
-    public Observable<PublisherSession> filter(PublisherSessionQuery query) {
+    public Observable<DeviceAccess> filter(DeviceAccessQuery query) {
         return Observable.just(query)
                 .compose((observable) -> DaoPolicies.applyObservable(observable))
-                .flatMap((_query) -> dbExecutor.executeSelect(filterSql, _query, PublisherSession.class));
+                .flatMap((_query) -> dbExecutor.executeSelect(filterSql, _query, DeviceAccess.class));
     }
 
     @Override
-    public Completable put(String publisherId, String wayfId) {
+    public Completable put(String publisherId, Long wayfId) {
         return null;
     }
 
     @Override
-    public Maybe<String> get(String publisherId) {
-        PublisherSessionQuery query = new PublisherSessionQuery().setLocalId(publisherId);
+    public Maybe<Long> get(String publisherId) {
+        DeviceAccessQuery query = new DeviceAccessQuery().setLocalId(publisherId);
 
         return Maybe.just(query)
                 .compose((maybe) -> DaoPolicies.applyMaybe(maybe))
-                .flatMap((_query) -> dbExecutor.executeSelectFirst(filterSql, _query, PublisherSession.class))
-                .map((_publisherSession) -> _publisherSession.getId());
+                .flatMap((_query) -> dbExecutor.executeSelectFirst(filterSql, _query, DeviceAccess.class))
+                .map((_deviceAccess) -> _deviceAccess.getId());
     }
 }

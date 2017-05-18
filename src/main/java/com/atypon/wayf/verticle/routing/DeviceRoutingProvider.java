@@ -93,12 +93,12 @@ public class DeviceRoutingProvider implements RoutingProvider {
         }
 
         String id = RequestReader.readPathArgument(routingContext, DEVICE_ID_PARAM_NAME);
-        query.setId(id);
+        query.setGlobalId(id);
 
         String ids = RequestReader.getQueryValue(routingContext, "ids");
         if (ids != null) {
             String[] idArray = ids.split(",");
-            query.setIds(Lists.newArrayList(idArray));
+            query.setGlobalIds(Lists.newArrayList(idArray));
         }
 
         return query;

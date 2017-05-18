@@ -26,9 +26,9 @@ import io.reactivex.Single;
 
 public interface PublisherDao {
     Single<Publisher> create(Publisher publisher);
-    Maybe<Publisher> read(String id);
+    Maybe<Publisher> read(Long id);
     Single<Publisher> update(Publisher publisher);
-    Completable delete(String id);
+    Completable delete(Long id);
 
     Observable<Publisher> filter(PublisherQuery filter);
 }

@@ -14,79 +14,48 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data.publisher;
-
-import com.atypon.wayf.data.user.User;
+package com.atypon.wayf.data.identity;
 
 import java.util.Date;
 
-public class Publisher {
-    private Long id;
-    private PublisherStatus status;
-
-    private String code;
-    private String name;
-
-   private User contact;
+public class OauthEntity extends IdentityProvider {
+    private OauthProvider provider;
 
     private Date createdDate;
     private Date modifiedDate;
 
-    public Publisher() {
+    public OauthEntity() {
     }
 
-    public Long getId() {
-        return id;
+    @Override
+    public IdentityProviderType getType() {
+        return IdentityProviderType.OAUTH;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public OauthProvider getProvider() {
+        return provider;
     }
 
-    public PublisherStatus getStatus() {
-        return status;
+    public void setProvider(OauthProvider provider) {
+        this.provider = provider;
     }
 
-    public void setStatus(PublisherStatus status) {
-        this.status = status;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public User getContact() {
-        return contact;
-    }
-
-    public void setContact(User contact) {
-        this.contact = contact;
-    }
-
+    @Override
     public Date getCreatedDate() {
         return createdDate;
     }
 
+    @Override
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
     }
 
+    @Override
     public Date getModifiedDate() {
         return modifiedDate;
     }
 
+    @Override
     public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
     }

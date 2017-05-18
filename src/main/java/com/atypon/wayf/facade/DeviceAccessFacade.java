@@ -16,18 +16,18 @@
 
 package com.atypon.wayf.facade;
 
-import com.atypon.wayf.data.publisher.session.PublisherSession;
-import com.atypon.wayf.data.publisher.session.PublisherSessionQuery;
+import com.atypon.wayf.data.device.access.DeviceAccess;
+import com.atypon.wayf.data.device.access.DeviceAccessQuery;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
-public interface PublisherSessionFacade {
-    Single<PublisherSession> create(PublisherSession publisherSession);
-    Single<PublisherSession> read(PublisherSessionQuery query);
-    Single<PublisherSession> update(PublisherSession publisherSession);
-    Completable delete(String id);
-    Observable<PublisherSession> filter(PublisherSessionQuery query);
+public interface DeviceAccessFacade {
+    Single<DeviceAccess> create(DeviceAccess publisherSession);
+    Single<DeviceAccess> read(DeviceAccessQuery query);
+    Single<DeviceAccess> update(DeviceAccess publisherSession);
+    Completable delete(Long id);
+    Observable<DeviceAccess> filter(DeviceAccessQuery query);
 
-    Completable addIdpRelationship(PublisherSession publisherSession);
+    Completable addIdpRelationship(DeviceAccess publisherSession);
 }

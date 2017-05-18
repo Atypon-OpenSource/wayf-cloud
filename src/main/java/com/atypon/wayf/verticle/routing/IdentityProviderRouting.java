@@ -65,6 +65,6 @@ public class IdentityProviderRouting implements RoutingProvider {
 
         return Single.just(routingContext)
                 .map((rc) -> RequestReader.readPathArgument(rc, IDENTITY_PROVIDER_ID_PARAM_NAME))
-                .flatMap((requestIdentityProviderId) -> identityProviderFacade.read(requestIdentityProviderId));
+                .flatMap((requestIdentityProviderId) -> identityProviderFacade.read(Long.valueOf(requestIdentityProviderId)));
     }
 }

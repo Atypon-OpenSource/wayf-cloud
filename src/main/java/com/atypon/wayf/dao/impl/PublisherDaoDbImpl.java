@@ -70,17 +70,15 @@ public class PublisherDaoDbImpl implements PublisherDao {
     public Single<Publisher> create(Publisher publisher) {
         LOG.debug("Creating publisher [{}] in the DB", publisher);
 
-        publisher.setId(UUID.randomUUID().toString());
-
         return Single.just(publisher)
                 .compose((single) -> DaoPolicies.applySingle(single))
                 .flatMap((_publisher) -> dbExecutor.executeUpdate(createSql, _publisher))
-                .flatMapMaybe((genId) -> read(publisher.getId()))
+                .flatMapMaybe((genId) -> read(genId))
                 .toSingle();
     }
 
     @Override
-    public Maybe<Publisher> read(String id) {
+    public Maybe<Publisher> read(Long id) {
         LOG.debug("Reading publisher with id [{}] in Neo4J", id);
 
         Publisher publisher = new Publisher();
@@ -97,7 +95,7 @@ public class PublisherDaoDbImpl implements PublisherDao {
     }
 
     @Override
-    public Completable delete(String id) {
+    public Completable delete(Long id) {
         Map<String, Object> args = new HashMap<>();
         args.put("id", id);
 

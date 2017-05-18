@@ -24,13 +24,18 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 import java.util.Map;
 
 @Singleton
 public class DbExecutor {
     private static final Logger LOG = LoggerFactory.getLogger(DbExecutor.class);
+
+    private static final Integer DEFAULT_LIMIT = 30;
+    private static final Integer DEFAULT_OFFSET = 0;
 
     public static final String LIMIT = "limit";
     public static final String OFFSET = "offset";
@@ -64,15 +69,17 @@ public class DbExecutor {
         return Observable.fromIterable(namedParameterJdbcTemplate.query(query, arguments, new NestedFieldRowMapper(returnType)));
     }
 
-    public Single<Integer> executeUpdate(String query, Object arguments) {
+    public Single<Long> executeUpdate(String query, Object arguments) {
         return executeUpdate(query, QueryMapper.buildQueryArguments(query, arguments));
     }
 
-    public Single<Integer> executeUpdate(String query, Map<String, Object> arguments) {
+    public Single<Long> executeUpdate(String query, Map<String, Object> arguments) {
         LOG.debug("Running update [{}] with values [{}]", query, arguments);
 
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         return Single.just(query)
-                .map((ignored) ->  namedParameterJdbcTemplate.update(query, arguments));
+                .map((ignored) ->  namedParameterJdbcTemplate.update(query, new MapSqlParameterSource(arguments), keyHolder))
+                .map((ignored) -> keyHolder.getKey() == null? null : keyHolder.getKey().longValue());
 
     }
 }

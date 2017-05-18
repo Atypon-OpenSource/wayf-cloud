@@ -14,40 +14,38 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data.publisher.session;
+package com.atypon.wayf.data.device.access;
 
-import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.device.Device;
+import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.publisher.Publisher;
 
 import java.util.Date;
 
-public class PublisherSession {
-    private String id;
+public class DeviceAccess {
+    private Long id;
 
     private String localId;
 
-    private PublisherSessionStatus status;
-
     private Device device;
 
-    private IdentityProvider authenticatedBy;
+    private IdentityProvider identityProvider;
 
     private Publisher publisher;
 
-    private Date lastActiveDate;
+    private DeviceAccessType type;
 
     private Date createdDate;
     private Date modifiedDate;
 
-    public PublisherSession() {
+    public DeviceAccess() {
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -59,14 +57,6 @@ public class PublisherSession {
         this.localId = localId;
     }
 
-    public PublisherSessionStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(PublisherSessionStatus status) {
-        this.status = status;
-    }
-
     public Device getDevice() {
         return device;
     }
@@ -75,12 +65,12 @@ public class PublisherSession {
         this.device = device;
     }
 
-    public IdentityProvider getAuthenticatedBy() {
-        return authenticatedBy;
+    public IdentityProvider getIdentityProvider() {
+        return identityProvider;
     }
 
-    public void setAuthenticatedBy(IdentityProvider authenticatedBy) {
-        this.authenticatedBy = authenticatedBy;
+    public void setIdentityProvider(IdentityProvider identityProvider) {
+        this.identityProvider = identityProvider;
     }
 
     public Publisher getPublisher() {
@@ -91,12 +81,12 @@ public class PublisherSession {
         this.publisher = publisher;
     }
 
-    public Date getLastActiveDate() {
-        return lastActiveDate;
+    public DeviceAccessType getType() {
+        return type;
     }
 
-    public void setLastActiveDate(Date lastActiveDate) {
-        this.lastActiveDate = lastActiveDate;
+    public void setType(DeviceAccessType type) {
+        this.type = type;
     }
 
     public Date getCreatedDate() {

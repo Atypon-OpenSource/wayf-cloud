@@ -22,7 +22,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.Date;
 
-import static com.fasterxml.jackson.annotation.JsonTypeInfo.*;
+import static com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 @JsonTypeInfo(
         use = Id.NAME,
@@ -31,11 +32,11 @@ import static com.fasterxml.jackson.annotation.JsonTypeInfo.*;
         visible = true)
 @JsonSubTypes({
         @Type(value = OpenAthensEntity.class, name = "OPEN_ATHENS"),
-        @Type(value = SamlEntity.class, name = "SAML")
+        @Type(value = SamlEntity.class, name = "SAML"),
+        @Type(value = OauthEntity.class, name = "OAUTH")
 })
-public class IdentityProvider {
-    private String id;
-    private String entityId;
+public abstract class IdentityProvider {
+    private Long id;
 
     private Date createdDate;
     private Date modifiedDate;
@@ -43,19 +44,11 @@ public class IdentityProvider {
     public IdentityProvider() {
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public String getEntityId() {
-        return entityId;
-    }
-
-    public void setEntityId(String entityId) {
-        this.entityId = entityId;
-    }
-
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -75,7 +68,5 @@ public class IdentityProvider {
         this.modifiedDate = modifiedDate;
     }
 
-    public IdentityProviderType getType() {
-        return null;
-    }
+    public abstract IdentityProviderType getType();
 }

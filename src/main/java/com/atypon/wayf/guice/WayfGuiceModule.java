@@ -24,6 +24,7 @@ import com.atypon.wayf.data.InflationPolicyParser;
 import com.atypon.wayf.data.InflationPolicyParserQueryParamImpl;
 import com.atypon.wayf.data.cache.CascadingCache;
 import com.atypon.wayf.data.identity.IdentityProviderType;
+import com.atypon.wayf.data.identity.OauthEntity;
 import com.atypon.wayf.data.identity.OpenAthensEntity;
 import com.atypon.wayf.data.identity.SamlEntity;
 import com.atypon.wayf.database.DbExecutor;
@@ -33,9 +34,6 @@ import com.google.inject.*;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.apache.commons.dbcp.BasicDataSource;
-import org.neo4j.driver.v1.AuthTokens;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.GraphDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -58,11 +56,12 @@ public class WayfGuiceModule extends AbstractModule {
             properties.load(classLoader.getResourceAsStream("dao/publisher-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/device-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/open-athens-entity-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/oauth-entity-dao-db.properties"));
 
             Names.bindProperties(binder(), properties);
 
-            bind(PublisherSessionFacade.class).to(PublisherSessionFacadeImpl.class);
-            bind(PublisherSessionDao.class).to(PublisherSessionDaoDbImpl.class);
+            bind(DeviceAccessFacade.class).to(DeviceAccessFacadeImpl.class);
+            bind(DeviceAccessDao.class).to(DeviceAccessDaoDbImpl.class);
 
             bind(DeviceFacade.class).to(DeviceFacadeImpl.class);
             bind(DeviceDao.class).to(DeviceDaoDbImpl.class);
@@ -129,22 +128,40 @@ public class WayfGuiceModule extends AbstractModule {
                 OpenAthensEntity.class);
     }
 
+    @Provides @Named("oauthEntity")
+    public IdentityProviderDao provideOauthEntityDao(DbExecutor dbExecutor) throws Exception {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+        Properties properties = new Properties();
+
+        properties.load(classLoader.getResourceAsStream("dao/oauth-entity-dao-db.properties"));
+
+        return new IdentityProviderDaoDbImpl(properties.getProperty("oauth-entity.dao.db.create"),
+                properties.getProperty("oauth-entity.dao.db.read"),
+                properties.getProperty("oauth-entity.dao.db.filter"),
+                dbExecutor,
+                OauthEntity.class);
+    }
+
     @Provides @Named("identityProviderDaoMap")
-    public Map<IdentityProviderType, IdentityProviderDao> provideIdentityProviderDaoMap(@Named("samlEntity") IdentityProviderDao samlDao, @Named("openAthensEntity") IdentityProviderDao openAthensDao) {
+    public Map<IdentityProviderType, IdentityProviderDao> provideIdentityProviderDaoMap(
+            @Named("samlEntity") IdentityProviderDao samlDao,
+            @Named("openAthensEntity") IdentityProviderDao openAthensDao,
+            @Named("oauthEntity") IdentityProviderDao oauthDao) {
         Map<IdentityProviderType, IdentityProviderDao> daoMap = new HashMap<>();
         daoMap.put(IdentityProviderType.SAML, samlDao);
         daoMap.put(IdentityProviderType.OPEN_ATHENS, openAthensDao);
-
+        daoMap.put(IdentityProviderType.OAUTH, oauthDao);
         return daoMap;
     }
 
     @Provides @Named("publisherIdCache")
-    public CascadingCache<String, String> providePublisherIdCache(@Named("publisherIdRedisDao") RedisDao l1, PublisherSessionDaoDbImpl l2) {
+    public CascadingCache<String, Long> providePublisherIdCache(@Named("publisherIdRedisDao") RedisDao l1, DeviceAccessDaoDbImpl l2) {
         return new CascadingCache(l1, l2);
     }
 
     @Provides @Named("identityProviderCache")
-    public CascadingCache<String, String> provideIdentityProviderCache(@Named("identityProviderRedisDao") RedisDao l1, IdentityProviderFacade l2) {
+    public CascadingCache<String, Long> provideIdentityProviderCache(@Named("identityProviderRedisDao") RedisDao l1, IdentityProviderFacade l2) {
         return new CascadingCache(l1, l2);
     }
 }

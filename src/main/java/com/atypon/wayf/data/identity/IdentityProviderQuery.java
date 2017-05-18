@@ -19,27 +19,27 @@ package com.atypon.wayf.data.identity;
 import java.util.Collection;
 
 public class IdentityProviderQuery {
-    private String id;
-    private Collection<String> ids;
+    private Long id;
+    private Collection<Long> ids;
     private String entityId;
 
     public IdentityProviderQuery() {
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public IdentityProviderQuery setId(String id) {
+    public IdentityProviderQuery setId(Long id) {
         this.id = id;
         return this;
     }
 
-    public Collection<String> getIds() {
+    public Collection<Long> getIds() {
         return ids;
     }
 
-    public IdentityProviderQuery setIds(Collection<String> ids) {
+    public IdentityProviderQuery setIds(Collection<Long> ids) {
         this.ids = ids;
         return this;
     }

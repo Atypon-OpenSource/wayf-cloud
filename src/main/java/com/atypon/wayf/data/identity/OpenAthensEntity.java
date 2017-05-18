@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class OpenAthensEntity extends IdentityProvider {
 
+    private String entityId;
     private String scope;
     private String organizationId;
 
@@ -31,6 +32,14 @@ public class OpenAthensEntity extends IdentityProvider {
     @JsonIgnore
     public IdentityProviderType getType() {
         return IdentityProviderType.OPEN_ATHENS;
+    }
+
+    public String getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(String entityId) {
+        this.entityId = entityId;
     }
 
     public String getScope() {

@@ -17,7 +17,7 @@
 package com.atypon.wayf.database;
 
 
-import com.atypon.wayf.data.publisher.session.PublisherSession;
+import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.database.NestedFieldBeanMapper;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,10 +35,10 @@ public class BeanMapperTest {
         row.put("id", "testId");
         row.put("device.id", "testDeviceId");
 
-        PublisherSession publisherSession = processor.map(row, PublisherSession.class);
+        DeviceAccess deviceAccess = processor.map(row, DeviceAccess.class);
 
-        Assert.assertEquals("testId", publisherSession.getId());
-        Assert.assertEquals("testDeviceId", publisherSession.getDevice().getId());
+        Assert.assertEquals("testId", deviceAccess.getId());
+        Assert.assertEquals("testDeviceId", deviceAccess.getDevice().getId());
     }
 
 

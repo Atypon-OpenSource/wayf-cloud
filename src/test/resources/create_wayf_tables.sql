@@ -39,53 +39,49 @@ CREATE TABLE `device` (
 --
 
 DROP TABLE IF EXISTS `identity_provider`;
-
-DROP TABLE IF EXISTS `saml_entity`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `saml_entity` (
-  `_id` int(11) NOT NULL AUTO_INCREMENT,
-  `id` varchar(36) NOT NULL,
-  `entity_id` varchar(50) NOT NULL,
-  `federation_id` varchar(50) NOT NULL,
+CREATE TABLE `identity_provider` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `type` varchar(25) NOT NULL,
+  `entity_id` varchar(50) NULL,
+  `scope` varchar(50) NULL,
+  `organization_id` varchar(50) NULL,
+  `federation_id` varchar(50) NULL,
+  `provider` varchar(25) NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`_id`),
+  PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
-DROP TABLE IF EXISTS `open_athens_entity`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `open_athens_entity` (
-  `_id` int(11) NOT NULL AUTO_INCREMENT,
-  `id` varchar(36) NOT NULL,
-  `entity_id` varchar(50) NOT NULL,
-  `scope` varchar(50) NOT NULL,
-  `organization_id` varchar(50) NOT NULL,
-  `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`_id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+DROP VIEW IF EXISTS `saml_entity`;
+CREATE VIEW `saml_entity` AS
+SELECT `id`,
+	`type`,
+    `entity_id`,
+    `federation_id`,
+    `created_date`,
+    `modified_date`
+  FROM identity_provider;
 
---
--- Table structure for table `institution`
---
+DROP VIEW IF EXISTS `open_athens_entity`;
+CREATE VIEW `open_athens_entity` AS
+SELECT `id`,
+	`type`,
+    `entity_id`,
+    `scope`,
+    `organization_id`,
+    `created_date`,
+    `modified_date`
+  FROM identity_provider;
 
-DROP TABLE IF EXISTS `institution`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `institution` (
-  `pk_id` int(11) NOT NULL AUTO_INCREMENT,
-  `id` varchar(36) DEFAULT NULL,
-  `name` varchar(50) DEFAULT NULL,
-  `description` varchar(150) DEFAULT NULL,
-  PRIMARY KEY (`pk_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10013 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+DROP VIEW IF EXISTS `oauth_entity`;
+CREATE VIEW `oauth_entity` AS
+SELECT `id`,
+	`type`,
+    `provider`,
+    `created_date`,
+    `modified_date`
+  FROM identity_provider;
 
 --
 -- Table structure for table `publisher`
@@ -95,16 +91,17 @@ DROP TABLE IF EXISTS `publisher`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `publisher` (
-  `_id` int(11) NOT NULL AUTO_INCREMENT,
-  `id` varchar(36) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
+  `code` varchar(50) NOT NULL,
   `status` varchar(15) NOT NULL,
+  `contact_id` int(11) NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`_id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
 
 --
 -- Table structure for table `publisher_session`

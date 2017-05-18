@@ -16,34 +16,15 @@
 
 package com.atypon.wayf.verticle.routing;
 
-import com.atypon.wayf.data.InflationPolicy;
-import com.atypon.wayf.data.InflationPolicyParser;
-import com.atypon.wayf.data.identity.IdentityProvider;
-import com.atypon.wayf.data.device.Device;
-import com.atypon.wayf.data.publisher.session.PublisherSession;
-import com.atypon.wayf.data.publisher.session.PublisherSessionQuery;
-import com.atypon.wayf.facade.PublisherSessionFacade;
-import com.atypon.wayf.request.RequestContextAccessor;
-import com.atypon.wayf.request.RequestReader;
-import com.atypon.wayf.verticle.WayfRequestHandler;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import io.reactivex.Completable;
-import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Singleton
 public class PublisherSessionRouting implements RoutingProvider {
+    @Override
+    public void addRoutings(Router router) {
+    }
+    /*
     private static final Logger LOG = LoggerFactory.getLogger(PublisherSessionRouting.class);
 
     private static final String PUBLISHER_SESSION_BASE_URL = "/1/publisherSession";
@@ -62,7 +43,7 @@ public class PublisherSessionRouting implements RoutingProvider {
     private static final String FILTER_PUBLISHER_SESSION = PUBLISHER_SESSION_BASE_URL + "s";
 
     @Inject
-    private PublisherSessionFacade publisherSessionFacade;
+    private DeviceAccessFacade deviceAccessFacade;
 
     @Inject
     private InflationPolicyParser<String> inflationPolicyParser;
@@ -100,7 +81,7 @@ public class PublisherSessionRouting implements RoutingProvider {
                         return requestPublisherSession;
                     }
                 )
-                .flatMap((requestPublisherSession) -> publisherSessionFacade.create(requestPublisherSession));
+                .flatMap((requestPublisherSession) -> deviceAccessFacade.create(requestPublisherSession));
     }
 
     public Single<PublisherSession> readPublisherSession(RoutingContext routingContext) {
@@ -108,7 +89,7 @@ public class PublisherSessionRouting implements RoutingProvider {
 
         return Single.just(routingContext)
                 .map((rc) -> buildQuery(routingContext))
-                .flatMap((query) -> publisherSessionFacade.read(query));
+                .flatMap((query) -> deviceAccessFacade.read(query));
     }
 
     public Single<PublisherSession> readPublisherSessionByLocalId(RoutingContext routingContext) {
@@ -116,7 +97,7 @@ public class PublisherSessionRouting implements RoutingProvider {
 
         return Single.just(routingContext)
                 .map((rc) -> buildQuery(rc))
-                .flatMapObservable((query) -> publisherSessionFacade.filter(query))
+                .flatMapObservable((query) -> deviceAccessFacade.filter(query))
                 .firstOrError();
     }
 
@@ -125,7 +106,7 @@ public class PublisherSessionRouting implements RoutingProvider {
 
         return Single.just(routingContext)
                 .flatMap((rc) -> RequestReader.readRequestBody(rc, PublisherSession.class))
-                .flatMap((requestPublisherSession) -> publisherSessionFacade.update(requestPublisherSession));
+                .flatMap((requestPublisherSession) -> deviceAccessFacade.update(requestPublisherSession));
     }
 
     public Completable addIdp(RoutingContext routingContext) {
@@ -144,7 +125,7 @@ public class PublisherSessionRouting implements RoutingProvider {
 
                     return publisherSession;
                 })
-                .flatMapCompletable((requestPublisherSession) -> publisherSessionFacade.addIdpRelationship(requestPublisherSession));
+                .flatMapCompletable((requestPublisherSession) -> deviceAccessFacade.addIdpRelationship(requestPublisherSession));
     }
 
     public Observable<PublisherSession> filter(RoutingContext routingContext) {
@@ -152,7 +133,7 @@ public class PublisherSessionRouting implements RoutingProvider {
 
         return Single.just(routingContext)
                 .map((rc) -> buildQuery(rc))
-                .flatMapObservable((publisherSessionFilter) -> publisherSessionFacade.filter(publisherSessionFilter));
+                .flatMapObservable((publisherSessionFilter) -> deviceAccessFacade.filter(publisherSessionFilter));
     }
 
     public Completable deletePublisherSession(RoutingContext routingContext) {
@@ -160,7 +141,7 @@ public class PublisherSessionRouting implements RoutingProvider {
 
         return Single.just(routingContext)
                 .map((rc) -> RequestReader.readPathArgument(rc, PUBLISHER_SESSION_ID_PARAM_NAME))
-                .flatMapCompletable((publisherSessionId) -> publisherSessionFacade.delete(publisherSessionId));
+                .flatMapCompletable((publisherSessionId) -> deviceAccessFacade.delete(publisherSessionId));
     }
 
     private PublisherSessionQuery buildQuery(RoutingContext routingContext) {
@@ -187,4 +168,5 @@ public class PublisherSessionRouting implements RoutingProvider {
 
         return sessionQuery;
     }
+    */
 }

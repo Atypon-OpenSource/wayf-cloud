@@ -24,7 +24,7 @@ import io.reactivex.Single;
 
 public interface IdentityProviderFacade extends KeyValueCache<String, String> {
     Single<IdentityProvider> create(IdentityProvider identityProvider);
-    Single<IdentityProvider> read(String id);
+    Single<IdentityProvider> read(Long id);
 
     Observable<IdentityProvider> filter(IdentityProviderQuery filter);
 

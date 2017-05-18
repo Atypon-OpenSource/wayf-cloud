@@ -51,12 +51,12 @@ public class IdentityProviderDaoDbImpl implements IdentityProviderDao {
         return Single.just(identityProvider)
                 .compose((single) -> DaoPolicies.applySingle(single))
                 .flatMap((_identityProvider) -> dbExecutor.executeUpdate(createSql, _identityProvider))
-                .flatMapMaybe((genId) -> read(identityProvider.getId()))
+                .flatMapMaybe((genId) -> read(Long.valueOf(genId)))
                 .toSingle();
     }
 
     @Override
-    public Maybe<IdentityProvider> read(String id) {
+    public Maybe<IdentityProvider> read(Long id) {
         IdentityProviderQuery query = new IdentityProviderQuery().setId(id);
 
         return Single.just(query)

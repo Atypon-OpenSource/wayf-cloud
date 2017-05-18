@@ -19,16 +19,16 @@ package com.atypon.wayf.data.publisher;
 import java.util.Collection;
 
 public class PublisherQuery {
-    private Collection<String> ids;
+    private Collection<Long> ids;
 
     public PublisherQuery() {
     }
 
-    public Collection<String> getIds() {
+    public Collection<Long> getIds() {
         return ids;
     }
 
-    public PublisherQuery setIds(Collection<String> ids) {
+    public PublisherQuery setIds(Collection<Long> ids) {
         this.ids = ids;
         return this;
     }

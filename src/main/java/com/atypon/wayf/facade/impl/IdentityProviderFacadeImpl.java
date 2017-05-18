@@ -49,7 +49,7 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
     @Inject
     @Named("identityProviderCache")
-    private CascadingCache<String, String> cache;
+    private CascadingCache<String, Long> cache;
 
     public IdentityProviderFacadeImpl() {
     }
@@ -58,14 +58,12 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     public Single<IdentityProvider> create(IdentityProvider identityProvider) {
         IdentityProviderDao dao = daosByType.get(identityProvider.getType());
 
-        identityProvider.setId(UUID.randomUUID().toString());
-
         return Single.just(identityProvider)
                 .flatMap(o_identityProvider -> dao.create(o_identityProvider));
     }
 
     @Override
-    public Single<IdentityProvider> read(String id) {
+    public Single<IdentityProvider> read(Long id) {
         Collection<IdentityProviderDao> daos = daosByType.values();
 
         return Observable.fromIterable(daos)
@@ -75,24 +73,7 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
     @Override
     public Single<IdentityProvider> resolve(IdentityProvider identityProvider) {
-        LOG.debug("Resolving identityProvider with id [{}] entityId [{}]", identityProvider.getId(), identityProvider.getEntityId());
-
-        return Maybe.concat(
-                        identityProvider.getId() != null? Maybe.just(identityProvider) : Maybe.empty(),
-
-                        Maybe.just(identityProvider)
-                                .map((_identityProvider) -> _identityProvider.getEntityId())
-                                .flatMap((entityId) -> cache.get(identityProvider.getEntityId()))
-                                .map((id) -> {
-                                            identityProvider.setId(id);
-                                            return identityProvider;
-                                }),
-
-                        Maybe.just(identityProvider)
-                                .map((_identityProvider) -> create(_identityProvider))
-                                .cast(IdentityProvider.class)
-                )
-                .firstOrError();
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -105,13 +86,11 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
     @Override
     public Maybe<String> get(String key) {
-        return filter(new IdentityProviderQuery().setEntityId(key))
-                .map(identityProvider -> identityProvider.getId())
-                .firstElement();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Completable put(String key, String value) {
-        return Completable.complete();
+        throw new UnsupportedOperationException();
     }
 }

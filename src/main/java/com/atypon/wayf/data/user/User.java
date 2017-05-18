@@ -16,22 +16,16 @@
 
 package com.atypon.wayf.data.user;
 
-import com.atypon.wayf.data.device.Device;
-import com.atypon.wayf.data.publisher.Publisher;
-
 import java.util.Date;
-import java.util.List;
 
 public class User {
-    private String id;
+    private Long id;
 
     private String firstName;
     private String lastName;
     private String email;
 
-    private List<Device> devices;
-
-    private List<Publisher> publishers;
+    private String phoneNumber;
 
     private Date createdDate;
     private Date modifiedDate;
@@ -39,11 +33,11 @@ public class User {
     public User() {
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -71,20 +65,12 @@ public class User {
         this.email = email;
     }
 
-    public List<Device> getDevices() {
-        return devices;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setDevices(List<Device> devices) {
-        this.devices = devices;
-    }
-
-    public List<Publisher> getPublishers() {
-        return publishers;
-    }
-
-    public void setPublishers(List<Publisher> publishers) {
-        this.publishers = publishers;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public Date getCreatedDate() {

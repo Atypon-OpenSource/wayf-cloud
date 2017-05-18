@@ -16,36 +16,38 @@
 
 package com.atypon.wayf.data.identity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Date;
 
-public class SamlEntity extends IdentityProvider {
+public class IdentityProviderUsage {
 
-    private String entityId;
-    private String federationId;
+    private Date lastActiveDate;
+    private Double frequency;
+    private IdentityProvider idp;
 
-    public SamlEntity() {
-        super();
+    public IdentityProviderUsage() {
     }
 
-    public String getEntityId() {
-        return entityId;
+    public Date getLastActiveDate() {
+        return lastActiveDate;
     }
 
-    public void setEntityId(String entityId) {
-        this.entityId = entityId;
+    public void setLastActiveDate(Date lastActiveDate) {
+        this.lastActiveDate = lastActiveDate;
     }
 
-    @Override
-    @JsonIgnore
-    public IdentityProviderType getType() {
-        return IdentityProviderType.SAML;
+    public Double getFrequency() {
+        return frequency;
     }
 
-    public String getFederationId() {
-        return federationId;
+    public void setFrequency(Double frequency) {
+        this.frequency = frequency;
     }
 
-    public void setFederationId(String federationId) {
-        this.federationId = federationId;
+    public IdentityProvider getIdp() {
+        return idp;
+    }
+
+    public void setIdp(IdentityProvider idp) {
+        this.idp = idp;
     }
 }

@@ -19,6 +19,7 @@ package com.atypon.wayf.dao.impl;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.data.publisher.PublisherStatus;
+import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.RequestContext;
@@ -33,6 +34,9 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class PublisherDaoDbImplTest {
 
@@ -49,47 +53,66 @@ public class PublisherDaoDbImplTest {
 
     @Test
     public void testCreate() {
+        User contact = new User();
+        contact.setId(456L);
+
         Publisher publisher = new Publisher();
         publisher.setName("Test Publisher");
+        publisher.setCode("test_publisher");
+        publisher.setContact(contact);
         publisher.setStatus(PublisherStatus.ACTIVE);
 
         Publisher createdPublisher = dao.create(publisher).blockingGet();
 
-        Assert.assertEquals(PublisherStatus.ACTIVE, createdPublisher.getStatus());
-        Assert.assertNotNull(createdPublisher.getId());
-        Assert.assertEquals("Test Publisher", createdPublisher.getName());
-        Assert.assertNotNull(createdPublisher.getCreatedDate());
+        assertNotNull(createdPublisher.getId());
+        assertNotNull(createdPublisher.getCreatedDate());
+        
+        assertEquals(PublisherStatus.ACTIVE, createdPublisher.getStatus());
+        assertEquals(publisher.getName(), createdPublisher.getName());
+        assertEquals(publisher.getCode(), createdPublisher.getCode());
+        assertEquals(publisher.getContact().getId(), createdPublisher.getContact().getId());
     }
 
     @Test
     public void testRead() {
+        User contact = new User();
+        contact.setId(456L);
+
         Publisher publisher = new Publisher();
         publisher.setName("Test Publisher");
         publisher.setStatus(PublisherStatus.ACTIVE);
+        publisher.setCode("test_publisher");
 
         Publisher createdPublisher = dao.create(publisher).blockingGet();
         Publisher readPublisher = dao.read(createdPublisher.getId()).blockingGet();
 
-        Assert.assertEquals(PublisherStatus.ACTIVE, readPublisher.getStatus());
-        Assert.assertNotNull(readPublisher.getId());
-        Assert.assertEquals("Test Publisher", readPublisher.getName());
-        Assert.assertNotNull(readPublisher.getCreatedDate());
+        assertNotNull(readPublisher.getCreatedDate());
+        assertEquals(createdPublisher.getId(), readPublisher.getId());
+        assertEquals(createdPublisher.getStatus(), readPublisher.getStatus());
+        assertEquals(createdPublisher.getName(), readPublisher.getName());
+        assertEquals(createdPublisher.getCode(), readPublisher.getCode());
+        assertEquals(createdPublisher.getContact().getId(), readPublisher.getContact().getId());
     }
 
     @Test
     public void testFilter() {
-        Map<String, Publisher> publishersById = new HashMap<>();
+        User contact = new User();
+        contact.setId(456L);
+
+        Map<Long, Publisher> publishersById = new HashMap<>();
 
         for (int i = 0; i < 5; i++) {
             Publisher publisher = new Publisher();
             publisher.setName("Test Publisher " + i);
             publisher.setStatus(PublisherStatus.ACTIVE);
+            publisher.setCode("test_publisher-" + i);
+            publisher.setContact(contact);
 
             Publisher createdPublisher = dao.create(publisher).blockingGet();
             publishersById.put(createdPublisher.getId(), createdPublisher);
         }
 
-        Assert.assertEquals(5, publishersById.keySet().size());
+        assertEquals(5, publishersById.keySet().size());
 
         PublisherQuery filter = new PublisherQuery();
         filter.setIds(Lists.newArrayList(publishersById.keySet()));
@@ -100,10 +123,12 @@ public class PublisherDaoDbImplTest {
 
         for (Publisher readPublisher : readPublishers) {
             Publisher expected = publishersById.get(readPublisher.getId());
-            Assert.assertEquals(expected.getId(), readPublisher.getId());
-            Assert.assertEquals(expected.getName(), readPublisher.getName());
-            Assert.assertEquals(expected.getStatus(), readPublisher.getStatus());
-            Assert.assertNotNull(readPublisher.getCreatedDate());
+            assertEquals(expected.getId(), readPublisher.getId());
+            assertEquals(expected.getName(), readPublisher.getName());
+            assertEquals(expected.getCode(), readPublisher.getCode());
+            assertEquals(expected.getContact().getId(), readPublisher.getContact().getId());
+            assertEquals(expected.getStatus(), readPublisher.getStatus());
+            assertNotNull(readPublisher.getCreatedDate());
         }
 
     }

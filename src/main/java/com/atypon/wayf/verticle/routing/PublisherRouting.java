@@ -72,7 +72,7 @@ public class PublisherRouting implements RoutingProvider {
 
         return Single.just(routingContext)
                 .map((rc) -> RequestReader.readPathArgument(rc, PUBLISHER_ID_PARAM_NAME))
-                .flatMap((publisherId) -> publisherFacade.read(publisherId));
+                .flatMap((publisherId) -> publisherFacade.read(Long.valueOf(publisherId)));
     }
 
     public Observable<Publisher> filterPublishers(RoutingContext routingContext) {
@@ -82,7 +82,12 @@ public class PublisherRouting implements RoutingProvider {
                 .map((rc) -> RequestReader.getQueryValue(rc, PUBLISHER_IDS_PARAM_NAME))
                 .flatMapObservable((idsArg) -> {
                         LOG.debug(idsArg);
-                        String[] ids = idsArg.split(",");
+                        String[] idsStr = idsArg.split(",");
+
+                        Long[] ids = new Long[idsStr.length];
+                        for (int i = 0; i < idsStr.length; i++) {
+                            ids[i] = Long.valueOf(idsStr[i]);
+                        }
                         PublisherQuery filter = new PublisherQuery();
                         filter.setIds(Lists.newArrayList(ids));
                         return  publisherFacade.filter(filter);

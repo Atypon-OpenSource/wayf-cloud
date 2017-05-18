@@ -63,7 +63,7 @@ public class DeviceDaoDbImplTest {
         device.setStatus(DeviceStatus.ACTIVE);
 
         Device createdDevice = dao.create(device).blockingGet();
-        Device readDevice = dao.read(new DeviceQuery().setId(createdDevice.getId())).blockingGet();
+        Device readDevice = dao.read(new DeviceQuery().setGlobalId(createdDevice.getGlobalId())).blockingGet();
 
         Assert.assertEquals(createdDevice.getId(), readDevice.getId());
         Assert.assertEquals(DeviceStatus.ACTIVE, readDevice.getStatus());

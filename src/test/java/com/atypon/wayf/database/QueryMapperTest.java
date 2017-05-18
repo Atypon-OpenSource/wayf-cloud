@@ -16,11 +16,11 @@
 
 package com.atypon.wayf.database;
 
+import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.database.QueryMapper;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.session.PublisherSession;
-import com.atypon.wayf.data.publisher.session.PublisherSessionStatus;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -32,36 +32,32 @@ public class QueryMapperTest {
 
     @Test
     public void testQueryMapper() throws Exception {
-        PublisherSession publisherSession = new PublisherSession();
-        publisherSession.setId(UUID.randomUUID().toString());
-        publisherSession.setStatus(PublisherSessionStatus.ACTIVE);
+        DeviceAccess publisherSession = new DeviceAccess();
+        publisherSession.setId(456L);
         publisherSession.setLocalId("123abc456");
-        publisherSession.setLastActiveDate(new Date());
         publisherSession.setCreatedDate(new Date());
         publisherSession.setModifiedDate(new Date());
 
         Device device = new Device();
-        device.setId(UUID.randomUUID().toString());
+        device.setGlobalId(UUID.randomUUID().toString());
         publisherSession.setDevice(device);
 
         Publisher publisher = new Publisher();
-        publisher.setId(UUID.randomUUID().toString());
+        publisher.setId(123L);
         publisherSession.setPublisher(publisher);
 
         Map<String, Object> arguments = QueryMapper.buildQueryArguments("SELECT id AS 'id', " +
                 "        local_id AS 'localId', " +
-                "        status, n" +
-                "        device_id AS 'device.id', " +
+                "        device_id AS 'device.globalId', " +
                 "        publisher_id AS 'publisher.id' " +
                 "        authenticated_by_id AS 'authenticatedBy.id', " +
-                "        last_active_date AS 'lastActiveDate',  " +
                 "        created_date AS 'createdDate',  " +
                 "        modified_date AS 'modifiedDate' " +
                 "    FROM wayf.publisher_session " +
                 "        WHERE id = :id AND device_id = :device.id;", publisherSession);
 
         Assert.assertEquals(publisherSession.getId(), arguments.get("id"));
-        Assert.assertEquals(publisherSession.getDevice().getId(), arguments.get("device.id"));
+        Assert.assertEquals(publisherSession.getDevice().getGlobalId(), arguments.get("device.globalId"));
 
 
     }

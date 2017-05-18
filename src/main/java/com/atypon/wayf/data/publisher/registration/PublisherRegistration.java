@@ -14,15 +14,7 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.facade;
+package com.atypon.wayf.data.publisher.registration;
 
-import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherQuery;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-
-public interface PublisherFacade {
-    Single<Publisher> create(Publisher publisher);
-    Single<Publisher> read(Long id);
-    Observable<Publisher> filter(PublisherQuery filter);
+public class PublisherRegistration {
 }
