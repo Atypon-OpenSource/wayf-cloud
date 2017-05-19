@@ -23,15 +23,15 @@ DROP TABLE IF EXISTS `device`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `device` (
-  `_id` int(11) NOT NULL AUTO_INCREMENT,
-  `id` varchar(36) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `global_id` varchar(36) NOT NULL,
   `status` varchar(15) NOT NULL,
   `user_agent` varchar(250) NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`_id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=155 DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `global_id_UNIQUE` (`global_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -82,6 +82,21 @@ SELECT `id`,
     `created_date`,
     `modified_date`
   FROM identity_provider;
+
+
+
+DROP TABLE IF EXISTS `device_idp_blacklist`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `device_idp_blacklist` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `device_id` varchar(36) NOT NULL,
+  `idp_id` int(11) NOT NULL,
+  `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
 
 --
 -- Table structure for table `publisher`

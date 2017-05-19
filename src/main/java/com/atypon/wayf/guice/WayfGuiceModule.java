@@ -57,6 +57,7 @@ public class WayfGuiceModule extends AbstractModule {
             properties.load(classLoader.getResourceAsStream("dao/device-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/open-athens-entity-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/oauth-entity-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/device-identity-provider-blacklist-dao-db.properties"));
 
             Names.bindProperties(binder(), properties);
 
@@ -80,6 +81,9 @@ public class WayfGuiceModule extends AbstractModule {
             bind(RedisDao.class)
                     .annotatedWith(Names.named("identityProviderRedisDao"))
                     .toProvider(() -> new RedisDaoDefaultImpl("IDENTITY_PROVIDER"));
+
+            bind(DeviceIdentityProviderBlacklistDao.class).to(DeviceIdentityProviderBlacklistDaoDbImpl.class);
+
 
             BasicDataSource dataSource = new BasicDataSource();
 

@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data.publisher.session;
+package com.atypon.wayf.dao;
 
-public enum PublisherSessionStatus {
-    ACTIVE,
-    DISABLED
+import com.atypon.wayf.data.device.Device;
+import com.atypon.wayf.data.identity.IdentityProvider;
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+
+public interface DeviceIdentityProviderBlacklistDao {
+
+    Completable add(Device device, IdentityProvider publisher);
+    Completable remove(Device device, IdentityProvider publisher);
+    Observable<IdentityProvider> getBlacklistedIdentityProviders(Device device);
 }
