@@ -22,6 +22,9 @@ public class IdentityProviderQuery {
     private Long id;
     private Collection<Long> ids;
     private String entityId;
+    private IdentityProviderType type;
+    private String organizationId;
+    private OauthProvider provider;
 
     public IdentityProviderQuery() {
     }
@@ -59,5 +62,32 @@ public class IdentityProviderQuery {
      */
     public boolean isNullIds() {
         return ids == null;
+    }
+
+    public IdentityProviderType getType() {
+        return type;
+    }
+
+    public IdentityProviderQuery setType(IdentityProviderType type) {
+        this.type = type;
+        return this;
+    }
+
+    public String getOrganizationId() {
+        return organizationId;
+    }
+
+    public IdentityProviderQuery setOrganizationId(String organizationId) {
+        this.organizationId = organizationId;
+        return this;
+    }
+
+    public OauthProvider getProvider() {
+        return provider;
+    }
+
+    public IdentityProviderQuery setProvider(OauthProvider provider) {
+        this.provider = provider;
+        return this;
     }
 }

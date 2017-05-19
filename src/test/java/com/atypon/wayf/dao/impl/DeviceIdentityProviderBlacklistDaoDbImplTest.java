@@ -39,7 +39,6 @@ import static org.junit.Assert.assertTrue;
 
 public class DeviceIdentityProviderBlacklistDaoDbImplTest {
 
-
     @Inject
     private DeviceIdentityProviderBlacklistDao dao;
 

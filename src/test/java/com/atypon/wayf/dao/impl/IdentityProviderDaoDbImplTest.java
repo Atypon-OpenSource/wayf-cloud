@@ -17,19 +17,19 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.IdentityProviderDao;
-import com.atypon.wayf.data.identity.OauthEntity;
-import com.atypon.wayf.data.identity.OauthProvider;
-import com.atypon.wayf.data.identity.OpenAthensEntity;
-import com.atypon.wayf.data.identity.SamlEntity;
+import com.atypon.wayf.data.identity.*;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.RequestContext;
 import com.atypon.wayf.request.RequestContextAccessor;
+import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -79,6 +79,23 @@ public class IdentityProviderDaoDbImplTest {
         assertEquals(createdOpenAthensEntity.getEntityId(), readOpenAthensEntity.getEntityId());
         assertEquals(createdOpenAthensEntity.getOrganizationId(), readOpenAthensEntity.getOrganizationId());
         assertEquals(createdOpenAthensEntity.getScope(), readOpenAthensEntity.getScope());
+
+        List<IdentityProvider> openAthens = openAthensDao.filter(
+                new IdentityProviderQuery()
+                        .setIds(Lists.newArrayList(createdOpenAthensEntity.getId()))
+                        .setType(IdentityProviderType.OPEN_ATHENS)
+                        .setOrganizationId(createdOpenAthensEntity.getOrganizationId())
+        ).toList().blockingGet();
+
+        assertEquals(1, openAthens.size());
+
+        OpenAthensEntity filteredOpenAthens = (OpenAthensEntity) openAthens.get(0);
+
+        assertEquals(createdOpenAthensEntity.getId(), filteredOpenAthens.getId());
+        assertEquals(createdOpenAthensEntity.getCreatedDate(), filteredOpenAthens.getCreatedDate());
+        assertEquals(createdOpenAthensEntity.getEntityId(), filteredOpenAthens.getEntityId());
+        assertEquals(createdOpenAthensEntity.getOrganizationId(), filteredOpenAthens.getOrganizationId());
+        assertEquals(createdOpenAthensEntity.getScope(), filteredOpenAthens.getScope());
     }
 
     @Test
@@ -102,6 +119,21 @@ public class IdentityProviderDaoDbImplTest {
         assertEquals(createdSamlEntity.getCreatedDate(), readSamlEntity.getCreatedDate());
         assertEquals(createdSamlEntity.getEntityId(), readSamlEntity.getEntityId());
         assertEquals(createdSamlEntity.getFederationId(), readSamlEntity.getFederationId());
+
+        List<IdentityProvider> samls = samlDao.filter(
+                new IdentityProviderQuery()
+                        .setType(IdentityProviderType.SAML)
+                        .setEntityId(createdSamlEntity.getEntityId())
+                        .setIds(Lists.newArrayList(createdSamlEntity.getId()))
+        ).toList().blockingGet();
+
+        assertEquals(1, samls.size());
+
+        SamlEntity filteredSaml = (SamlEntity) samls.get(0);
+        assertEquals(createdSamlEntity.getId(), filteredSaml.getId());
+        assertEquals(createdSamlEntity.getCreatedDate(), filteredSaml.getCreatedDate());
+        assertEquals(createdSamlEntity.getEntityId(), filteredSaml.getEntityId());
+        assertEquals(createdSamlEntity.getFederationId(), filteredSaml.getFederationId());
     }
 
     @Test
@@ -121,5 +153,19 @@ public class IdentityProviderDaoDbImplTest {
         assertEquals(createdOauthEntity.getId(), readOauthEntity.getId());
         assertEquals(createdOauthEntity.getCreatedDate(), readOauthEntity.getCreatedDate());
         assertEquals(createdOauthEntity.getProvider(), readOauthEntity.getProvider());
+
+        List<IdentityProvider> oauths = oauthDao.filter(
+                new IdentityProviderQuery()
+                        .setType(IdentityProviderType.OAUTH)
+                        .setProvider(OauthProvider.FACEBOOK)
+                        .setIds(Lists.newArrayList(createdOauthEntity.getId()))
+        ).toList().blockingGet();
+
+        assertEquals(1, oauths.size());
+
+        OauthEntity filteredOauth = (OauthEntity) oauths.get(0);
+        assertEquals(createdOauthEntity.getId(), filteredOauth.getId());
+        assertEquals(createdOauthEntity.getCreatedDate(), filteredOauth.getCreatedDate());
+        assertEquals(createdOauthEntity.getProvider(), filteredOauth.getProvider());
     }
 }
