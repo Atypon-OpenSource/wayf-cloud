@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -59,7 +60,7 @@ public class DeviceAccessDaoDbImplTest {
 
 
         Device device = new Device();
-        device.setGlobalId(UUID.randomUUID().toString());
+        device.setId(Long.valueOf(new Random().nextInt(3200)));
         deviceAccess.setDevice(device);
 
         Publisher publisher = new Publisher();
@@ -76,7 +77,7 @@ public class DeviceAccessDaoDbImplTest {
         assertNotNull(createdDeviceAccess.getCreatedDate());
 
         assertEquals(deviceAccess.getLocalId(), createdDeviceAccess.getLocalId());
-        assertEquals(deviceAccess.getDevice().getGlobalId(), createdDeviceAccess.getDevice().getGlobalId());
+        assertEquals(deviceAccess.getDevice().getId(), createdDeviceAccess.getDevice().getId());
         assertEquals(deviceAccess.getIdentityProvider().getId(), createdDeviceAccess.getIdentityProvider().getId());
         assertEquals(deviceAccess.getPublisher().getId(), createdDeviceAccess.getPublisher().getId());
         assertEquals(deviceAccess.getType(), createdDeviceAccess.getType());
@@ -90,7 +91,7 @@ public class DeviceAccessDaoDbImplTest {
 
 
         Device device = new Device();
-        device.setGlobalId(UUID.randomUUID().toString());
+        device.setId(Long.valueOf(new Random().nextInt(32000)));
         deviceAccess.setDevice(device);
 
         Publisher publisher = new Publisher();
@@ -103,7 +104,7 @@ public class DeviceAccessDaoDbImplTest {
 
         DeviceAccess createdDeviceAccess = deviceAccessDao.create(deviceAccess).blockingGet();
 
-        List<DeviceAccess> filterDeviceAccess = deviceAccessDao.filter(new DeviceAccessQuery().setDeviceIds(Lists.newArrayList(device.getGlobalId()))).toList().blockingGet();
+        List<DeviceAccess> filterDeviceAccess = deviceAccessDao.filter(new DeviceAccessQuery().setDeviceIds(Lists.newArrayList(device.getId()))).toList().blockingGet();
 
         assertEquals(1, filterDeviceAccess.size());
 
@@ -113,7 +114,81 @@ public class DeviceAccessDaoDbImplTest {
         assertEquals(createdDeviceAccess.getCreatedDate(), filteredDeviceAccess.getCreatedDate());
         assertEquals(createdDeviceAccess.getModifiedDate(), filteredDeviceAccess.getModifiedDate());
         assertEquals(createdDeviceAccess.getLocalId(), filteredDeviceAccess.getLocalId());
-        assertEquals(createdDeviceAccess.getDevice().getGlobalId(), filteredDeviceAccess.getDevice().getGlobalId());
+        assertEquals(createdDeviceAccess.getDevice().getId(), filteredDeviceAccess.getDevice().getId());
+        assertEquals(createdDeviceAccess.getIdentityProvider().getId(), filteredDeviceAccess.getIdentityProvider().getId());
+        assertEquals(createdDeviceAccess.getPublisher().getId(), filteredDeviceAccess.getPublisher().getId());
+        assertEquals(createdDeviceAccess.getType(), filteredDeviceAccess.getType());
+    }
+
+    @Test
+    public void testFilterExcludeIdp() {
+        DeviceAccess deviceAccess = new DeviceAccess();
+        deviceAccess.setLocalId("test-local-id");
+        deviceAccess.setType(DeviceAccessType.READ_IDP_HISTORY);
+
+
+        Device device = new Device();
+        device.setId(Long.valueOf(new Random().nextInt(32000)));
+        deviceAccess.setDevice(device);
+
+        Publisher publisher = new Publisher();
+        publisher.setId(123L);
+        deviceAccess.setPublisher(publisher);
+
+        IdentityProvider identityProvider = new SamlEntity();
+        identityProvider.setId(123L);
+        deviceAccess.setIdentityProvider(identityProvider);
+
+        DeviceAccess createdDeviceAccess = deviceAccessDao.create(deviceAccess).blockingGet();
+
+        List<DeviceAccess> filterDeviceAccess = deviceAccessDao.filter(
+                new DeviceAccessQuery()
+                        .setDeviceIds(Lists.newArrayList(device.getId()))
+                        .setNotIdps(Lists.newArrayList(identityProvider.getId()))).toList().blockingGet();
+
+        assertEquals(0, filterDeviceAccess.size());
+    }
+
+    @Test
+    public void testFilterType() {
+        DeviceAccess deviceAccess = new DeviceAccess();
+        deviceAccess.setLocalId("test-local-id");
+        deviceAccess.setType(DeviceAccessType.READ_IDP_HISTORY);
+
+
+        Device device = new Device();
+        device.setId(Long.valueOf(new Random().nextInt(32000)));
+        deviceAccess.setDevice(device);
+
+        Publisher publisher = new Publisher();
+        publisher.setId(123L);
+        deviceAccess.setPublisher(publisher);
+
+        IdentityProvider identityProvider = new SamlEntity();
+        identityProvider.setId(123L);
+        deviceAccess.setIdentityProvider(identityProvider);
+
+        DeviceAccess createdDeviceAccess = deviceAccessDao.create(deviceAccess).blockingGet();
+
+        List<DeviceAccess> filterDeviceAccess = deviceAccessDao.filter(
+                new DeviceAccessQuery()
+                        .setDeviceIds(Lists.newArrayList(device.getId()))
+                        .setType(DeviceAccessType.ADD_IDP)).toList().blockingGet();
+
+        assertEquals(0, filterDeviceAccess.size());
+
+        filterDeviceAccess = deviceAccessDao.filter(
+                new DeviceAccessQuery()
+                        .setDeviceIds(Lists.newArrayList(device.getId()))
+                        .setType(DeviceAccessType.READ_IDP_HISTORY)).toList().blockingGet();
+
+        DeviceAccess filteredDeviceAccess = filterDeviceAccess.get(0);
+
+        assertEquals(createdDeviceAccess.getId(), filteredDeviceAccess.getId());
+        assertEquals(createdDeviceAccess.getCreatedDate(), filteredDeviceAccess.getCreatedDate());
+        assertEquals(createdDeviceAccess.getModifiedDate(), filteredDeviceAccess.getModifiedDate());
+        assertEquals(createdDeviceAccess.getLocalId(), filteredDeviceAccess.getLocalId());
+        assertEquals(createdDeviceAccess.getDevice().getId(), filteredDeviceAccess.getDevice().getId());
         assertEquals(createdDeviceAccess.getIdentityProvider().getId(), filteredDeviceAccess.getIdentityProvider().getId());
         assertEquals(createdDeviceAccess.getPublisher().getId(), filteredDeviceAccess.getPublisher().getId());
         assertEquals(createdDeviceAccess.getType(), filteredDeviceAccess.getType());

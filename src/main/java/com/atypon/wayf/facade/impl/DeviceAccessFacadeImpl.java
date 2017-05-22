@@ -155,16 +155,18 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
     }
 
     private Single<Boolean> isUniqueLocalId(DeviceAccess deviceAccess) {
+        return Single.just(Boolean.TRUE);/*
         return filter(new DeviceAccessQuery().setLocalId(deviceAccess.getLocalId())) // Filter for publisher sessions with that local ID
                 .firstElement() // Get the first element
-                .isEmpty(); // Return whether or not there was an element
+                .isEmpty(); // Return whether or not there was an element*/
     }
 
 
     private Single<DeviceAccess> resolveForLocalId(String localId) {
-        return filter(new DeviceAccessQuery().setLocalId(localId))
+        return null;
+        /*return filter(new DeviceAccessQuery().setLocalId(localId))
                 .singleOrError()
-                .doOnError((e) -> {throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not find unique DeviceAccess for local ID: " + localId);});
+                .doOnError((e) -> {throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not find unique DeviceAccess for local ID: " + localId);});*/
     }
 
     private Completable populate(DeviceAccess deviceAccess, DeviceAccessQuery query) {

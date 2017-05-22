@@ -111,18 +111,18 @@ public class DeviceFacadeImpl implements DeviceFacade {
             return Completable.complete();
         }
 
-        Multimap<String, Device> devicesById = HashMultimap.create();
+        Multimap<Long, Device> devicesById = HashMultimap.create();
 
         return Observable.fromIterable(devices)
                  // Collect all of the publisher sessions and their identity provider IDs into a map
-                .collectInto(devicesById, (map, device) -> map.put(device.getGlobalId(), device))
+                .collectInto(devicesById, (map, device) -> map.put(device.getId(), device))
 
                 // Fetch all of the publishers for those publisher IDs
                 .flatMapObservable((map) -> map.keySet().isEmpty()? Observable.empty() : deviceAccessFacade.filter(new DeviceAccessQuery().setDeviceIds(map.keySet())))
 
                 // For each identity provider returned, map it to each publisher session that had its ID
                 .flatMapCompletable((deviceAccess) ->
-                        Observable.fromIterable(devicesById.get(deviceAccess.getDevice().getGlobalId()))
+                        Observable.fromIterable(devicesById.get(deviceAccess.getDevice().getId()))
                                 .flatMapCompletable((device) ->
                                         Completable.fromAction(() -> {
                                             List<DeviceAccess> activity = device.getActivity();

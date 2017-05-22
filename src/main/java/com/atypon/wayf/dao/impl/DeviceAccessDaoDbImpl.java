@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
-public class DeviceAccessDaoDbImpl implements DeviceAccessDao, KeyValueCache<String, Long> {
+public class DeviceAccessDaoDbImpl implements DeviceAccessDao {
     private static Logger LOG = LoggerFactory.getLogger(com.atypon.wayf.dao.impl.DeviceAccessDaoDbImpl.class);
 
     @Inject
@@ -78,20 +78,5 @@ public class DeviceAccessDaoDbImpl implements DeviceAccessDao, KeyValueCache<Str
         return Observable.just(query)
                 .compose((observable) -> DaoPolicies.applyObservable(observable))
                 .flatMap((_query) -> dbExecutor.executeSelect(filterSql, _query, DeviceAccess.class));
-    }
-
-    @Override
-    public Completable put(String publisherId, Long wayfId) {
-        return null;
-    }
-
-    @Override
-    public Maybe<Long> get(String publisherId) {
-        DeviceAccessQuery query = new DeviceAccessQuery().setLocalId(publisherId);
-
-        return Maybe.just(query)
-                .compose((maybe) -> DaoPolicies.applyMaybe(maybe))
-                .flatMap((_query) -> dbExecutor.executeSelectFirst(filterSql, _query, DeviceAccess.class))
-                .map((_deviceAccess) -> _deviceAccess.getId());
     }
 }

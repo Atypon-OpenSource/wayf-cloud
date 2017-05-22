@@ -28,10 +28,9 @@ public class DeviceAccessQuery {
 
     private Long id;
 
-    private String localId;
-
-    private Collection<String> deviceIds;
-    private List<Long> ids;
+    private Collection<Long> deviceIds;
+    private DeviceAccessType type;
+    private Collection<Long> notIdps;
 
     private InflationPolicy inflationPolicy;
 
@@ -47,16 +46,8 @@ public class DeviceAccessQuery {
         return this;
     }
 
-    public String getLocalId() {
-        return localId;
-    }
 
-    public DeviceAccessQuery setLocalId(String localId) {
-        this.localId = localId;
-        return this;
-    }
-
-    public Collection<String> getDeviceIds() {
+    public Collection<Long> getDeviceIds() {
         return deviceIds;
     }
 
@@ -68,9 +59,31 @@ public class DeviceAccessQuery {
         return deviceIds == null;
     }
 
-    public DeviceAccessQuery setDeviceIds(Collection<String> deviceIds) {
+    public DeviceAccessQuery setDeviceIds(Collection<Long> deviceIds) {
         this.deviceIds = deviceIds;
         return this;
+    }
+
+    public DeviceAccessType getType() {
+        return type;
+    }
+
+    public DeviceAccessQuery setType(DeviceAccessType type) {
+        this.type = type;
+        return this;
+    }
+
+    public Collection<Long> getNotIdps() {
+        return notIdps;
+    }
+
+    public DeviceAccessQuery setNotIdps(Collection<Long> notIdps) {
+        this.notIdps = notIdps;
+        return this;
+    }
+
+    public boolean isNullNotIdps() {
+        return notIdps == null;
     }
 
     public InflationPolicy getInflationPolicy() {
@@ -80,22 +93,5 @@ public class DeviceAccessQuery {
     public DeviceAccessQuery setInflationPolicy(InflationPolicy inflationPolicy) {
         this.inflationPolicy = inflationPolicy;
         return this;
-    }
-
-    public List<Long> getIds() {
-        return ids;
-    }
-
-    public DeviceAccessQuery setIds(List<Long> ids) {
-        this.ids = ids;
-        return this;
-    }
-
-    /**
-     * Database use only
-     * @return
-     */
-    public boolean isNullIds() {
-        return ids == null;
     }
 }

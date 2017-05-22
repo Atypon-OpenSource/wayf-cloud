@@ -169,11 +169,6 @@ public class WayfGuiceModule extends AbstractModule {
         return daoMap;
     }
 
-    @Provides @Named("publisherIdCache")
-    public CascadingCache<String, Long> providePublisherIdCache(@Named("publisherIdRedisDao") RedisDao l1, DeviceAccessDaoDbImpl l2) {
-        return new CascadingCache(l1, l2);
-    }
-
     @Provides @Named("identityProviderCache")
     public CascadingCache<String, Long> provideIdentityProviderCache(@Named("identityProviderRedisDao") RedisDao l1, IdentityProviderFacade l2) {
         return new CascadingCache(l1, l2);

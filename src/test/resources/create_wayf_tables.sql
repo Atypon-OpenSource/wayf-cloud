@@ -157,7 +157,7 @@ CREATE TABLE `device_access` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `local_id` varchar(45) NOT NULL,
   `type` varchar(30) NOT NULL,
-  `device_id` varchar(36) NOT NULL,
+  `device_id` int(11) NOT NULL,
   `identity_provider_id` varchar(36) DEFAULT NULL,
   `publisher_id` varchar(36) DEFAULT NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
