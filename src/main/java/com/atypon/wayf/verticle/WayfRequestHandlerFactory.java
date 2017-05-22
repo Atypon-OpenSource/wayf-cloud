@@ -16,11 +16,11 @@
 
 package com.atypon.wayf.verticle;
 
-import com.atypon.wayf.request.RequestContext;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.atypon.wayf.request.RequestContextFactory;
 import com.atypon.wayf.request.ResponseWriter;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -39,34 +39,35 @@ import java.text.SimpleDateFormat;
  * information about inbound requests, switches the processing to an appropriate threadpool, and guarantees consistent
  * response marshalling for both successes and failures.
  */
-public abstract class WayfRequestHandler implements Handler<RoutingContext> {
-    private static final Logger LOG = LoggerFactory.getLogger(WayfRequestHandler.class);
+@Singleton
+public class WayfRequestHandlerFactory {
+    private static final Logger LOG = LoggerFactory.getLogger(WayfRequestHandlerFactory.class);
 
     @Inject
-    protected RequestContextFactory requestContextFactory;
+    private RequestContextFactory requestContextFactory;
 
-
-    private WayfRequestHandler() {
+    public WayfRequestHandlerFactory() {
         Json.prettyMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S"));
     }
 
-    public static WayfRequestHandler observable(Function<RoutingContext, Observable<?>> delegate) {
-        return new WayfRequestHandlerObservableImpl(delegate);
+    public Handler<RoutingContext> observable(Function<RoutingContext, Observable<?>> delegate) {
+        return new WayfRequestHandlerObservableImpl(requestContextFactory, delegate);
     }
 
-    public static WayfRequestHandler single(Function<RoutingContext, Single<?>> delegate) {
-        return new WayfRequestHandlerSingleImpl(delegate);
+    public Handler<RoutingContext> single(Function<RoutingContext, Single<?>> delegate) {
+        return new WayfRequestHandlerSingleImpl(requestContextFactory, delegate);
     }
 
-    public static WayfRequestHandler completable(Function<RoutingContext, Completable> delegate) {
-        return new WayfRequestHandlerCompletableImpl(delegate);
+    public Handler<RoutingContext> completable(Function<RoutingContext, Completable> delegate) {
+        return new WayfRequestHandlerCompletableImpl(requestContextFactory, delegate);
     }
 
-    private static class WayfRequestHandlerSingleImpl<T> extends WayfRequestHandler {
+    private static class WayfRequestHandlerSingleImpl<T> implements Handler<RoutingContext> {
         private Function<RoutingContext, Single<T>> singleDelegate;
+        private RequestContextFactory requestContextFactory;
 
-        public WayfRequestHandlerSingleImpl(Function<RoutingContext, Single<T>> delegate) {
-            super();
+        public WayfRequestHandlerSingleImpl(RequestContextFactory requestContextFactory, Function<RoutingContext, Single<T>> delegate) {
+            this.requestContextFactory = requestContextFactory;
             this.singleDelegate = delegate;
         }
 
@@ -86,11 +87,12 @@ public abstract class WayfRequestHandler implements Handler<RoutingContext> {
         }
     }
 
-    private static class WayfRequestHandlerObservableImpl<T> extends WayfRequestHandler {
+    private static class WayfRequestHandlerObservableImpl<T> implements Handler<RoutingContext> {
+        private RequestContextFactory requestContextFactory;
         private Function<RoutingContext, Observable<T>> observableDelegate;
 
-        public WayfRequestHandlerObservableImpl(Function<RoutingContext, Observable<T>> delegate) {
-            super();
+        public WayfRequestHandlerObservableImpl(RequestContextFactory requestContextFactory, Function<RoutingContext, Observable<T>> delegate) {
+            this.requestContextFactory = requestContextFactory;
             this.observableDelegate = delegate;
         }
 
@@ -111,11 +113,12 @@ public abstract class WayfRequestHandler implements Handler<RoutingContext> {
         }
     }
 
-    private static class WayfRequestHandlerCompletableImpl extends WayfRequestHandler {
+    private static class WayfRequestHandlerCompletableImpl implements Handler<RoutingContext> {
+        private RequestContextFactory requestContextFactory;
         private Function<RoutingContext, Completable> completableDelgate;
 
-        public WayfRequestHandlerCompletableImpl(Function<RoutingContext, Completable> delegate) {
-            super();
+        public WayfRequestHandlerCompletableImpl(RequestContextFactory requestContextFactory, Function<RoutingContext, Completable> delegate) {
+            this.requestContextFactory = requestContextFactory;
             this.completableDelgate = delegate;
         }
 

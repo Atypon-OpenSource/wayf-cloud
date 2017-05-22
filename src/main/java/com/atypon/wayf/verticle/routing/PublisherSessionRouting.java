@@ -54,13 +54,13 @@ public class PublisherSessionRouting implements RoutingProvider {
 
     public void addRoutings(Router router) {
         router.route(PUBLISHER_SESSION_BASE_URL + "*").handler(BodyHandler.create());
-        router.post(CREATE_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> createPublisherSession(rc)));
-        router.get(READ_PUBLISHER_SESSION_BY_LOCAL_ID).handler(WayfRequestHandler.single((rc) -> readPublisherSessionByLocalId(rc)));
-        router.get(READ_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> readPublisherSession(rc)));
-        router.put(UPDATE_PUBLISHER_SESSION).handler(WayfRequestHandler.single((rc) -> updatePublisherSession(rc)));
-        router.put(SET_IDP_BY_PUBLISHER_ID).handler(WayfRequestHandler.completable((rc) -> addIdp(rc)));
-        router.get(FILTER_PUBLISHER_SESSION).handler(WayfRequestHandler.observable((rc) -> filter(rc)));
-        router.delete(DELETE_PUBLISHER_SESSION).handler(WayfRequestHandler.completable((rc) -> deletePublisherSession(rc)));
+        router.post(CREATE_PUBLISHER_SESSION).handler(WayfRequestHandlerFactory.single((rc) -> createPublisherSession(rc)));
+        router.get(READ_PUBLISHER_SESSION_BY_LOCAL_ID).handler(WayfRequestHandlerFactory.single((rc) -> readPublisherSessionByLocalId(rc)));
+        router.get(READ_PUBLISHER_SESSION).handler(WayfRequestHandlerFactory.single((rc) -> readPublisherSession(rc)));
+        router.put(UPDATE_PUBLISHER_SESSION).handler(WayfRequestHandlerFactory.single((rc) -> updatePublisherSession(rc)));
+        router.put(SET_IDP_BY_PUBLISHER_ID).handler(WayfRequestHandlerFactory.completable((rc) -> addIdp(rc)));
+        router.get(FILTER_PUBLISHER_SESSION).handler(WayfRequestHandlerFactory.observable((rc) -> filter(rc)));
+        router.delete(DELETE_PUBLISHER_SESSION).handler(WayfRequestHandlerFactory.completable((rc) -> deletePublisherSession(rc)));
     }
 
     public Single<PublisherSession> createPublisherSession(RoutingContext routingContext) {

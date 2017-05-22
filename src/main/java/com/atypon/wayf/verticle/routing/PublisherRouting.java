@@ -20,7 +20,7 @@ import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.facade.PublisherFacade;
 import com.atypon.wayf.request.RequestReader;
-import com.atypon.wayf.verticle.WayfRequestHandler;
+import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -48,14 +48,17 @@ public class PublisherRouting implements RoutingProvider {
     @Inject
     private PublisherFacade publisherFacade;
 
+    @Inject
+    private WayfRequestHandlerFactory handlerFactory;
+
     public PublisherRouting() {
     }
 
     public void addRoutings(Router router) {
         router.route(PUBLISHER_BASE_URL + "*").handler(BodyHandler.create());
-        router.post(CREATE_PUBLISHER).handler(WayfRequestHandler.single((rc) -> createPublisher(rc)));
-        router.get(READ_PUBLISHER).handler(WayfRequestHandler.single((rc) -> readPublisher(rc)));
-        router.get(FILTER_PUBLISHERS).handler(WayfRequestHandler.observable((rc) -> filterPublishers(rc)));
+        router.post(CREATE_PUBLISHER).handler(handlerFactory.single((rc) -> createPublisher(rc)));
+        router.get(READ_PUBLISHER).handler(handlerFactory.single((rc) -> readPublisher(rc)));
+        router.get(FILTER_PUBLISHERS).handler(handlerFactory.observable((rc) -> filterPublishers(rc)));
 
     }
 

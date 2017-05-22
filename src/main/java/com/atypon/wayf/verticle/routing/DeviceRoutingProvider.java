@@ -21,7 +21,7 @@ import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.request.RequestReader;
-import com.atypon.wayf.verticle.WayfRequestHandler;
+import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -51,6 +51,9 @@ public class DeviceRoutingProvider implements RoutingProvider {
     private DeviceFacade deviceFacade;
 
     @Inject
+    private WayfRequestHandlerFactory handlerFactory;
+
+    @Inject
     private InflationPolicyParser<String> inflationPolicyParser;
 
     public DeviceRoutingProvider() {
@@ -58,9 +61,9 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
     public void addRoutings(Router router) {
         router.route(DEVICE_BASE_URL + "*").handler(BodyHandler.create());
-        router.post(CREATE_DEVICE).handler(WayfRequestHandler.single((rc) -> createDevice(rc)));
-        router.get(READ_DEVICE).handler(WayfRequestHandler.single((rc) -> readDevice(rc)));
-        router.get(FILTER_DEVICE).handler(WayfRequestHandler.observable((rc) -> filterDevice(rc)));
+        router.post(CREATE_DEVICE).handler(handlerFactory.single((rc) -> createDevice(rc)));
+        router.get(READ_DEVICE).handler(handlerFactory.single((rc) -> readDevice(rc)));
+        router.get(FILTER_DEVICE).handler(handlerFactory.observable((rc) -> filterDevice(rc)));
     }
 
     public Single<Device> createDevice(RoutingContext routingContext) {

@@ -19,7 +19,7 @@ package com.atypon.wayf.verticle.routing;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.atypon.wayf.request.RequestReader;
-import com.atypon.wayf.verticle.WayfRequestHandler;
+import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Single;
@@ -43,13 +43,16 @@ public class IdentityProviderRouting implements RoutingProvider {
     @Inject
     private IdentityProviderFacade identityProviderFacade;
 
+    @Inject
+    private WayfRequestHandlerFactory handlerFactory;
+
     public IdentityProviderRouting() {
     }
 
     public void addRoutings(Router router) {
         router.route(IDENTITY_PROVIDER_BASE_URL + "*").handler(BodyHandler.create());
-        router.post(CREATE_IDENTITY_PROVIDER).handler(WayfRequestHandler.single((rc) -> createIdentityProvider(rc)));
-        router.get(READ_IDENTITY_PROVIDER).handler(WayfRequestHandler.single((rc) -> readIdentityProvider(rc)));
+        router.post(CREATE_IDENTITY_PROVIDER).handler(handlerFactory.single((rc) -> createIdentityProvider(rc)));
+        router.get(READ_IDENTITY_PROVIDER).handler(handlerFactory.single((rc) -> readIdentityProvider(rc)));
     }
 
     public Single<IdentityProvider> createIdentityProvider(RoutingContext routingContext) {
