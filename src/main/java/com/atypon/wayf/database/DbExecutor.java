@@ -17,7 +17,9 @@
 package com.atypon.wayf.database;
 
 import com.atypon.wayf.request.RequestContextAccessor;
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
@@ -34,11 +36,11 @@ import java.util.Map;
 public class DbExecutor {
     private static final Logger LOG = LoggerFactory.getLogger(DbExecutor.class);
 
-    private static final Integer DEFAULT_LIMIT = 30;
-    private static final Integer DEFAULT_OFFSET = 0;
-
     public static final String LIMIT = "limit";
     public static final String OFFSET = "offset";
+
+    @Inject
+    private NestedFieldBeanMapper beanMapper;
 
     @Inject
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -66,7 +68,7 @@ public class DbExecutor {
 
         LOG.debug("Running query [{}] with values [{}]", query, arguments);
 
-        return Observable.fromIterable(namedParameterJdbcTemplate.query(query, arguments, new NestedFieldRowMapper(returnType)));
+        return Observable.fromIterable(namedParameterJdbcTemplate.query(query, arguments, new NestedFieldRowMapper(returnType, beanMapper)));
     }
 
     public Single<Long> executeUpdate(String query, Object arguments) {

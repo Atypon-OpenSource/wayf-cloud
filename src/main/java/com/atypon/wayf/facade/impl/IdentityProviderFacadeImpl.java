@@ -89,7 +89,7 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
             throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "IdentityProvider of type [" + identityProvider.getType() + "] not supported");
         }
 
-        return foundProviders.singleOrError().doOnError((e) -> {throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Could not determine a unique IdentityProvider from input");});
+        return foundProviders.singleOrError().doOnError((e) -> {throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Could not determine a unique IdentityProvider from input", e);});
     }
 
     @Override

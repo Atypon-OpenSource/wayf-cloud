@@ -20,6 +20,7 @@ import com.atypon.wayf.dao.*;
 import com.atypon.wayf.dao.impl.*;
 import com.atypon.wayf.dao.redis.RedisDao;
 import com.atypon.wayf.dao.redis.impl.RedisDaoDefaultImpl;
+import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.InflationPolicyParser;
 import com.atypon.wayf.data.InflationPolicyParserQueryParamImpl;
 import com.atypon.wayf.data.cache.CascadingCache;
@@ -27,6 +28,8 @@ import com.atypon.wayf.data.identity.IdentityProviderType;
 import com.atypon.wayf.data.identity.OauthEntity;
 import com.atypon.wayf.data.identity.OpenAthensEntity;
 import com.atypon.wayf.data.identity.SamlEntity;
+import com.atypon.wayf.database.AuthenticatableBeanFactory;
+import com.atypon.wayf.database.BeanFactory;
 import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.facade.impl.*;
@@ -37,6 +40,8 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,8 +63,13 @@ public class WayfGuiceModule extends AbstractModule {
             properties.load(classLoader.getResourceAsStream("dao/open-athens-entity-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/oauth-entity-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/device-identity-provider-blacklist-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/authentication-dao-db.properties"));
 
             Names.bindProperties(binder(), properties);
+
+            bind(AuthenticationDao.class).annotatedWith(Names.named("authenticationDaoRedisImpl")).to(AuthenticationDaoRedisImpl.class);
+            bind(AuthenticationDao.class).annotatedWith(Names.named("authenticationDaoDbImpl")).to(AuthenticationDaoDbImpl.class);
+            bind(AuthenticationFacade.class).to(AuthenticatableFacadeImpl.class);
 
             bind(DeviceAccessFacade.class).to(DeviceAccessFacadeImpl.class);
             bind(DeviceAccessDao.class).to(DeviceAccessDaoDbImpl.class);
@@ -167,5 +177,19 @@ public class WayfGuiceModule extends AbstractModule {
     @Provides @Named("identityProviderCache")
     public CascadingCache<String, Long> provideIdentityProviderCache(@Named("identityProviderRedisDao") RedisDao l1, IdentityProviderFacade l2) {
         return new CascadingCache(l1, l2);
+    }
+
+    @Provides @Named("beanFactoryMap")
+    public Map<Class<?>, BeanFactory<?>> provideBeanFactoryMap(AuthenticatableBeanFactory authenticatableBeanFactory) {
+        Map<Class<?>, BeanFactory<?>> beanFactoryMap = new HashMap<>();
+
+        beanFactoryMap.put(Authenticatable.class, authenticatableBeanFactory);
+
+        return beanFactoryMap;
+    }
+
+    @Provides
+    public JedisPool getJedisPool() {
+        return new JedisPool(new JedisPoolConfig(), "localhost");
     }
 }

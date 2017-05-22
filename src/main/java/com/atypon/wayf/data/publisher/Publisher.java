@@ -16,11 +16,12 @@
 
 package com.atypon.wayf.data.publisher;
 
+import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.user.User;
 
 import java.util.Date;
 
-public class Publisher {
+public class Publisher implements Authenticatable {
     private Long id;
     private PublisherStatus status;
 
@@ -89,5 +90,15 @@ public class Publisher {
 
     public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.PUBLISHER;
+    }
+
+    @Override
+    public void setType(Type type) {
+
     }
 }

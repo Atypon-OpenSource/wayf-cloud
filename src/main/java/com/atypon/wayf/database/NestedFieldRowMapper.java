@@ -27,16 +27,15 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
-
-class NestedFieldRowMapper implements RowMapper {
+public class NestedFieldRowMapper implements RowMapper {
     private static final Logger LOG = LoggerFactory.getLogger(NestedFieldRowMapper.class);
 
     private Class<?> returnType;
     private NestedFieldBeanMapper beanMapper;
 
-    public NestedFieldRowMapper(Class<?> returnType) {
+    public NestedFieldRowMapper(Class<?> returnType, NestedFieldBeanMapper beanMapper) {
         this.returnType = returnType;
-        beanMapper = new NestedFieldBeanMapper();
+        this.beanMapper = beanMapper;
     }
 
     @Override

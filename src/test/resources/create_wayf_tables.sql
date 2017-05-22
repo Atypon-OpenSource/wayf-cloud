@@ -98,6 +98,21 @@ CREATE TABLE `device_idp_blacklist` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
 
+DROP TABLE IF EXISTS `api_token`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `api_token` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `authenticatable_type` varchar(25) NOT NULL,
+  `authenticatable_id` int(11) NOT NULL,
+  `token` varchar(50) NOT NULL,
+  `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+
+
 --
 -- Table structure for table `publisher`
 --

@@ -14,56 +14,49 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.database;
+package com.atypon.wayf.dao.impl;
 
-
-import com.atypon.wayf.dao.impl.AuthenticationDaoDbImpl;
 import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.guice.WayfGuiceModule;
+import com.atypon.wayf.reactivex.WayfReactivexConfig;
+import com.atypon.wayf.request.RequestContext;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class BeanMapperTest {
-
+public class AuthenticationDaoDbImplTest {
     @Inject
-    private NestedFieldBeanMapper beanMapper;
+    private AuthenticationDaoDbImpl dao;
 
     @Before
     public void setUp() {
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
+
+        WayfReactivexConfig.initializePlugins();
+        RequestContextAccessor.set(new RequestContext());
     }
 
     @Test
-    public void testMapNested() throws Exception {
-        Map<String, Object> row = new HashMap<>();
-        row.put("localId", "testId");
-        row.put("device.globalId", "testDeviceId");
+    public void testCreateAndAuthenticate() {
+        String token = UUID.randomUUID().toString();
 
-        DeviceAccess deviceAccess = beanMapper.map(row, DeviceAccess.class);
+        Publisher publisher = new Publisher();
+        publisher.setId(123L);
 
-        assertEquals("testId", deviceAccess.getLocalId());
-        assertEquals("testDeviceId", deviceAccess.getDevice().getGlobalId());
-    }
+        dao.create(token, publisher).blockingGet();
 
-    @Test
-    public void testBeanFactory() {
-        Map<String, Object> row = new HashMap<>();
-        row.put(AuthenticationDaoDbImpl.AUTHENTICATABLE_TYPE, Authenticatable.Type.PUBLISHER);
-        row.put(AuthenticationDaoDbImpl.AUTHENTICATABLE_ID, 123L);
-
-        Authenticatable authenticatable = beanMapper.map(row, Authenticatable.class);
+        Authenticatable authenticatable = dao.authenticate(token).blockingGet();
         assertNotNull(authenticatable);
+
         assertEquals(Publisher.class, authenticatable.getClass());
-        assertEquals(new Long(123L), authenticatable.getId());
+        assertEquals(publisher.getId(), authenticatable.getId());
     }
 }
