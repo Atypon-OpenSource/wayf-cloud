@@ -24,7 +24,6 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
-import io.reactivex.Single;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.request;
 
+import com.atypon.wayf.data.Authenticatable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,8 @@ public class RequestContext {
     private String deviceId;
     private String requestUrl;
     private String requestUri;
+
+    private Authenticatable authenticatable;
 
     private Boolean hasAnotherDbPage = Boolean.FALSE;
 
@@ -98,6 +101,15 @@ public class RequestContext {
 
     public RequestContext setUserAgent(String userAgent) {
         this.userAgent = userAgent;
+        return this;
+    }
+
+    public Authenticatable getAuthenticatable() {
+        return authenticatable;
+    }
+
+    public RequestContext setAuthenticatable(Authenticatable authenticatable) {
+        this.authenticatable = authenticatable;
         return this;
     }
 }

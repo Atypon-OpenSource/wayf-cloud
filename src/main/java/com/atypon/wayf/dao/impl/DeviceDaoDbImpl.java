@@ -39,6 +39,10 @@ import java.util.UUID;
 public class DeviceDaoDbImpl implements DeviceDao {
     private static final Logger LOG = LoggerFactory.getLogger(DeviceDaoDbImpl.class);
 
+    private static final String DEVICE_ID = "device.id";
+    private static final String PUBLISHER_ID = "publisher.id";
+    private static final String PUBLISHER_LOCAL_ID = "localId";
+
     @Inject
     @Named("device.dao.db.create")
     private String createSql;
@@ -57,6 +61,14 @@ public class DeviceDaoDbImpl implements DeviceDao {
     @Inject
     @Named("device.dao.db.filter")
     private String filterSql;
+
+    @Inject
+    @Named("device.dao.db.create-publisher-local-id-xref")
+    private String createPublisherLocalIdXrefSql;
+
+    @Inject
+    @Named("device.dao.db.read-by-publisher-local-id")
+    private String readByPublisherLocalIdSql;
 
     @Inject
     private DbExecutor dbExecutor;
@@ -102,5 +114,26 @@ public class DeviceDaoDbImpl implements DeviceDao {
         return Single.just(query)
                 .compose((single) -> DaoPolicies.applySingle(single))
                 .flatMapObservable((_query) -> dbExecutor.executeSelect(filterSql, _query, Device.class));
+    }
+
+    public Completable createDevicePublisherLocalIdXref(Long deviceId, Long publisherId, String localId) {
+        Map<String, Object> args = new HashMap<>();
+        args.put(DEVICE_ID, deviceId);
+        args.put(PUBLISHER_ID, publisherId);
+        args.put(PUBLISHER_LOCAL_ID, localId);
+
+        return Completable.fromSingle(dbExecutor.executeUpdate(createPublisherLocalIdXrefSql, args))
+                .compose((completable) -> DaoPolicies.applyCompletable(completable));
+    }
+
+    @Override
+    public Maybe<Device> readByPublisherLocalId(Long publisherId, String localId) {
+        Map<String, Object> args = new HashMap<>();
+        args.put(PUBLISHER_ID, publisherId);
+        args.put(PUBLISHER_LOCAL_ID, localId);
+
+        return Maybe.just(args)
+                .compose((maybe) -> DaoPolicies.applyMaybe(maybe))
+                .flatMap((_args) -> dbExecutor.executeSelectFirst(readByPublisherLocalIdSql, args, Device.class));
     }
 }

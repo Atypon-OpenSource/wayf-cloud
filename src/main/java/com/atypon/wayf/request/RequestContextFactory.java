@@ -16,6 +16,9 @@
 
 package com.atypon.wayf.request;
 
+import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.facade.AuthenticationFacade;
+import com.google.inject.Inject;
 import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +26,10 @@ import org.slf4j.LoggerFactory;
 public class RequestContextFactory {
     private static final Logger LOG = LoggerFactory.getLogger(RequestContextFactory.class);
 
-    public static RequestContext fromRoutingContext(RoutingContext routingContext) {
+    @Inject
+    private AuthenticationFacade authenticationFacade;
+
+    public RequestContext fromRoutingContext(RoutingContext routingContext) {
         RequestContext requestContext = new RequestContext();
 
         requestContext.setUserAgent(RequestReader.getHeaderValue(routingContext, "User-Agent"));
@@ -43,6 +49,12 @@ public class RequestContextFactory {
         String deviceId = RequestReader.getHeaderValue(routingContext, "deviceId");
         if (deviceId != null && !deviceId.isEmpty()) {
             requestContext.setDeviceId(deviceId);
+        }
+
+        String apiKey = RequestReader.getHeaderValue(routingContext, "Authorization");
+        if (apiKey != null && !apiKey.isEmpty()) {
+            Authenticatable authenticatable = authenticationFacade.authenticate(apiKey).blockingGet();
+            requestContext.setAuthenticatable(authenticatable);
         }
 
         return requestContext;

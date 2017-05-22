@@ -29,4 +29,6 @@ public interface DeviceDao {
     Single<Device> update(Device device);
     Completable delete(String id);
     Observable<Device> filter(DeviceQuery query);
+
+    Maybe<Device> readByPublisherLocalId(Long publisherId, String localId);
 }

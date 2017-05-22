@@ -62,8 +62,6 @@ public class DeviceDaoDbImplTest {
         assertEquals(device.getStatus(), createdDevice.getStatus());
     }
 
-
-
     @Test
     public void testRead() {
         Device device = new Device();
@@ -78,5 +76,25 @@ public class DeviceDaoDbImplTest {
 
         assertEquals(createdDevice.getGlobalId(), readDevice.getGlobalId());
         assertEquals(createdDevice.getStatus(), readDevice.getStatus());
+    }
+
+    @Test
+    public void testXref() {
+        Device device = new Device();
+        device.setGlobalId(UUID.randomUUID().toString());
+        device.setStatus(DeviceStatus.ACTIVE);
+
+        Device createdDevice = dao.create(device).blockingGet();
+        assertNotNull(createdDevice.getId());
+
+        Long publisherId = 123L;
+        String localId = UUID.randomUUID().toString();
+
+        dao.createDevicePublisherLocalIdXref(createdDevice.getId(), publisherId, localId).blockingGet();
+
+        Device readByLocalId = dao.readByPublisherLocalId(publisherId, localId).blockingGet();
+        assertEquals(createdDevice.getId(), readByLocalId.getId());
+        assertEquals(createdDevice.getGlobalId(), readByLocalId.getGlobalId());
+        assertEquals(createdDevice.getStatus(), readByLocalId.getStatus());
     }
 }
