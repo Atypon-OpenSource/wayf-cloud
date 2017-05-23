@@ -34,6 +34,9 @@ public class DeviceAccessQuery {
 
     private InflationPolicy inflationPolicy;
 
+    private Integer limit;
+    private Integer offset;
+
     public DeviceAccessQuery() {
     }
 
@@ -92,6 +95,24 @@ public class DeviceAccessQuery {
 
     public DeviceAccessQuery setInflationPolicy(InflationPolicy inflationPolicy) {
         this.inflationPolicy = inflationPolicy;
+        return this;
+    }
+
+    public Integer getLimit() {
+        return limit;
+    }
+
+    public DeviceAccessQuery setLimit(Integer limit) {
+        this.limit = limit;
+        return this;
+    }
+
+    public Integer getOffset() {
+        return offset;
+    }
+
+    public DeviceAccessQuery setOffset(Integer offset) {
+        this.offset = offset;
         return this;
     }
 }

@@ -63,8 +63,13 @@ public class DbExecutor {
     public <T> Observable<T> executeSelect(String query, Map<String, Object> arguments, Class<T> returnType) {
         // Add in limit and offset arguments by default. The limit is increased by 1 so that we can see if there is
         // more data for the client to paginate
-        arguments.put(LIMIT, RequestContextAccessor.get().getLimit() + 1);
-        arguments.put(OFFSET, RequestContextAccessor.get().getOffset());
+        if (arguments.get(LIMIT) == null) {
+            arguments.put(LIMIT, RequestContextAccessor.get().getLimit() + 1);
+        }
+
+        if (arguments.get(OFFSET) == null) {
+            arguments.put(OFFSET, RequestContextAccessor.get().getOffset());
+        }
 
         LOG.debug("Running query [{}] with values [{}]", query, arguments);
 
