@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.facade.impl;
 
+import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessQuery;
@@ -23,14 +24,18 @@ import com.atypon.wayf.data.device.access.DeviceAccessType;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
 import com.atypon.wayf.facade.DeviceAccessFacade;
+import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.DeviceIdentityProviderBlacklistFacade;
 import com.atypon.wayf.facade.IdentityProviderUsageFacade;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
+import io.reactivex.Single;
 import io.reactivex.functions.Function3;
+import io.reactivex.schedulers.Schedulers;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -46,6 +51,9 @@ public class IdentityProviderUsageFacadeImpl implements IdentityProviderUsageFac
     private DeviceAccessFacade deviceAccessFacade;
 
     @Inject
+    private DeviceFacade deviceFacade;
+
+    @Inject
     private DeviceIdentityProviderBlacklistFacade idpBlacklistFacade;
 
     public void setDeviceAccessFacade(DeviceAccessFacade deviceAccessFacade) {
@@ -54,6 +62,35 @@ public class IdentityProviderUsageFacadeImpl implements IdentityProviderUsageFac
 
     public void setIdpBlacklistFacade(DeviceIdentityProviderBlacklistFacade idpBlacklistFacade) {
         this.idpBlacklistFacade = idpBlacklistFacade;
+    }
+
+    @Override
+    public Observable<IdentityProviderUsage> buildRecentHistory(String localId) {
+        return deviceFacade.readByLocalId(localId)
+                .flatMap((device) ->
+                        Single.zip(
+                                // Build the history
+                                Single.just(buildRecentHistory(device)).subscribeOn(Schedulers.io()),
+
+                                // Log this access
+                                deviceAccessFacade.create(new DeviceAccess()
+                                        .setDevice(device)
+                                        .setPublisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
+                                        .setLocalId(localId)
+                                        .setType(DeviceAccessType.READ_IDP_HISTORY)).subscribeOn(Schedulers.io()),
+
+                                // Once both the processes complete, return the history
+                                (history, deviceAccess) -> history
+                        )
+                ).flatMapObservable((history) -> Observable.fromIterable(history));
+    }
+
+    private DeviceAccess createAccess(Device device, String localId, DeviceAccessType type) {
+        return new DeviceAccess()
+                .setDevice(device)
+                .setPublisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
+                .setLocalId(localId)
+                .setType(type);
     }
 
     @Override

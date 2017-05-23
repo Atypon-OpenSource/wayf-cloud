@@ -17,11 +17,18 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.IdentityProviderDao;
+import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.cache.KeyValueCache;
+import com.atypon.wayf.data.device.access.DeviceAccess;
+import com.atypon.wayf.data.device.access.DeviceAccessType;
 import com.atypon.wayf.data.identity.*;
 import com.atypon.wayf.data.cache.CascadingCache;
+import com.atypon.wayf.facade.DeviceAccessFacade;
+import com.atypon.wayf.facade.DeviceFacade;
+import com.atypon.wayf.facade.DeviceIdentityProviderBlacklistFacade;
 import com.atypon.wayf.facade.IdentityProviderFacade;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -50,6 +57,15 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     @Inject
     @Named("identityProviderCache")
     private CascadingCache<String, Long> cache;
+
+    @Inject
+    private DeviceFacade deviceFacade;
+
+    @Inject
+    private DeviceAccessFacade deviceAccessFacade;
+
+    @Inject
+    private DeviceIdentityProviderBlacklistFacade blacklistFacade;
 
     public IdentityProviderFacadeImpl() {
     }
@@ -93,6 +109,63 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     }
 
     @Override
+    public Single<IdentityProvider> recordIdentityProviderUse(String localId, IdentityProvider identityProvider) {
+        return Single.zip(
+                // Resolve the persisted IdentityProvider from the input
+                resolve(identityProvider),
+
+                // Read the device by the local ID passed in and authenticated publisher
+                deviceFacade.readByLocalId(localId),
+
+
+                // Once the device and IdentityProvider have been loaded, perform additional logic
+                (resolvedIdentityProvider, device) ->
+                    Single.zip(
+                            // Remove the IDP from the blacklist if it was on it
+                            blacklistFacade.remove(device, resolvedIdentityProvider).toSingleDefault(device).subscribeOn(Schedulers.io()),
+
+                            // Log the device access
+                            deviceAccessFacade.create(new DeviceAccess()
+                                    .setDevice(device)
+                                    .setPublisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
+                                    .setLocalId(localId)
+                                    .setIdentityProvider(resolvedIdentityProvider)
+                                    .setType(DeviceAccessType.ADD_IDP)).subscribeOn(Schedulers.io()),
+
+                            // Only care about that the processes terminated, not their results, return an ignorable value
+                            (ignored, deviceAccess) -> ignored
+                    )
+
+                    // Ignore the output from the zip, return the resolved IdentityProvider
+                    .map((ignored) -> resolvedIdentityProvider)
+        ).cast(IdentityProvider.class); // Java generics type erasure fix
+    }
+
+    @Override
+    public Completable blockIdentityProviderForDevice(String localId, Long idpId) {
+        IdentityProvider identityProvider = new IdentityProvider();
+        identityProvider.setId(idpId);
+
+        return deviceFacade.readByLocalId(localId)
+                .flatMapCompletable((device) ->
+                    Single.zip(
+                            // Remove the IDP from the blacklist if it was on it
+                            blacklistFacade.add(device, identityProvider).toSingleDefault(device).subscribeOn(Schedulers.io()),
+
+                            // Log the device access
+                            deviceAccessFacade.create(new DeviceAccess()
+                                    .setDevice(device)
+                                    .setPublisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
+                                    .setLocalId(localId)
+                                    .setIdentityProvider(identityProvider)
+                                    .setType(DeviceAccessType.ADD_IDP)).subscribeOn(Schedulers.io()),
+
+                            (ignored, deviceAccess) -> ignored
+                    ).toCompletable()
+                );
+    }
+
+    @Override
     public Observable<IdentityProvider> filter(IdentityProviderQuery query) {
         // If a type is known, only query that DAO. If no type is known, concat the results of filtering all DAOs
         if (query.getType() != null) {
@@ -103,16 +176,6 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
             return Observable.fromIterable(daos)
                     .flatMap((dao) -> dao.filter(query));
         }
-    }
-
-    @Override
-    public Maybe<String> get(String key) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Completable put(String key, String value) {
-        throw new UnsupportedOperationException();
     }
 
     private Observable<IdentityProvider> resolveOauth(OauthEntity oauthEntity) {

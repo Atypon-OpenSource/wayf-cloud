@@ -18,9 +18,13 @@ package com.atypon.wayf.facade;
 
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
+import io.reactivex.Observable;
 
 import java.util.List;
 
 public interface IdentityProviderUsageFacade {
+
+    Observable<IdentityProviderUsage> buildRecentHistory(String localId);
+
     List<IdentityProviderUsage> buildRecentHistory(Device device);
 }

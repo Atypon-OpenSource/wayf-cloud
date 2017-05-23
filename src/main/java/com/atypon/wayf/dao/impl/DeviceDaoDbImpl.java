@@ -116,6 +116,7 @@ public class DeviceDaoDbImpl implements DeviceDao {
                 .flatMapObservable((_query) -> dbExecutor.executeSelect(filterSql, _query, Device.class));
     }
 
+    @Override
     public Completable createDevicePublisherLocalIdXref(Long deviceId, Long publisherId, String localId) {
         Map<String, Object> args = new HashMap<>();
         args.put(DEVICE_ID, deviceId);

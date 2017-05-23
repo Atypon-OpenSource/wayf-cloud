@@ -20,6 +20,7 @@ import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.user.User;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.apache.http.HttpStatus;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -41,4 +42,12 @@ public interface Authenticatable {
 
     Type getType();
     void setType(Type type);
+
+    static Publisher asPublisher(Authenticatable authenticatable) {
+        if (Publisher.class.isAssignableFrom(authenticatable.getClass())) {
+            return (Publisher) authenticatable;
+        }
+
+        throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "An authenticated Publisher is required");
+    }
 }

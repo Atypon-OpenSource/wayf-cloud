@@ -30,5 +30,7 @@ public interface DeviceDao {
     Completable delete(String id);
     Observable<Device> filter(DeviceQuery query);
 
+    Completable createDevicePublisherLocalIdXref(Long deviceId, Long publisherId, String localId);
+
     Maybe<Device> readByPublisherLocalId(Long publisherId, String localId);
 }

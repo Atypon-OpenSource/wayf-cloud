@@ -45,63 +45,71 @@ public class DeviceAccess {
         return id;
     }
 
-    public void setId(Long id) {
+    public DeviceAccess setId(Long id) {
         this.id = id;
+        return this;
     }
 
     public String getLocalId() {
         return localId;
     }
 
-    public void setLocalId(String localId) {
+    public DeviceAccess setLocalId(String localId) {
         this.localId = localId;
+        return this;
     }
 
     public Device getDevice() {
         return device;
     }
 
-    public void setDevice(Device device) {
+    public DeviceAccess setDevice(Device device) {
         this.device = device;
+        return this;
     }
 
     public IdentityProvider getIdentityProvider() {
         return identityProvider;
     }
 
-    public void setIdentityProvider(IdentityProvider identityProvider) {
+    public DeviceAccess setIdentityProvider(IdentityProvider identityProvider) {
         this.identityProvider = identityProvider;
+        return this;
     }
 
     public Publisher getPublisher() {
         return publisher;
     }
 
-    public void setPublisher(Publisher publisher) {
+    public DeviceAccess setPublisher(Publisher publisher) {
         this.publisher = publisher;
+        return this;
     }
 
     public DeviceAccessType getType() {
         return type;
     }
 
-    public void setType(DeviceAccessType type) {
+    public DeviceAccess setType(DeviceAccessType type) {
         this.type = type;
+        return this;
     }
 
     public Date getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(Date createdDate) {
+    public DeviceAccess setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
+        return this;
     }
 
     public Date getModifiedDate() {
         return modifiedDate;
     }
 
-    public void setModifiedDate(Date modifiedDate) {
+    public DeviceAccess setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
+        return this;
     }
 }

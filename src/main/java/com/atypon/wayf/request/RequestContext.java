@@ -34,7 +34,7 @@ public class RequestContext {
     private String requestUrl;
     private String requestUri;
 
-    private Authenticatable authenticatable;
+    private Authenticatable authenticated;
 
     private Boolean hasAnotherDbPage = Boolean.FALSE;
 
@@ -104,12 +104,12 @@ public class RequestContext {
         return this;
     }
 
-    public Authenticatable getAuthenticatable() {
-        return authenticatable;
+    public Authenticatable getAuthenticated() {
+        return authenticated;
     }
 
-    public RequestContext setAuthenticatable(Authenticatable authenticatable) {
-        this.authenticatable = authenticatable;
+    public RequestContext setAuthenticated(Authenticatable authenticated) {
+        this.authenticated = authenticated;
         return this;
     }
 }

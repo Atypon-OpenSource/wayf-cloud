@@ -27,6 +27,4 @@ public interface DeviceAccessFacade {
     Single<DeviceAccess> read(DeviceAccessQuery query);
 
     Observable<DeviceAccess> filter(DeviceAccessQuery query);
-
-    Completable addIdpRelationship(DeviceAccess publisherSession);
 }

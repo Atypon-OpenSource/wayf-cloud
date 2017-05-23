@@ -54,7 +54,7 @@ public class RequestContextFactory {
         String apiKey = RequestReader.getHeaderValue(routingContext, "Authorization");
         if (apiKey != null && !apiKey.isEmpty()) {
             Authenticatable authenticatable = authenticationFacade.authenticate(apiKey).blockingGet();
-            requestContext.setAuthenticatable(authenticatable);
+            requestContext.setAuthenticated(authenticatable);
         }
 
         return requestContext;

@@ -17,12 +17,15 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.DeviceDao;
+import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceInfo;
 import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.device.DeviceStatus;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessQuery;
+import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.DeviceAccessFacade;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.reactivex.FacadePolicies;
@@ -35,6 +38,7 @@ import com.google.inject.Singleton;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,6 +97,29 @@ public class DeviceFacadeImpl implements DeviceFacade {
                                 .toObservable()
                                 .cast(Device.class)
                                 .concatWith(Observable.fromIterable(devices)));
+    }
+
+    @Override
+    public Single<Device> createOrUpdateForPublisher(String localId) {
+        Device device = createOrRead().blockingGet();
+        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+
+        return deviceDao.createDevicePublisherLocalIdXref(device.getId(), publisher.getId(), localId).toSingleDefault(device);
+    }
+
+    private Single<Device> createOrRead() {
+        String deviceGlobalId = RequestContextAccessor.get().getDeviceId();
+
+        return deviceGlobalId == null? create(new Device()) : read(new DeviceQuery().setGlobalId(deviceGlobalId));
+    }
+
+    @Override
+    public Single<Device> readByLocalId(String localId) {
+        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+
+        return deviceDao.readByPublisherLocalId(publisher.getId(), localId)
+                .toSingle()
+                .doOnError((e) -> {throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not find device associated with localId [" + localId + "]");});
     }
 
     private Completable populate(Device device, DeviceQuery query) {

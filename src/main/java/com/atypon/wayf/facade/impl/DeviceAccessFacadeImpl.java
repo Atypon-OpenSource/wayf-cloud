@@ -17,8 +17,6 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.DeviceAccessDao;
-import com.atypon.wayf.data.ServiceException;
-import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessQuery;
@@ -38,7 +36,6 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,27 +60,10 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
 
     @Override
     public Single<DeviceAccess> create(DeviceAccess deviceAcccess) {
-            LOG.debug("Creating institution [{}]", deviceAcccess);
+        LOG.debug("Creating institution [{}]", deviceAcccess);
 
-            return Single.zip(// Run some logic in parallel
-                    // Get the device on the publisher session or create a new one
-                    getOrCreateDevice(deviceAcccess.getDevice()).subscribeOn(Schedulers.io()),
-
-                    // Ensure the localID is unique to that publisher
-                    isUniqueLocalId(deviceAcccess).subscribeOn(Schedulers.io()),
-
-                    (device, isUnique) -> {
-                        if (!isUnique) {
-                            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Publisher ID must be unique");
-                        }
-
-                        LOG.debug("Setting device {}", device.getId());
-                        deviceAcccess.setDevice(device);
-
-                        return deviceAcccess;
-                    })
-                    .compose((single) -> FacadePolicies.applySingle(single))
-                    .flatMap((_deviceAccess) -> deviceAccessDao.create(_deviceAccess));
+        return deviceAccessDao.create(deviceAcccess)
+                .compose((single) -> FacadePolicies.applySingle(single));
     }
 
     @Override
@@ -100,28 +80,6 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
 
                 // Inflate the publisher session and emit it
                 .flatMap((_deviceAccess) -> populate(_deviceAccess, query).toSingle(() -> _deviceAccess));
-    }
-
-    @Override
-    public Completable addIdpRelationship(DeviceAccess deviceAccess) {
-        LOG.debug("Adding relationship");
-
-        return Single.zip( // Do these tasks in parallel
-                // Resolve the Identity Provider to a persisted one (with an ID)
-                identityProviderFacade.resolve(deviceAccess.getIdentityProvider()).subscribeOn(Schedulers.io()),
-
-                // Resolve the Publisher session to a persisted one (with an ID)
-                resolveForLocalId(deviceAccess.getLocalId()).subscribeOn(Schedulers.io()),
-
-                // Once we have resolved both, set the IDP as the authenticator
-                (identityProvider, persistedDeviceAccess) -> {
-                    persistedDeviceAccess.setIdentityProvider(identityProvider);
-                    return persistedDeviceAccess;
-                })
-
-                // Save the updated Publisher Session
-               // .flatMap(deviceAccessToPersist -> update(deviceAccessToPersist))
-                .toCompletable();
     }
 
     @Override
@@ -144,29 +102,6 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
                                 .cast(DeviceAccess.class)
                                 .concatWith(Observable.fromIterable(deviceAccesss)));
 
-    }
-
-    private Single<Device> getOrCreateDevice(Device device) {
-        if (device != null && device.getId() != null) {
-            return Single.just(device);
-        }
-
-        return deviceFacade.create(new Device());
-    }
-
-    private Single<Boolean> isUniqueLocalId(DeviceAccess deviceAccess) {
-        return Single.just(Boolean.TRUE);/*
-        return filter(new DeviceAccessQuery().setLocalId(deviceAccess.getLocalId())) // Filter for publisher sessions with that local ID
-                .firstElement() // Get the first element
-                .isEmpty(); // Return whether or not there was an element*/
-    }
-
-
-    private Single<DeviceAccess> resolveForLocalId(String localId) {
-        return null;
-        /*return filter(new DeviceAccessQuery().setLocalId(localId))
-                .singleOrError()
-                .doOnError((e) -> {throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not find unique DeviceAccess for local ID: " + localId);});*/
     }
 
     private Completable populate(DeviceAccess deviceAccess, DeviceAccessQuery query) {

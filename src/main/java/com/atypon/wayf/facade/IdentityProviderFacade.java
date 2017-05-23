@@ -16,17 +16,20 @@
 
 package com.atypon.wayf.facade;
 
-import com.atypon.wayf.data.cache.KeyValueCache;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderQuery;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
-public interface IdentityProviderFacade extends KeyValueCache<String, String> {
+public interface IdentityProviderFacade {
     Single<IdentityProvider> create(IdentityProvider identityProvider);
     Single<IdentityProvider> read(Long id);
 
     Observable<IdentityProvider> filter(IdentityProviderQuery filter);
 
     Single<IdentityProvider> resolve(IdentityProvider identityProvider);
+
+    Completable blockIdentityProviderForDevice(String localId, Long idpId);
+    Single<IdentityProvider> recordIdentityProviderUse(String localId, IdentityProvider identityProvider);
 }
