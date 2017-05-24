@@ -58,7 +58,7 @@ public class BeanMapperTest {
     @Test
     public void testBeanFactory() {
         Map<String, Object> row = new HashMap<>();
-        row.put(AuthenticationDaoDbImpl.AUTHENTICATABLE_TYPE, Authenticatable.Type.PUBLISHER);
+        row.put(AuthenticationDaoDbImpl.AUTHENTICATABLE_TYPE, Authenticatable.Type.PUBLISHER.toString());
         row.put(AuthenticationDaoDbImpl.AUTHENTICATABLE_ID, 123L);
 
         Authenticatable authenticatable = beanMapper.map(row, Authenticatable.class);

@@ -18,10 +18,12 @@ package com.atypon.wayf.verticle.routing;
 
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.ArrayUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static io.restassured.RestAssured.given;
 
+@Ignore
 public class DeviceRoutingTest extends BaseHttpTest {
 
     private static final String ID_FIELD = "$.id";

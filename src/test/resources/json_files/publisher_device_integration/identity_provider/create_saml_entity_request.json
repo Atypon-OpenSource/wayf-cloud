@@ -1,0 +1,5 @@
+{
+  "entityId": "sample-saml-entity-id",
+  "federationId": "sample-saml-federation-id",
+  "type" : "SAML"
+}

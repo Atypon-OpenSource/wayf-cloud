@@ -18,6 +18,7 @@ package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherQuery;
+import com.atypon.wayf.facade.AuthenticationFacade;
 import com.atypon.wayf.facade.PublisherFacade;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
@@ -49,6 +50,9 @@ public class PublisherRouting implements RoutingProvider {
     private PublisherFacade publisherFacade;
 
     @Inject
+    private AuthenticationFacade authenticationFacade;
+
+    @Inject
     private WayfRequestHandlerFactory handlerFactory;
 
     public PublisherRouting() {
@@ -67,7 +71,12 @@ public class PublisherRouting implements RoutingProvider {
 
         return Single.just(routingContext)
                 .flatMap((rc) -> RequestReader.readRequestBody(rc, Publisher.class))
-                .flatMap((requestPublisher) -> publisherFacade.create(requestPublisher));
+                .flatMap((requestPublisher) -> publisherFacade.create(requestPublisher))
+                .map((createdPublisher) -> {
+                    String token = authenticationFacade.createToken(createdPublisher).blockingGet();
+                    createdPublisher.setToken(token);
+                    return  createdPublisher;
+                });
     }
 
     public Single<Publisher> readPublisher(RoutingContext routingContext) {

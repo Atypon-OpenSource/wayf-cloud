@@ -16,9 +16,11 @@
 
 package com.atypon.wayf.data.device.access;
 
+import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.request.RequestContextAccessor;
 
 import java.util.Date;
 
@@ -45,71 +47,111 @@ public class DeviceAccess {
         return id;
     }
 
-    public DeviceAccess setId(Long id) {
+    public void setId(Long id) {
         this.id = id;
-        return this;
     }
 
     public String getLocalId() {
         return localId;
     }
 
-    public DeviceAccess setLocalId(String localId) {
+    public void setLocalId(String localId) {
         this.localId = localId;
-        return this;
     }
 
     public Device getDevice() {
         return device;
     }
 
-    public DeviceAccess setDevice(Device device) {
+    public void setDevice(Device device) {
         this.device = device;
-        return this;
     }
 
     public IdentityProvider getIdentityProvider() {
         return identityProvider;
     }
 
-    public DeviceAccess setIdentityProvider(IdentityProvider identityProvider) {
+    public void setIdentityProvider(IdentityProvider identityProvider) {
         this.identityProvider = identityProvider;
-        return this;
     }
 
     public Publisher getPublisher() {
         return publisher;
     }
 
-    public DeviceAccess setPublisher(Publisher publisher) {
+    public void setPublisher(Publisher publisher) {
         this.publisher = publisher;
-        return this;
     }
 
     public DeviceAccessType getType() {
         return type;
     }
 
-    public DeviceAccess setType(DeviceAccessType type) {
+    public void setType(DeviceAccessType type) {
         this.type = type;
-        return this;
     }
 
     public Date getCreatedDate() {
         return createdDate;
     }
 
-    public DeviceAccess setCreatedDate(Date createdDate) {
+    public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
-        return this;
     }
 
     public Date getModifiedDate() {
         return modifiedDate;
     }
 
-    public DeviceAccess setModifiedDate(Date modifiedDate) {
+    public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
-        return this;
     }
+
+    public static class Builder {
+        private String localId;
+
+        private Device device;
+
+        private IdentityProvider identityProvider;
+
+        private Publisher publisher;
+
+        private DeviceAccessType type;
+
+        public Builder localId(String localId) {
+            this.localId = localId;
+            return this;
+        }
+
+        public Builder device(Device device) {
+            this.device = device;
+            return this;
+        }
+
+        public Builder identityProvider(IdentityProvider identityProvider) {
+            this.identityProvider = identityProvider;
+            return this;
+        }
+
+        public Builder publisher(Publisher publisher) {
+            this.publisher = publisher;
+            return this;
+        }
+
+        public Builder type(DeviceAccessType type) {
+            this.type = type;
+            return this;
+        }
+
+        public DeviceAccess build() {
+            DeviceAccess deviceAccess = new DeviceAccess();
+            deviceAccess.setLocalId(localId);
+            deviceAccess.setDevice(device);
+            deviceAccess.setIdentityProvider(identityProvider);
+            deviceAccess.setPublisher(publisher);
+            deviceAccess.setType(type);
+            return deviceAccess;
+        }
+    }
+
 }

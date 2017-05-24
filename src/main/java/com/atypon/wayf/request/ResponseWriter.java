@@ -38,6 +38,10 @@ import java.net.URL;
 public class ResponseWriter {
     private static final Logger LOG = LoggerFactory.getLogger(ResponseWriter.class);
 
+    public static void setDeviceIdHeader(RoutingContext routingContext, String globalId) {
+        routingContext.response().putHeader("deviceId", globalId);
+    }
+
     public static <B> void buildSuccess(RoutingContext routingContext, B body) {
         LOG.debug("Building success message");
 

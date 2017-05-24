@@ -39,7 +39,7 @@ public class WayfVerticle extends AbstractVerticle {
     private static final Logger LOG = LoggerFactory.getLogger(WayfVerticle.class);
 
     @Inject
-    private PublisherSessionRouting publisherSessionRouting;
+    private IdentityProviderUsageRouting identityProviderUsageRouting;
 
     @Inject
     private IdentityProviderRouting identityProviderRouting;
@@ -63,7 +63,7 @@ public class WayfVerticle extends AbstractVerticle {
 
     private void startWebApp(Handler<AsyncResult<HttpServer>> next) {
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
-        routingProviders = Lists.newArrayList(publisherSessionRouting, identityProviderRouting, deviceRoutingProvider, publisherRouting);
+        routingProviders = Lists.newArrayList(identityProviderUsageRouting, identityProviderRouting, deviceRoutingProvider, publisherRouting);
         // Create a router object.
         Router router = Router.router(vertx);
 

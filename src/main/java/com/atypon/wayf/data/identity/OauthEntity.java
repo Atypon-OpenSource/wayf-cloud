@@ -32,6 +32,9 @@ public class OauthEntity extends IdentityProvider {
         return IdentityProviderType.OAUTH;
     }
 
+    public void setType(IdentityProviderType type) {
+    }
+
     public OauthProvider getProvider() {
         return provider;
     }

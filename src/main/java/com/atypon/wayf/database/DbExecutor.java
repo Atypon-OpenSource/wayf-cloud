@@ -63,11 +63,14 @@ public class DbExecutor {
     public <T> Observable<T> executeSelect(String query, Map<String, Object> arguments, Class<T> returnType) {
         // Add in limit and offset arguments by default. The limit is increased by 1 so that we can see if there is
         // more data for the client to paginate
-        if (arguments.get(LIMIT) == null) {
+        //
+        // There should be a RequestContext in almost all cases. An exception would be a database call made prior
+        // to the request being built like the one made to authenticated the API Token
+        if (arguments.get(LIMIT) == null && RequestContextAccessor.get() != null) {
             arguments.put(LIMIT, RequestContextAccessor.get().getLimit() + 1);
         }
 
-        if (arguments.get(OFFSET) == null) {
+        if (arguments.get(OFFSET) == null && RequestContextAccessor.get() != null) {
             arguments.put(OFFSET, RequestContextAccessor.get().getOffset());
         }
 

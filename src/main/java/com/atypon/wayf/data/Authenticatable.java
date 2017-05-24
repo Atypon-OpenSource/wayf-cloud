@@ -18,10 +18,12 @@ package com.atypon.wayf.data;
 
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.http.HttpStatus;
 
+/*
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
@@ -30,7 +32,7 @@ import org.apache.http.HttpStatus;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = Publisher.class, name = "PUBLISHER"),
         @JsonSubTypes.Type(value = User.class, name = "ADMIN")
-})
+})*/
 public interface Authenticatable {
     enum Type {
         PUBLISHER,
@@ -40,6 +42,7 @@ public interface Authenticatable {
     void setId(Long id);
     Long getId();
 
+    @JsonIgnore
     Type getType();
     void setType(Type type);
 

@@ -19,6 +19,7 @@ package com.atypon.wayf.verticle.routing;
 import io.restassured.http.ContentType;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.commons.lang3.ArrayUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -28,6 +29,7 @@ import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+@Ignore
 public class PublisherSessionRoutingTest extends BaseHttpTest {
     private static final String ID_FIELD = "$.id";
     private static final String LOCAL_ID_FIELD = "$.localId";

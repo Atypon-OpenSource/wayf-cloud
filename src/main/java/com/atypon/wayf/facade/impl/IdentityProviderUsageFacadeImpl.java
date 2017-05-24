@@ -22,11 +22,9 @@ import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessQuery;
 import com.atypon.wayf.data.device.access.DeviceAccessType;
 import com.atypon.wayf.data.identity.IdentityProvider;
+import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
-import com.atypon.wayf.facade.DeviceAccessFacade;
-import com.atypon.wayf.facade.DeviceFacade;
-import com.atypon.wayf.facade.DeviceIdentityProviderBlacklistFacade;
-import com.atypon.wayf.facade.IdentityProviderUsageFacade;
+import com.atypon.wayf.facade.*;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
@@ -35,6 +33,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.Single;
 import io.reactivex.functions.Function3;
+import io.reactivex.functions.Function4;
 import io.reactivex.schedulers.Schedulers;
 
 import java.math.BigDecimal;
@@ -56,6 +55,9 @@ public class IdentityProviderUsageFacadeImpl implements IdentityProviderUsageFac
     @Inject
     private DeviceIdentityProviderBlacklistFacade idpBlacklistFacade;
 
+    @Inject
+    private IdentityProviderFacade identityProviderFacade;
+
     public void setDeviceAccessFacade(DeviceAccessFacade deviceAccessFacade) {
         this.deviceAccessFacade = deviceAccessFacade;
     }
@@ -73,24 +75,17 @@ public class IdentityProviderUsageFacadeImpl implements IdentityProviderUsageFac
                                 Single.just(buildRecentHistory(device)).subscribeOn(Schedulers.io()),
 
                                 // Log this access
-                                deviceAccessFacade.create(new DeviceAccess()
-                                        .setDevice(device)
-                                        .setPublisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
-                                        .setLocalId(localId)
-                                        .setType(DeviceAccessType.READ_IDP_HISTORY)).subscribeOn(Schedulers.io()),
+                                deviceAccessFacade.create(new DeviceAccess.Builder()
+                                        .device(device)
+                                        .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
+                                        .localId(localId)
+                                        .type(DeviceAccessType.READ_IDP_HISTORY)
+                                        .build()).subscribeOn(Schedulers.io()),
 
                                 // Once both the processes complete, return the history
                                 (history, deviceAccess) -> history
                         )
                 ).flatMapObservable((history) -> Observable.fromIterable(history));
-    }
-
-    private DeviceAccess createAccess(Device device, String localId, DeviceAccessType type) {
-        return new DeviceAccess()
-                .setDevice(device)
-                .setPublisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
-                .setLocalId(localId)
-                .setType(type);
     }
 
     @Override
@@ -113,9 +108,10 @@ public class IdentityProviderUsageFacadeImpl implements IdentityProviderUsageFac
                                 getLatestActiveDateForIdpId(deviceAccessObservable),
                                 getIdpCountByIdpId(deviceAccessObservable),
                                 getTotalAccessCount(deviceAccessObservable),
+                                getInflatedIdpByIdpId(deviceAccessObservable),
 
                                 // Zip the results of the functions and construct a List of IdentityProviderUsage from them
-                                (latestActiveDateByIdpId, idpCountByIdpId, totalCount) -> BUILD_USAGES.apply(latestActiveDateByIdpId, idpCountByIdpId, totalCount)
+                                (latestActiveDateByIdpId, idpCountByIdpId, totalCount, inflatedIdpsById) -> BUILD_USAGES.apply(latestActiveDateByIdpId, idpCountByIdpId, totalCount, inflatedIdpsById)
                         )
                 ).blockingFirst();
 
@@ -175,7 +171,28 @@ public class IdentityProviderUsageFacadeImpl implements IdentityProviderUsageFac
         return deviceAccessObservable.count().toObservable();
     }
 
-    private static final Function3<HashMap<Long, Date>, HashMap<Long, Integer>, Long, List<IdentityProviderUsage>> BUILD_USAGES = (latestActiveDateByIdpId, idpCountByIdpId, totalCount) -> {
+    /**
+     * Given an Observable stream of DeviceAccess, get the unique IdentityProviders in the stream and their number of occurrences
+     */
+    private ObservableSource<HashMap<Long, IdentityProvider>> getInflatedIdpByIdpId(Observable<DeviceAccess> deviceAccessObservable) {
+        return deviceAccessObservable.collect(
+                    () -> new HashSet<Long>(),
+                    (idpIds, _deviceAccess) -> {
+                        Long idpId = _deviceAccess.getIdentityProvider().getId();
+
+                        idpIds.add(idpId);
+                    }
+                )
+                .flatMapObservable((idpIds) -> idpIds.isEmpty()? Observable.empty() : identityProviderFacade.filter(new IdentityProviderQuery().setIds(idpIds)))
+                .collect(
+                        () -> new HashMap<Long, IdentityProvider>(),
+                        (inflatedIdpByIdpId, identityProvider) -> {
+                            inflatedIdpByIdpId.put(identityProvider.getId(), identityProvider);
+                        }
+                )
+                .toObservable();
+    }
+    private static final Function4<HashMap<Long, Date>, HashMap<Long, Integer>, Long, HashMap<Long, IdentityProvider>, List<IdentityProviderUsage>> BUILD_USAGES = (latestActiveDateByIdpId, idpCountByIdpId, totalCount, idpsById) -> {
         Set<Long> idpIds = idpCountByIdpId.keySet();
 
         List<IdentityProviderUsage> usages = new LinkedList<>();
@@ -186,8 +203,7 @@ public class IdentityProviderUsageFacadeImpl implements IdentityProviderUsageFac
             IdentityProviderUsage usage = new IdentityProviderUsage();
             usage.setLastActiveDate(latestActiveDateByIdpId.get(idpId));
 
-            IdentityProvider identityProvider = new IdentityProvider();
-            identityProvider.setId(idpId);
+            IdentityProvider identityProvider = idpsById.get(idpId);
             usage.setIdp(identityProvider);
 
             BigDecimal idpCountBd = new BigDecimal(idpCountByIdpId.get(idpId).intValue());

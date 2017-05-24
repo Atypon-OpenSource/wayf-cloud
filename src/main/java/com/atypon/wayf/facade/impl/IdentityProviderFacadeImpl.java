@@ -55,10 +55,6 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     private Map<IdentityProviderType, IdentityProviderDao> daosByType;
 
     @Inject
-    @Named("identityProviderCache")
-    private CascadingCache<String, Long> cache;
-
-    @Inject
     private DeviceFacade deviceFacade;
 
     @Inject
@@ -89,6 +85,7 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
     @Override
     public Single<IdentityProvider> resolve(IdentityProvider identityProvider) {
+        LOG.debug("Attempting to resolve IdentityProvider [{}]", identityProvider);
         if (identityProvider.getType() == null) {
             throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "In order to resolve an IdentityProvider, 'type' is required");
         }
@@ -105,7 +102,10 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
             throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "IdentityProvider of type [" + identityProvider.getType() + "] not supported");
         }
 
-        return foundProviders.singleOrError().doOnError((e) -> {throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Could not determine a unique IdentityProvider from input", e);});
+        return foundProviders.switchIfEmpty(create(identityProvider).toObservable())
+                .firstOrError().doOnError((e) -> {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Could not determine a unique IdentityProvider from input", e);
+        });
     }
 
     @Override
@@ -118,27 +118,28 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
                 deviceFacade.readByLocalId(localId),
 
 
-                // Once the device and IdentityProvider have been loaded, perform additional logic
+                // Once the device and IdentityProvider have create a DeviceAccess object to contain both items
                 (resolvedIdentityProvider, device) ->
+                        new DeviceAccess.Builder()
+                                .device(device)
+                                .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
+                                .localId(localId)
+                                .identityProvider(resolvedIdentityProvider)
+                                .type(DeviceAccessType.ADD_IDP)
+                                .build()
+            ).flatMap((deviceAccess) ->
+                    // Map the DeviceAccess containing the read Device and the resolved IdentityProvider
                     Single.zip(
                             // Remove the IDP from the blacklist if it was on it
-                            blacklistFacade.remove(device, resolvedIdentityProvider).toSingleDefault(device).subscribeOn(Schedulers.io()),
+                            blacklistFacade.remove(deviceAccess.getDevice(), deviceAccess.getIdentityProvider()).toSingleDefault(deviceAccess.getDevice()).subscribeOn(Schedulers.io()),
 
                             // Log the device access
-                            deviceAccessFacade.create(new DeviceAccess()
-                                    .setDevice(device)
-                                    .setPublisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
-                                    .setLocalId(localId)
-                                    .setIdentityProvider(resolvedIdentityProvider)
-                                    .setType(DeviceAccessType.ADD_IDP)).subscribeOn(Schedulers.io()),
+                            deviceAccessFacade.create(deviceAccess).subscribeOn(Schedulers.io()),
 
-                            // Only care about that the processes terminated, not their results, return an ignorable value
-                            (ignored, deviceAccess) -> ignored
+                            // Only care about that the processes terminated, not their results, return the resolved IDP
+                            (ignored, createdDeviceAccess) -> deviceAccess.getIdentityProvider()
                     )
-
-                    // Ignore the output from the zip, return the resolved IdentityProvider
-                    .map((ignored) -> resolvedIdentityProvider)
-        ).cast(IdentityProvider.class); // Java generics type erasure fix
+        ); // Java generics type erasure fix
     }
 
     @Override
@@ -153,12 +154,13 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
                             blacklistFacade.add(device, identityProvider).toSingleDefault(device).subscribeOn(Schedulers.io()),
 
                             // Log the device access
-                            deviceAccessFacade.create(new DeviceAccess()
-                                    .setDevice(device)
-                                    .setPublisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
-                                    .setLocalId(localId)
-                                    .setIdentityProvider(identityProvider)
-                                    .setType(DeviceAccessType.ADD_IDP)).subscribeOn(Schedulers.io()),
+                            deviceAccessFacade.create(new DeviceAccess.Builder()
+                                    .device(device)
+                                    .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
+                                    .localId(localId)
+                                    .identityProvider(identityProvider)
+                                    .type(DeviceAccessType.ADD_IDP)
+                                    .build()).subscribeOn(Schedulers.io()),
 
                             (ignored, deviceAccess) -> ignored
                     ).toCompletable()

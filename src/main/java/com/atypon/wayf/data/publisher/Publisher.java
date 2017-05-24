@@ -25,10 +25,12 @@ public class Publisher implements Authenticatable {
     private Long id;
     private PublisherStatus status;
 
+    private String token;
+
     private String code;
     private String name;
 
-   private User contact;
+    private User contact;
 
     private Date createdDate;
     private Date modifiedDate;
@@ -50,6 +52,14 @@ public class Publisher implements Authenticatable {
 
     public void setStatus(PublisherStatus status) {
         this.status = status;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public String getName() {

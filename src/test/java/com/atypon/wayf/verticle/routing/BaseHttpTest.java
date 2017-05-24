@@ -36,6 +36,8 @@ import org.hamcrest.core.IsNull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -47,6 +49,7 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(VertxUnitRunner.class)
 public abstract class BaseHttpTest {
+    private static final Logger LOG = LoggerFactory.getLogger(BaseHttpTest.class);
     private static Vertx vertx;
     private static Integer port;
 
@@ -75,9 +78,10 @@ public abstract class BaseHttpTest {
     protected Predicate ALWAYS_TRUE_PREDICATE = (arg) -> true;
 
 
-    protected String getFileAsString(String path) {
+    protected static String getFileAsString(String path) {
+        LOG.debug("Loading file: {}", path);
         try {
-            return CharStreams.toString(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream(path), Charsets.UTF_8));
+            return CharStreams.toString(new InputStreamReader(BaseHttpTest.class.getClassLoader().getResourceAsStream(path), Charsets.UTF_8));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

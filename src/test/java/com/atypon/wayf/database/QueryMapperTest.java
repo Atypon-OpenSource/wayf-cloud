@@ -32,19 +32,19 @@ public class QueryMapperTest {
 
     @Test
     public void testQueryMapper() throws Exception {
-        DeviceAccess publisherSession = new DeviceAccess();
-        publisherSession.setId(456L);
-        publisherSession.setLocalId("123abc456");
-        publisherSession.setCreatedDate(new Date());
-        publisherSession.setModifiedDate(new Date());
+        DeviceAccess deviceAccess = new DeviceAccess();
+        deviceAccess.setId(456L);
+        deviceAccess.setLocalId("123abc456");
+        deviceAccess.setCreatedDate(new Date());
+        deviceAccess.setModifiedDate(new Date());
 
         Device device = new Device();
         device.setGlobalId(UUID.randomUUID().toString());
-        publisherSession.setDevice(device);
+        deviceAccess.setDevice(device);
 
         Publisher publisher = new Publisher();
         publisher.setId(123L);
-        publisherSession.setPublisher(publisher);
+        deviceAccess.setPublisher(publisher);
 
         Map<String, Object> arguments = QueryMapper.buildQueryArguments("SELECT id AS 'id', " +
                 "        local_id AS 'localId', " +
@@ -54,10 +54,10 @@ public class QueryMapperTest {
                 "        created_date AS 'createdDate',  " +
                 "        modified_date AS 'modifiedDate' " +
                 "    FROM wayf.publisher_session " +
-                "        WHERE id = :id AND device_id = :device.id;", publisherSession);
+                "        WHERE id = :id AND device_id = :device.globalId;", deviceAccess);
 
-        Assert.assertEquals(publisherSession.getId(), arguments.get("id"));
-        Assert.assertEquals(publisherSession.getDevice().getGlobalId(), arguments.get("device.globalId"));
+        Assert.assertEquals(deviceAccess.getId(), arguments.get("id"));
+        Assert.assertEquals(deviceAccess.getDevice().getGlobalId(), arguments.get("device.globalId"));
 
 
     }

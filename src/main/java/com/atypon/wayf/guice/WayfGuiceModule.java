@@ -67,6 +67,9 @@ public class WayfGuiceModule extends AbstractModule {
 
             Names.bindProperties(binder(), properties);
 
+            bind(DeviceIdentityProviderBlacklistFacade.class).to(DeviceIdentityProviderBlacklistFacadeImpl.class);
+            bind(IdentityProviderUsageFacade.class).to(IdentityProviderUsageFacadeImpl.class);
+
             bind(AuthenticationDao.class).annotatedWith(Names.named("authenticationDaoRedisImpl")).to(AuthenticationDaoRedisImpl.class);
             bind(AuthenticationDao.class).annotatedWith(Names.named("authenticationDaoDbImpl")).to(AuthenticationDaoDbImpl.class);
             bind(AuthenticationFacade.class).to(AuthenticatableFacadeImpl.class);
@@ -167,11 +170,6 @@ public class WayfGuiceModule extends AbstractModule {
         daoMap.put(IdentityProviderType.OPEN_ATHENS, openAthensDao);
         daoMap.put(IdentityProviderType.OAUTH, oauthDao);
         return daoMap;
-    }
-
-    @Provides @Named("identityProviderCache")
-    public CascadingCache<String, Long> provideIdentityProviderCache(@Named("identityProviderRedisDao") RedisDao l1, IdentityProviderFacade l2) {
-        return new CascadingCache(l1, l2);
     }
 
     @Provides @Named("beanFactoryMap")

@@ -81,7 +81,9 @@ public class DeviceAccessQuery {
     }
 
     public DeviceAccessQuery setNotIdps(Collection<Long> notIdps) {
-        this.notIdps = notIdps;
+        if (notIdps != null && !notIdps.isEmpty()) {
+            this.notIdps = notIdps;
+        }
         return this;
     }
 
