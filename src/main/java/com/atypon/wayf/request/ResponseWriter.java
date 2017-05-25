@@ -31,12 +31,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 /**
  * A utility class to write responses to VertX
  */
 public class ResponseWriter {
     private static final Logger LOG = LoggerFactory.getLogger(ResponseWriter.class);
+
+    public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
 
     public static void setDeviceIdHeader(RoutingContext routingContext, String globalId) {
         routingContext.response().putHeader("deviceId", globalId);
@@ -45,6 +49,7 @@ public class ResponseWriter {
     public static <B> void buildSuccess(RoutingContext routingContext, B body) {
         LOG.debug("Building success message");
 
+        Json.prettyMapper.setDateFormat(DATE_FORMAT);
         Json.prettyMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         Completable.fromAction(

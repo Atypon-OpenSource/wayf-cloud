@@ -19,11 +19,18 @@ package com.atypon.wayf.integration;
 import com.atypon.wayf.verticle.routing.BaseHttpTest;
 import io.restassured.http.ContentType;
 import io.restassured.response.ExtractableResponse;
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
+
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class PublisherDeviceIntegrationTest extends BaseHttpTest {
 
@@ -47,9 +54,11 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
     private static final String RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/device/relate_new_device_publisher_a_response.json");
 
     private static final String NEW_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/empty_history_response.json");
+    private static final String INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/initial_add_idp_response.json");
+    private static final String AFTER_DELETE_IDP_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/after_delete_idp_response.json");
 
     @Test
-    public void runIntegration() {
+    public void runIntegration() throws Exception {
         // Create 2 Publishers
         String publisherAToken = testCreatePublisher(CREATE_PUBLISHER_A_REQUEST_JSON, CREATE_PUBLISHER_A_RESPONSE_JSON);
         String publisherBToken = testCreatePublisher(CREATE_PUBLISHER_B_REQUEST_JSON, CREATE_PUBLISHER_B_RESPONSE_JSON);
@@ -57,26 +66,39 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
         String publisherALocalId = "local-id-publisher-a";
 
         // Create device
-        String globalId = relateDeviceToPublisher(publisherALocalId, publisherAToken, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+        String globalIdPublisherA = relateDeviceToPublisher(publisherALocalId, publisherAToken, null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Assert an empty history
         testDeviceHistory(publisherALocalId, publisherAToken, NEW_DEVICE_HISTORY_RESPONSE_JSON);
 
+        Date earliestLastActiveDate = DATE_FORMAT.parse(DATE_FORMAT.format(new Date()));
+
         // Add the IDPs to the device multiple times and validate the IDP's ID is the same each time
-        testAddIdpToDeviceAndIdpResolution(5, publisherALocalId, publisherAToken, CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
+        Long samlId = testAddIdpToDeviceAndIdpResolution(5, publisherALocalId, publisherAToken, CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
         testAddIdpToDeviceAndIdpResolution(4, publisherALocalId, publisherAToken, CREATE_OPEN_ATHENS_IDP_REQUEST_JSON, CREATE_OPEN_ATHENS_IDP_RESPONSE_JSON);
         testAddIdpToDeviceAndIdpResolution(3, publisherALocalId, publisherAToken, CREATE_OAUTH_IDP_REQUEST_JSON, CREATE_OAUTH_IDP_RESPONSE_JSON);
 
-        testDeviceHistory(publisherALocalId, publisherAToken, NEW_DEVICE_HISTORY_RESPONSE_JSON);
+        Date latestLastActiveDate = DATE_FORMAT.parse(DATE_FORMAT.format(new Date()));
 
+        // Test the device history after adding the IDPs
+        String deviceHistoryFromPublisherA = testDeviceHistory(publisherALocalId, publisherAToken, INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON);
+        testLastActiveDateBetween(earliestLastActiveDate, latestLastActiveDate, 3, deviceHistoryFromPublisherA);
 
-        // POST an IDP assert correct history
-        // POST more IDPS
-        // Asset correct staits via GET
-        // Create new local ID for other publisher
-        // assert existing correct stats
-        //  Delete IDP for new publihser
-        // Assert history is correct on both publishers
+        String publisherBLocalId = "local-id-publisher-b";
+        String globalIdPublisherB = relateDeviceToPublisher(publisherBLocalId, publisherBToken, globalIdPublisherA, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+
+        assertEquals(globalIdPublisherA, globalIdPublisherB);
+
+        String deviceHistoryFromPublisherB = testDeviceHistory(publisherBLocalId, publisherBToken, INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON);
+
+        compareDeviceHistory(deviceHistoryFromPublisherA, deviceHistoryFromPublisherB);
+
+        removeIdpForDevice(publisherALocalId, publisherAToken, samlId);
+
+        deviceHistoryFromPublisherA = testDeviceHistory(publisherALocalId, publisherAToken, AFTER_DELETE_IDP_DEVICE_HISTORY_RESPONSE_JSON);
+        deviceHistoryFromPublisherB = testDeviceHistory(publisherBLocalId, publisherBToken, AFTER_DELETE_IDP_DEVICE_HISTORY_RESPONSE_JSON);
+
+        compareDeviceHistory(deviceHistoryFromPublisherA, deviceHistoryFromPublisherB);
     }
 
     private String testCreatePublisher(String request, String response) {
@@ -128,12 +150,18 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
         return id;
     }
 
-    private String relateDeviceToPublisher(String localId, String publisherToken, String expectedResponseJson) {
+    private String relateDeviceToPublisher(String localId, String publisherToken, String globalId, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", publisherToken);
+        headers.put("User-Agent", "Test-Agent");
+        if (globalId != null) {
+            headers.put("deviceId", globalId);
+        }
+
         ExtractableResponse relateResponse =
                 given()
                         .contentType(ContentType.JSON)
-                        .header("Authorization", publisherToken)
-                        .header("User-Agent", "Test-Agent")
+                        .headers(headers)
                         .patch("/1/device/" + localId)
                         .then()
                         .statusCode(200)
@@ -154,7 +182,7 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
         return deviceIdHeader;
     }
 
-    private void testDeviceHistory(String localId, String publisherToken, String expectedHistoryJson) {
+    private String testDeviceHistory(String localId, String publisherToken, String expectedHistoryJson) {
         String historyResponse =
                 given()
                         .contentType(ContentType.JSON)
@@ -164,7 +192,19 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
                         .statusCode(200)
                         .extract().response().asString();
 
-        assertJsonEquals(expectedHistoryJson, historyResponse, null);
+        compareDeviceHistory(expectedHistoryJson, historyResponse);
+
+        return historyResponse;
+    }
+
+    private void compareDeviceHistory(String history1, String history2) {
+        String[] addDeviceHistoryGeneratedFields = {
+                "$[*].lastActiveDate",
+                "$[*].idp.id",
+                "$[*].idp.createdDate"
+        };
+
+        assertJsonEquals(history1, history2, addDeviceHistoryGeneratedFields);
     }
 
     private Long addIdpToDevice(String localId, String publisherToken, String idpBodyJson, String expectedResponseJson) {
@@ -190,7 +230,7 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
         return idpId;
     }
 
-    private void testAddIdpToDeviceAndIdpResolution(int count, String localId, String publisherToken, String requestJson, String expectedResponseJson) {
+    private Long testAddIdpToDeviceAndIdpResolution(int count, String localId, String publisherToken, String requestJson, String expectedResponseJson) {
         Long[] ids = new Long[count];
 
         for (int i = 0; i < count; i++) {
@@ -200,5 +240,34 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
         for (int i = 0; i < count - 1; i++) {
             assertEquals(ids[i], ids[i+1]);
         }
+
+        return ids[0];
+    }
+
+    private void testLastActiveDateBetween(Date startDate, Date endDate, int idpCount, String deviceHistory) {
+        for (int i = 0; i < idpCount; i++) {
+            try {
+                String lastActiveDateStr = readField(deviceHistory, "$[" + i + "].lastActiveDate");
+                Date lastActiveDate = DATE_FORMAT.parse(lastActiveDateStr);
+
+                assertTrue(startDate.compareTo(lastActiveDate) <= 0);
+                assertTrue(endDate.compareTo(lastActiveDate) >= 0);
+            } catch (Exception e) {
+                throw new RuntimeException("Could not parse date in " + deviceHistory, e);
+            }
+        }
+    }
+
+    private void removeIdpForDevice(String localId, String publisherToken, Long idpId) {
+        String addIdpResponse =
+                given()
+                        .contentType(ContentType.JSON)
+                        .header("Authorization", publisherToken)
+                        .delete("/1/device/" + localId + "/history/idp/" + idpId)
+                        .then()
+                        .statusCode(200)
+                        .extract().response().asString();
+
+        assertTrue(addIdpResponse.isEmpty());
     }
 }

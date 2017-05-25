@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.verticle.routing;
 
+import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.WayfVerticle;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +43,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -52,6 +55,8 @@ public abstract class BaseHttpTest {
     private static final Logger LOG = LoggerFactory.getLogger(BaseHttpTest.class);
     private static Vertx vertx;
     private static Integer port;
+
+    protected static final DateFormat DATE_FORMAT = ResponseWriter.DATE_FORMAT;
 
     @BeforeClass
     public static void setUpClass(TestContext context) throws IOException {
