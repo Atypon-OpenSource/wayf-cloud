@@ -28,6 +28,8 @@ import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.Predicate;
 import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.response.ExtractableResponse;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -44,9 +46,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Map;
 
+import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -146,6 +148,4 @@ public abstract class BaseHttpTest {
             throw new RuntimeException(e);
         }
     }
-
-
 }

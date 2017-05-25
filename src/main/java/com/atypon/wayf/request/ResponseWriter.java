@@ -43,7 +43,7 @@ public class ResponseWriter {
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
 
     public static void setDeviceIdHeader(RoutingContext routingContext, String globalId) {
-        routingContext.response().putHeader("deviceId", globalId);
+        routingContext.response().putHeader(RequestReader.DEVICE_ID_HEADER, globalId);
     }
 
     public static <B> void buildSuccess(RoutingContext routingContext, B body) {

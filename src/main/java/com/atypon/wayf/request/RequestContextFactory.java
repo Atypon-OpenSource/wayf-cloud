@@ -32,26 +32,26 @@ public class RequestContextFactory {
     public RequestContext fromRoutingContext(RoutingContext routingContext) {
         RequestContext requestContext = new RequestContext();
 
-        requestContext.setUserAgent(RequestReader.getHeaderValue(routingContext, "User-Agent"));
+        requestContext.setUserAgent(RequestReader.getHeaderValue(routingContext, RequestReader.USER_AGENT_HEADER));
         requestContext.setRequestUri(routingContext.request().uri());
         requestContext.setRequestUrl(routingContext.request().absoluteURI());
 
-        String limit = RequestReader.getQueryValue(routingContext, "limit");
+        String limit = RequestReader.getQueryValue(routingContext, RequestReader.LIMIT_QUERY_PARAM);
         if (limit != null && !limit.isEmpty()) {
             requestContext.setLimit(Integer.parseInt(limit));
         }
 
-        String offset = RequestReader.getQueryValue(routingContext, "offset");
+        String offset = RequestReader.getQueryValue(routingContext, RequestReader.OFFSET_QUERY_PARAM);
         if (offset != null && !offset.isEmpty()) {
             requestContext.setOffset(Integer.parseInt(offset));
         }
 
-        String deviceId = RequestReader.getHeaderValue(routingContext, "deviceId");
+        String deviceId = RequestReader.getHeaderValue(routingContext, RequestReader.DEVICE_ID_HEADER);
         if (deviceId != null && !deviceId.isEmpty()) {
             requestContext.setDeviceId(deviceId);
         }
 
-        String apiKey = RequestReader.getHeaderValue(routingContext, "Authorization");
+        String apiKey = RequestReader.getHeaderValue(routingContext, RequestReader.AUTHORIZATION_HEADER);
         if (apiKey != null && !apiKey.isEmpty()) {
             Authenticatable authenticatable = authenticationFacade.authenticate(apiKey).blockingGet();
             requestContext.setAuthenticated(authenticatable);

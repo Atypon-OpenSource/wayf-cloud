@@ -17,21 +17,21 @@
 package com.atypon.wayf.integration;
 
 import com.atypon.wayf.verticle.routing.BaseHttpTest;
+import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
 import io.restassured.http.ContentType;
+import io.restassured.http.Method;
 import io.restassured.response.ExtractableResponse;
-import org.apache.commons.lang3.time.DateUtils;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
-import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.restassured.RestAssured.given;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PublisherDeviceIntegrationTest extends BaseHttpTest {
 
     private static final String BASE_FILE_PATH = "json_files/publisher_device_integration/";
@@ -57,6 +57,9 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
     private static final String INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/initial_add_idp_response.json");
     private static final String AFTER_DELETE_IDP_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/after_delete_idp_response.json");
     private static final String RE_ADD_SAML_IDP_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/re-add_saml_idp_response.json");
+
+    private LoggingHttpRequest request = new LoggingHttpRequest("publisher_integration_test");
+
     @Test
     public void runIntegration() throws Exception {
         // Create 2 Publishers
@@ -119,13 +122,14 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
         compareDeviceHistory(deviceHistoryFromPublisherA, deviceHistoryFromPublisherB);
     }
 
-    private String testCreatePublisher(String request, String response) {
+    private String testCreatePublisher(String requestBody, String response) {
         String createResponse =
-                given()
+                request
                         .contentType(ContentType.JSON)
-                        .body(request)
-                        .post("/1/publisher")
-                        .then()
+                        .body(requestBody)
+                        .method(Method.POST)
+                        .url("/1/publisher")
+                        .execute()
                         .statusCode(200)
                         .extract().response().asString();
 
@@ -144,48 +148,23 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
         return token;
     }
 
-    private Long testCreateIdp(String request, String expectedResponseJson) {
-        String createResponse =
-                given()
-                        .contentType(ContentType.JSON)
-                        .body(request)
-                        .post("/1/identityProvider")
-                        .then()
-                        .statusCode(200)
-                        .extract().response().asString();
-
-        String[] createResponseGeneratedFields = {
-                "$.id",
-                "$.createdDate"
-        };
-
-        assertNotNullPaths(createResponse, createResponseGeneratedFields);
-
-        Long id = Long.valueOf(readField(createResponse, "$.id"));
-
-        assertJsonEquals(expectedResponseJson, createResponse, createResponseGeneratedFields);
-
-        return id;
-    }
-
     private String relateDeviceToPublisher(String localId, String publisherToken, String globalId, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", publisherToken);
         headers.put("User-Agent", "Test-Agent");
         if (globalId != null) {
-            headers.put("deviceId", globalId);
+            headers.put("X-Device-Id", globalId);
         }
 
-        ExtractableResponse relateResponse =
-                given()
-                        .contentType(ContentType.JSON)
-                        .headers(headers)
-                        .patch("/1/device/" + localId)
-                        .then()
-                        .statusCode(200)
-                        .extract();
+        ExtractableResponse relateResponse = request
+                .headers(headers)
+                .url("/1/device/" + localId)
+                .method(Method.PATCH)
+                .execute()
+                .statusCode(200)
+                .extract();
 
-        String deviceIdHeader = relateResponse.header("deviceId");
+        String deviceIdHeader = relateResponse.header("X-Device-Id");
         assertNotNull(deviceIdHeader);
 
         String deviceBody = relateResponse.response().body().asString();
@@ -201,12 +180,16 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
     }
 
     private String testDeviceHistory(String localId, String publisherToken, String expectedHistoryJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", publisherToken);
+
         String historyResponse =
-                given()
+                request
                         .contentType(ContentType.JSON)
-                        .header("Authorization", publisherToken)
-                        .get("/1/device/" + localId + "/history")
-                        .then()
+                        .headers(headers)
+                        .url("/1/device/" + localId + "/history")
+                        .method(Method.GET)
+                        .execute()
                         .statusCode(200)
                         .extract().response().asString();
 
@@ -226,13 +209,17 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
     }
 
     private Long addIdpToDevice(String localId, String publisherToken, String idpBodyJson, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", publisherToken);
+
         String addIdpResponse =
-                given()
+                request
                         .contentType(ContentType.JSON)
-                        .header("Authorization", publisherToken)
+                        .headers(headers)
                         .body(idpBodyJson)
-                        .post("/1/device/" + localId + "/history/idp")
-                        .then()
+                        .method(Method.POST)
+                        .url("/1/device/" + localId + "/history/idp")
+                        .execute()
                         .statusCode(200)
                         .extract().response().asString();
 
@@ -277,12 +264,16 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
     }
 
     private void removeIdpForDevice(String localId, String publisherToken, Long idpId) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", publisherToken);
+
         String addIdpResponse =
-                given()
+                request
                         .contentType(ContentType.JSON)
-                        .header("Authorization", publisherToken)
-                        .delete("/1/device/" + localId + "/history/idp/" + idpId)
-                        .then()
+                        .headers(headers)
+                        .method(Method.DELETE)
+                        .url("/1/device/" + localId + "/history/idp/" + idpId)
+                        .execute()
                         .statusCode(200)
                         .extract().response().asString();
 
