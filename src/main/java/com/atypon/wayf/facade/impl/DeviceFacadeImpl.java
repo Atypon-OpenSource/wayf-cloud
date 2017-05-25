@@ -17,15 +17,17 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.DeviceDao;
+import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceInfo;
 import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.device.DeviceStatus;
-import com.atypon.wayf.data.identity.IdentityProviderQuery;
-import com.atypon.wayf.data.publisher.session.PublisherSession;
-import com.atypon.wayf.data.publisher.session.PublisherSessionQuery;
+import com.atypon.wayf.data.device.access.DeviceAccess;
+import com.atypon.wayf.data.device.access.DeviceAccessQuery;
+import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.facade.DeviceAccessFacade;
 import com.atypon.wayf.facade.DeviceFacade;
-import com.atypon.wayf.facade.PublisherSessionFacade;
 import com.atypon.wayf.reactivex.FacadePolicies;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.HashMultimap;
@@ -36,7 +38,7 @@ import com.google.inject.Singleton;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.schedulers.Schedulers;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +54,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
     private DeviceDao deviceDao;
 
     @Inject
-    private PublisherSessionFacade publisherSessionFacade;
+    private DeviceAccessFacade deviceAccessFacade;
 
     public DeviceFacadeImpl() {
     }
@@ -62,7 +64,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
         LOG.debug("Creating device [{}]", device);
 
         device.setStatus(DeviceStatus.ACTIVE);
-        device.setId(UUID.randomUUID().toString());
+        device.setGlobalId(UUID.randomUUID().toString());
 
         DeviceInfo info = device.getInfo();
 
@@ -97,6 +99,29 @@ public class DeviceFacadeImpl implements DeviceFacade {
                                 .concatWith(Observable.fromIterable(devices)));
     }
 
+    @Override
+    public Single<Device> createOrUpdateForPublisher(String localId) {
+        Device device = createOrRead().blockingGet();
+        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+
+        return deviceDao.createDevicePublisherLocalIdXref(device.getId(), publisher.getId(), localId).toSingleDefault(device);
+    }
+
+    private Single<Device> createOrRead() {
+        String deviceGlobalId = RequestContextAccessor.get().getDeviceId();
+
+        return deviceGlobalId == null? create(new Device()) : read(new DeviceQuery().setGlobalId(deviceGlobalId));
+    }
+
+    @Override
+    public Single<Device> readByLocalId(String localId) {
+        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+
+        return deviceDao.readByPublisherLocalId(publisher.getId(), localId)
+                .toSingle()
+                .doOnError((e) -> {throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not find device associated with localId [" + localId + "]");});
+    }
+
     private Completable populate(Device device, DeviceQuery query) {
         return populate(Lists.newArrayList(device), query);
     }
@@ -113,28 +138,28 @@ public class DeviceFacadeImpl implements DeviceFacade {
             return Completable.complete();
         }
 
-        Multimap<String, Device> devicesById = HashMultimap.create();
+        Multimap<Long, Device> devicesById = HashMultimap.create();
 
         return Observable.fromIterable(devices)
                  // Collect all of the publisher sessions and their identity provider IDs into a map
                 .collectInto(devicesById, (map, device) -> map.put(device.getId(), device))
 
                 // Fetch all of the publishers for those publisher IDs
-                .flatMapObservable((map) -> map.keySet().isEmpty()? Observable.empty() : publisherSessionFacade.filter(new PublisherSessionQuery().setDeviceIds(map.keySet())))
+                .flatMapObservable((map) -> map.keySet().isEmpty()? Observable.empty() : deviceAccessFacade.filter(new DeviceAccessQuery().setDeviceIds(map.keySet())))
 
                 // For each identity provider returned, map it to each publisher session that had its ID
-                .flatMapCompletable((publisherSession) ->
-                        Observable.fromIterable(devicesById.get(publisherSession.getDevice().getId()))
+                .flatMapCompletable((deviceAccess) ->
+                        Observable.fromIterable(devicesById.get(deviceAccess.getDevice().getId()))
                                 .flatMapCompletable((device) ->
                                         Completable.fromAction(() -> {
-                                            List<PublisherSession> sessions = device.getSessions();
+                                            List<DeviceAccess> activity = device.getActivity();
 
-                                            if (sessions == null) {
-                                                sessions = new LinkedList<>();
-                                                device.setSessions(sessions);
+                                            if (activity == null) {
+                                                activity = new LinkedList<>();
+                                                device.setActivity(activity);
                                             }
 
-                                            sessions.add(publisherSession);
+                                            activity.add(deviceAccess);
                                         })
                                 )
                 );

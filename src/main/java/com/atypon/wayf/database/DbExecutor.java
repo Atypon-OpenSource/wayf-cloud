@@ -17,14 +17,18 @@
 package com.atypon.wayf.database;
 
 import com.atypon.wayf.request.RequestContextAccessor;
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 import java.util.Map;
 
@@ -34,6 +38,9 @@ public class DbExecutor {
 
     public static final String LIMIT = "limit";
     public static final String OFFSET = "offset";
+
+    @Inject
+    private NestedFieldBeanMapper beanMapper;
 
     @Inject
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -56,23 +63,33 @@ public class DbExecutor {
     public <T> Observable<T> executeSelect(String query, Map<String, Object> arguments, Class<T> returnType) {
         // Add in limit and offset arguments by default. The limit is increased by 1 so that we can see if there is
         // more data for the client to paginate
-        arguments.put(LIMIT, RequestContextAccessor.get().getLimit() + 1);
-        arguments.put(OFFSET, RequestContextAccessor.get().getOffset());
+        //
+        // There should be a RequestContext in almost all cases. An exception would be a database call made prior
+        // to the request being built like the one made to authenticated the API Token
+        if (arguments.get(LIMIT) == null && RequestContextAccessor.get() != null) {
+            arguments.put(LIMIT, RequestContextAccessor.get().getLimit() + 1);
+        }
+
+        if (arguments.get(OFFSET) == null && RequestContextAccessor.get() != null) {
+            arguments.put(OFFSET, RequestContextAccessor.get().getOffset());
+        }
 
         LOG.debug("Running query [{}] with values [{}]", query, arguments);
 
-        return Observable.fromIterable(namedParameterJdbcTemplate.query(query, arguments, new NestedFieldRowMapper(returnType)));
+        return Observable.fromIterable(namedParameterJdbcTemplate.query(query, arguments, new NestedFieldRowMapper(returnType, beanMapper)));
     }
 
-    public Single<Integer> executeUpdate(String query, Object arguments) {
+    public Single<Long> executeUpdate(String query, Object arguments) {
         return executeUpdate(query, QueryMapper.buildQueryArguments(query, arguments));
     }
 
-    public Single<Integer> executeUpdate(String query, Map<String, Object> arguments) {
+    public Single<Long> executeUpdate(String query, Map<String, Object> arguments) {
         LOG.debug("Running update [{}] with values [{}]", query, arguments);
 
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         return Single.just(query)
-                .map((ignored) ->  namedParameterJdbcTemplate.update(query, arguments));
+                .map((ignored) ->  namedParameterJdbcTemplate.update(query, new MapSqlParameterSource(arguments), keyHolder))
+                .map((ignored) -> keyHolder.getKey() == null? null : keyHolder.getKey().longValue());
 
     }
 }

@@ -23,15 +23,15 @@ DROP TABLE IF EXISTS `device`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `device` (
-  `_id` int(11) NOT NULL AUTO_INCREMENT,
-  `id` varchar(36) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `global_id` varchar(36) NOT NULL,
   `status` varchar(15) NOT NULL,
   `user_agent` varchar(250) NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`_id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=155 DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `global_id_UNIQUE` (`global_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -39,36 +39,92 @@ CREATE TABLE `device` (
 --
 
 DROP TABLE IF EXISTS `identity_provider`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `identity_provider` (
-  `_id` int(11) NOT NULL AUTO_INCREMENT,
-  `id` varchar(36) NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `entity_id` varchar(50) NOT NULL,
-  `federation_id` varchar(50) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `type` varchar(25) NOT NULL,
+  `entity_id` varchar(50) NULL,
+  `scope` varchar(50) NULL,
+  `organization_id` varchar(50) NULL,
+  `federation_id` varchar(50) NULL,
+  `provider` varchar(25) NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`_id`),
+  PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
---
--- Table structure for table `institution`
---
+DROP VIEW IF EXISTS `saml_entity`;
+CREATE VIEW `saml_entity` AS
+SELECT `id`,
+	`type`,
+    `entity_id`,
+    `federation_id`,
+    `created_date`,
+    `modified_date`
+  FROM identity_provider;
 
-DROP TABLE IF EXISTS `institution`;
+DROP VIEW IF EXISTS `open_athens_entity`;
+CREATE VIEW `open_athens_entity` AS
+SELECT `id`,
+	`type`,
+    `entity_id`,
+    `scope`,
+    `organization_id`,
+    `created_date`,
+    `modified_date`
+  FROM identity_provider;
+
+DROP VIEW IF EXISTS `oauth_entity`;
+CREATE VIEW `oauth_entity` AS
+SELECT `id`,
+	`type`,
+    `provider`,
+    `created_date`,
+    `modified_date`
+  FROM identity_provider;
+
+
+
+DROP TABLE IF EXISTS `device_idp_blacklist`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `institution` (
-  `pk_id` int(11) NOT NULL AUTO_INCREMENT,
-  `id` varchar(36) DEFAULT NULL,
-  `name` varchar(50) DEFAULT NULL,
-  `description` varchar(150) DEFAULT NULL,
-  PRIMARY KEY (`pk_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10013 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE `device_idp_blacklist` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `device_id` varchar(36) NOT NULL,
+  `idp_id` int(11) NOT NULL,
+  `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `api_token`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `api_token` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `authenticatable_type` varchar(25) NOT NULL,
+  `authenticatable_id` int(11) NOT NULL,
+  `token` varchar(50) NOT NULL,
+  `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `publisher_local_id_device_xref`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `publisher_local_id_device_xref` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `publisher_id` int(11) NOT NULL,
+  `local_id` VARCHAR(50) NOT NULL,
+  `device_id` int(11) NOT NULL,
+  `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+
 
 --
 -- Table structure for table `publisher`
@@ -78,37 +134,36 @@ DROP TABLE IF EXISTS `publisher`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `publisher` (
-  `_id` int(11) NOT NULL AUTO_INCREMENT,
-  `id` varchar(36) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
+  `code` varchar(50) NOT NULL,
   `status` varchar(15) NOT NULL,
+  `contact_id` int(11) NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`_id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
 
 --
 -- Table structure for table `publisher_session`
 --
 
-DROP TABLE IF EXISTS `publisher_session`;
+DROP TABLE IF EXISTS `device_access`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `publisher_session` (
-  `_id` int(11) NOT NULL AUTO_INCREMENT,
-  `id` varchar(36) NOT NULL,
+CREATE TABLE `device_access` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `local_id` varchar(45) NOT NULL,
-  `status` varchar(20) DEFAULT NULL,
-  `device_id` varchar(36) DEFAULT NULL,
-  `authenticated_by_id` varchar(36) DEFAULT NULL,
+  `type` varchar(30) NOT NULL,
+  `device_id` int(11) NOT NULL,
+  `identity_provider_id` varchar(36) DEFAULT NULL,
   `publisher_id` varchar(36) DEFAULT NULL,
-  `last_active_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=135 DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

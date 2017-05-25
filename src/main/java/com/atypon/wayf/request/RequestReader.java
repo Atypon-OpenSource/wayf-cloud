@@ -29,6 +29,13 @@ import org.slf4j.LoggerFactory;
 public class RequestReader {
     private static final Logger LOG = LoggerFactory.getLogger(RequestReader.class);
 
+    public static final String LIMIT_QUERY_PARAM = "limit";
+    public static final String OFFSET_QUERY_PARAM = "offset";
+
+    public static final String DEVICE_ID_HEADER = "X-Device-Id";
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String USER_AGENT_HEADER = "User-Agent";
+
     private static <B> B _readRequestBody(RoutingContext routingContext, Class<B> bodyClass) {
         LOG.debug("Reading request body of type [{}] from request", bodyClass);
 

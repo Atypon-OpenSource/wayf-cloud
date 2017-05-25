@@ -18,9 +18,10 @@ package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherQuery;
+import com.atypon.wayf.facade.AuthenticationFacade;
 import com.atypon.wayf.facade.PublisherFacade;
 import com.atypon.wayf.request.RequestReader;
-import com.atypon.wayf.verticle.WayfRequestHandler;
+import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -48,14 +49,20 @@ public class PublisherRouting implements RoutingProvider {
     @Inject
     private PublisherFacade publisherFacade;
 
+    @Inject
+    private AuthenticationFacade authenticationFacade;
+
+    @Inject
+    private WayfRequestHandlerFactory handlerFactory;
+
     public PublisherRouting() {
     }
 
     public void addRoutings(Router router) {
         router.route(PUBLISHER_BASE_URL + "*").handler(BodyHandler.create());
-        router.post(CREATE_PUBLISHER).handler(WayfRequestHandler.single((rc) -> createPublisher(rc)));
-        router.get(READ_PUBLISHER).handler(WayfRequestHandler.single((rc) -> readPublisher(rc)));
-        router.get(FILTER_PUBLISHERS).handler(WayfRequestHandler.observable((rc) -> filterPublishers(rc)));
+        router.post(CREATE_PUBLISHER).handler(handlerFactory.single((rc) -> createPublisher(rc)));
+        router.get(READ_PUBLISHER).handler(handlerFactory.single((rc) -> readPublisher(rc)));
+        router.get(FILTER_PUBLISHERS).handler(handlerFactory.observable((rc) -> filterPublishers(rc)));
 
     }
 
@@ -64,7 +71,12 @@ public class PublisherRouting implements RoutingProvider {
 
         return Single.just(routingContext)
                 .flatMap((rc) -> RequestReader.readRequestBody(rc, Publisher.class))
-                .flatMap((requestPublisher) -> publisherFacade.create(requestPublisher));
+                .flatMap((requestPublisher) -> publisherFacade.create(requestPublisher))
+                .map((createdPublisher) -> {
+                    String token = authenticationFacade.createToken(createdPublisher).blockingGet();
+                    createdPublisher.setToken(token);
+                    return  createdPublisher;
+                });
     }
 
     public Single<Publisher> readPublisher(RoutingContext routingContext) {
@@ -72,7 +84,7 @@ public class PublisherRouting implements RoutingProvider {
 
         return Single.just(routingContext)
                 .map((rc) -> RequestReader.readPathArgument(rc, PUBLISHER_ID_PARAM_NAME))
-                .flatMap((publisherId) -> publisherFacade.read(publisherId));
+                .flatMap((publisherId) -> publisherFacade.read(Long.valueOf(publisherId)));
     }
 
     public Observable<Publisher> filterPublishers(RoutingContext routingContext) {
@@ -82,7 +94,12 @@ public class PublisherRouting implements RoutingProvider {
                 .map((rc) -> RequestReader.getQueryValue(rc, PUBLISHER_IDS_PARAM_NAME))
                 .flatMapObservable((idsArg) -> {
                         LOG.debug(idsArg);
-                        String[] ids = idsArg.split(",");
+                        String[] idsStr = idsArg.split(",");
+
+                        Long[] ids = new Long[idsStr.length];
+                        for (int i = 0; i < idsStr.length; i++) {
+                            ids[i] = Long.valueOf(idsStr[i]);
+                        }
                         PublisherQuery filter = new PublisherQuery();
                         filter.setIds(Lists.newArrayList(ids));
                         return  publisherFacade.filter(filter);

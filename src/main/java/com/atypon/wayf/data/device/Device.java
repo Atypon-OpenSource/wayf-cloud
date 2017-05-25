@@ -16,21 +16,21 @@
 
 package com.atypon.wayf.data.device;
 
-import com.atypon.wayf.data.publisher.session.PublisherSession;
-import com.atypon.wayf.data.user.User;
+import com.atypon.wayf.data.device.access.DeviceAccess;
+import com.atypon.wayf.data.identity.IdentityProviderUsage;
 
 import java.util.Date;
 import java.util.List;
 
 public class Device {
-    private String id;
+    private Long id;
+    private String globalId;
     private DeviceStatus status;
 
     private DeviceInfo info;
 
-    private List<PublisherSession> sessions;
-
-    private User owner;
+    private List<IdentityProviderUsage> history;
+    private List<DeviceAccess> activity;
 
     private Date createdDate;
     private Date modifiedDate;
@@ -38,12 +38,20 @@ public class Device {
     public Device() {
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getGlobalId() {
+        return globalId;
+    }
+
+    public void setGlobalId(String globalId) {
+        this.globalId = globalId;
     }
 
     public DeviceStatus getStatus() {
@@ -62,20 +70,20 @@ public class Device {
         this.info = info;
     }
 
-    public List<PublisherSession> getSessions() {
-        return sessions;
+    public List<IdentityProviderUsage> getHistory() {
+        return history;
     }
 
-    public void setSessions(List<PublisherSession> sessions) {
-        this.sessions = sessions;
+    public void setHistory(List<IdentityProviderUsage> history) {
+        this.history = history;
     }
 
-    public User getOwner() {
-        return owner;
+    public List<DeviceAccess> getActivity() {
+        return activity;
     }
 
-    public void setOwner(User owner) {
-        this.owner = owner;
+    public void setActivity(List<DeviceAccess> activity) {
+        this.activity = activity;
     }
 
     public Date getCreatedDate() {

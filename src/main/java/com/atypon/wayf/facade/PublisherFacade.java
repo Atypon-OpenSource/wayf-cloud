@@ -23,6 +23,6 @@ import io.reactivex.Single;
 
 public interface PublisherFacade {
     Single<Publisher> create(Publisher publisher);
-    Single<Publisher> read(String id);
+    Single<Publisher> read(Long id);
     Observable<Publisher> filter(PublisherQuery filter);
 }

@@ -25,5 +25,9 @@ public interface DeviceFacade {
     Single<Device> create(Device device);
     Single<Device> read(DeviceQuery query);
 
+    Single<Device> createOrUpdateForPublisher(String localId);
+
     Observable<Device> filter(DeviceQuery query);
+
+    Single<Device> readByLocalId(String localId);
 }

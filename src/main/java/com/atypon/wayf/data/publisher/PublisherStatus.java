@@ -17,9 +17,8 @@
 package com.atypon.wayf.data.publisher;
 
 public enum PublisherStatus {
-    NEW,
-    REQUESTED,
     ACTIVE,
-    DENIED,
-    SUSPENDED;
+    REVOKED,
+    SUSPENDED,
+    TERMINATED
 }

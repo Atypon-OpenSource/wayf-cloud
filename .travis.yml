@@ -16,3 +16,5 @@ before_script:
   - mysql -h localhost -u root -ptest < src/test/resources/create_wayf_db.sql
   - mysql -h localhost -u root -ptest wayf < src/test/resources/create_wayf_tables.sql
 
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

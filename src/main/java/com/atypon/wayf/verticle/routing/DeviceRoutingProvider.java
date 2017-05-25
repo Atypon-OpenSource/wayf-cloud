@@ -21,7 +21,8 @@ import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.request.RequestReader;
-import com.atypon.wayf.verticle.WayfRequestHandler;
+import com.atypon.wayf.request.ResponseWriter;
+import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -37,18 +38,18 @@ import org.slf4j.LoggerFactory;
 public class DeviceRoutingProvider implements RoutingProvider {
     private static final Logger LOG = LoggerFactory.getLogger(DeviceRoutingProvider.class);
 
-    private static final String DEVICE_BASE_URL = "/1/device";
     private static final String DEVICE_ID_PARAM_NAME = "id";
-    private static final String DEVICE_ID_PARAM = ":" + DEVICE_ID_PARAM_NAME;
+    private static final String LOCAL_ID_PARAM = "localId";
 
-    private static final String CREATE_DEVICE = DEVICE_BASE_URL;
-    private static final String READ_DEVICE = DEVICE_BASE_URL + "/" +  DEVICE_ID_PARAM;
-    private static final String UPDATE_DEVICE = DEVICE_BASE_URL + "/" +  DEVICE_ID_PARAM;
-    private static final String DELETE_DEVICE = DEVICE_BASE_URL + "/" +  DEVICE_ID_PARAM;
-    private static final String FILTER_DEVICE = DEVICE_BASE_URL + "s";
+    private static final String READ_DEVICE = "/1/device/:id";
+    private static final String FILTER_DEVICE = "/1/devices";
+    private static final String ADD_DEVICE_PUBLISHER_RELATIONSHIP = "/1/device/:localId";
 
     @Inject
     private DeviceFacade deviceFacade;
+
+    @Inject
+    private WayfRequestHandlerFactory handlerFactory;
 
     @Inject
     private InflationPolicyParser<String> inflationPolicyParser;
@@ -57,31 +58,41 @@ public class DeviceRoutingProvider implements RoutingProvider {
     }
 
     public void addRoutings(Router router) {
-        router.route(DEVICE_BASE_URL + "*").handler(BodyHandler.create());
-        router.post(CREATE_DEVICE).handler(WayfRequestHandler.single((rc) -> createDevice(rc)));
-        router.get(READ_DEVICE).handler(WayfRequestHandler.single((rc) -> readDevice(rc)));
-        router.get(FILTER_DEVICE).handler(WayfRequestHandler.observable((rc) -> filterDevice(rc)));
+        router.route("/1/device*").handler(BodyHandler.create());
+        router.get(READ_DEVICE).handler(handlerFactory.single((rc) -> readDevice(rc)));
+        router.get(FILTER_DEVICE).handler(handlerFactory.observable((rc) -> filterDevice(rc)));
+        router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.single((rc) -> createPublisherDeviceRelationship(rc)));
     }
 
-    public Single<Device> createDevice(RoutingContext routingContext) {
-        LOG.debug("Received create Device request");
-
-        return Single.just(routingContext)
-                .flatMap((rc) -> RequestReader.readRequestBody(rc, Device.class))
-                .flatMap((requestDevice) -> deviceFacade.create(requestDevice));
-    }
 
     public Single<Device> readDevice(RoutingContext routingContext) {
         LOG.debug("Received read Device request");
 
-        return Single.just(routingContext)
-                .flatMap((deviceId) -> deviceFacade.read(buildQuery(routingContext)));
+        DeviceQuery query = buildQuery(routingContext);
+
+        return deviceFacade.read(query);
     }
 
     public Observable<Device> filterDevice(RoutingContext routingContext) {
         LOG.debug("Received read Device request");
 
-        return deviceFacade.filter(buildQuery(routingContext));
+        DeviceQuery query = buildQuery(routingContext);
+
+        return deviceFacade.filter(query);
+    }
+
+    public Single<Device> createPublisherDeviceRelationship(RoutingContext routingContext) {
+        LOG.debug("Received request to create publisher/device relationship");
+
+        String localId = RequestReader.readPathArgument(routingContext, LOCAL_ID_PARAM);
+
+        return deviceFacade.createOrUpdateForPublisher(localId)
+                .map((device) -> {
+                    String globalId = device.getGlobalId();
+                    ResponseWriter.setDeviceIdHeader(routingContext, globalId);
+                    device.setGlobalId(null);
+                    return device;
+                });
     }
 
     private DeviceQuery buildQuery(RoutingContext routingContext) {
@@ -93,12 +104,12 @@ public class DeviceRoutingProvider implements RoutingProvider {
         }
 
         String id = RequestReader.readPathArgument(routingContext, DEVICE_ID_PARAM_NAME);
-        query.setId(id);
+        query.setGlobalId(id);
 
         String ids = RequestReader.getQueryValue(routingContext, "ids");
         if (ids != null) {
             String[] idArray = ids.split(",");
-            query.setIds(Lists.newArrayList(idArray));
+            query.setGlobalIds(Lists.newArrayList(idArray));
         }
 
         return query;

@@ -17,78 +17,202 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.IdentityProviderDao;
-import com.atypon.wayf.data.identity.IdentityProvider;
-import com.atypon.wayf.data.identity.IdentityProviderQuery;
+import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.ServiceException;
+import com.atypon.wayf.data.cache.KeyValueCache;
+import com.atypon.wayf.data.device.access.DeviceAccess;
+import com.atypon.wayf.data.device.access.DeviceAccessType;
+import com.atypon.wayf.data.identity.*;
 import com.atypon.wayf.data.cache.CascadingCache;
+import com.atypon.wayf.facade.DeviceAccessFacade;
+import com.atypon.wayf.facade.DeviceFacade;
+import com.atypon.wayf.facade.DeviceIdentityProviderBlacklistFacade;
 import com.atypon.wayf.facade.IdentityProviderFacade;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 @Singleton
 public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     private static final Logger LOG = LoggerFactory.getLogger(IdentityProviderFacadeImpl.class);
-    @Inject
-    private IdentityProviderDao identityProviderDao;
 
     @Inject
-    @Named("identityProviderCache")
-    private CascadingCache<String, String> cache;
+    @Named("identityProviderDaoMap")
+    private Map<IdentityProviderType, IdentityProviderDao> daosByType;
+
+    @Inject
+    private DeviceFacade deviceFacade;
+
+    @Inject
+    private DeviceAccessFacade deviceAccessFacade;
+
+    @Inject
+    private DeviceIdentityProviderBlacklistFacade blacklistFacade;
 
     public IdentityProviderFacadeImpl() {
     }
 
     @Override
     public Single<IdentityProvider> create(IdentityProvider identityProvider) {
-        identityProvider.setId(UUID.randomUUID().toString());
+        IdentityProviderDao dao = daosByType.get(identityProvider.getType());
 
         return Single.just(identityProvider)
-                .flatMap(o_identityProvider -> identityProviderDao.create(o_identityProvider));
+                .flatMap(o_identityProvider -> dao.create(o_identityProvider));
     }
 
     @Override
-    public Single<IdentityProvider> read(String id) {
-        return Single.just(id)
-                .observeOn(Schedulers.io())
-                .flatMapMaybe((_id) -> identityProviderDao.read(_id))
-                .toSingle();
-    }
+    public Single<IdentityProvider> read(Long id) {
+        Collection<IdentityProviderDao> daos = daosByType.values();
 
-    @Override
-    public Single<IdentityProvider> resolve(IdentityProvider identityProvider) {
-        LOG.debug("Resolving identityProvider with id [{}] entityId [{}]", identityProvider.getId(), identityProvider.getEntityId());
-
-        return Maybe.concat(
-                        identityProvider.getId() != null? Maybe.just(identityProvider) : Maybe.empty(),
-
-                        Maybe.just(identityProvider)
-                                .map((_identityProvider) -> _identityProvider.getEntityId())
-                                .flatMap((entityId) -> cache.get(identityProvider.getEntityId()))
-                                .map((id) -> {
-                                        IdentityProvider idp = new IdentityProvider();
-                                            idp.setId(id);
-                                            return idp;
-                                }),
-
-                        Maybe.just(identityProvider)
-                                .map((_identityProvider) -> create(_identityProvider))
-                                .cast(IdentityProvider.class)
-                )
+        return Observable.fromIterable(daos)
+                .flatMapMaybe((dao) -> dao.read(id))
                 .firstOrError();
     }
 
     @Override
+    public Single<IdentityProvider> resolve(IdentityProvider identityProvider) {
+        LOG.debug("Attempting to resolve IdentityProvider [{}]", identityProvider);
+        if (identityProvider.getType() == null) {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "In order to resolve an IdentityProvider, 'type' is required");
+        }
+
+        Observable<IdentityProvider> foundProviders = null;
+
+        if (identityProvider.getType() == IdentityProviderType.OAUTH) {
+            foundProviders = resolveOauth((OauthEntity) identityProvider);
+        } else if (identityProvider.getType() == IdentityProviderType.OPEN_ATHENS) {
+            foundProviders = resolveOpenAthens((OpenAthensEntity) identityProvider);
+        } else if (identityProvider.getType() == IdentityProviderType.SAML) {
+            foundProviders = resolveSamlEntity((SamlEntity) identityProvider);
+        } else {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "IdentityProvider of type [" + identityProvider.getType() + "] not supported");
+        }
+
+        return foundProviders.switchIfEmpty(create(identityProvider).toObservable())
+                .firstOrError().doOnError((e) -> {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Could not determine a unique IdentityProvider from input", e);
+        });
+    }
+
+    @Override
+    public Single<IdentityProvider> recordIdentityProviderUse(String localId, IdentityProvider identityProvider) {
+        return Single.zip(
+                // Resolve the persisted IdentityProvider from the input
+                resolve(identityProvider),
+
+                // Read the device by the local ID passed in and authenticated publisher
+                deviceFacade.readByLocalId(localId),
+
+
+                // Once the device and IdentityProvider have create a DeviceAccess object to contain both items
+                (resolvedIdentityProvider, device) ->
+                        new DeviceAccess.Builder()
+                                .device(device)
+                                .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
+                                .localId(localId)
+                                .identityProvider(resolvedIdentityProvider)
+                                .type(DeviceAccessType.ADD_IDP)
+                                .build()
+            ).flatMap((deviceAccess) ->
+                    // Map the DeviceAccess containing the read Device and the resolved IdentityProvider
+                    Single.zip(
+                            // Remove the IDP from the blacklist if it was on it
+                            blacklistFacade.remove(deviceAccess.getDevice(), deviceAccess.getIdentityProvider()).toSingleDefault(deviceAccess.getDevice()).subscribeOn(Schedulers.io()),
+
+                            // Log the device access
+                            deviceAccessFacade.create(deviceAccess).subscribeOn(Schedulers.io()),
+
+                            // Only care about that the processes terminated, not their results, return the resolved IDP
+                            (ignored, createdDeviceAccess) -> deviceAccess.getIdentityProvider()
+                    )
+        ); // Java generics type erasure fix
+    }
+
+    @Override
+    public Completable blockIdentityProviderForDevice(String localId, Long idpId) {
+        IdentityProvider identityProvider = new IdentityProvider();
+        identityProvider.setId(idpId);
+
+        return deviceFacade.readByLocalId(localId)
+                .flatMapCompletable((device) ->
+                    Single.zip(
+                            // Remove the IDP from the blacklist if it was on it
+                            blacklistFacade.add(device, identityProvider).toSingleDefault(device).subscribeOn(Schedulers.io()),
+
+                            // Log the device access
+                            deviceAccessFacade.create(new DeviceAccess.Builder()
+                                    .device(device)
+                                    .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
+                                    .localId(localId)
+                                    .identityProvider(identityProvider)
+                                    .type(DeviceAccessType.ADD_IDP)
+                                    .build()).subscribeOn(Schedulers.io()),
+
+                            (ignored, deviceAccess) -> ignored
+                    ).toCompletable()
+                );
+    }
+
+    @Override
     public Observable<IdentityProvider> filter(IdentityProviderQuery query) {
-        return Observable.just(query)
-                .flatMap((_query) -> identityProviderDao.filter(_query));
+        // If a type is known, only query that DAO. If no type is known, concat the results of filtering all DAOs
+        if (query.getType() != null) {
+            return daosByType.get(query.getType()).filter(query);
+        } else {
+            Collection<IdentityProviderDao> daos = daosByType.values();
+
+            return Observable.fromIterable(daos)
+                    .flatMap((dao) -> dao.filter(query));
+        }
+    }
+
+    private Observable<IdentityProvider> resolveOauth(OauthEntity oauthEntity) {
+        if (oauthEntity.getProvider() == null) {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "In order to resolve an OAUTH Entity, 'provider' is required");
+        }
+
+        IdentityProviderQuery query = new IdentityProviderQuery()
+                .setType(IdentityProviderType.OAUTH)
+                .setProvider(oauthEntity.getProvider());
+
+        return filter(query);
+    }
+
+    private Observable<IdentityProvider> resolveOpenAthens(OpenAthensEntity openAthensEntity) {
+        if (openAthensEntity.getOrganizationId() == null) {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "In order to resolve an OpenAthens Entity, 'organizationId' is required");
+        }
+
+        IdentityProviderQuery query  = new IdentityProviderQuery()
+                .setType(IdentityProviderType.OPEN_ATHENS)
+                .setOrganizationId(openAthensEntity.getOrganizationId());
+
+        return filter(query);
+    }
+
+    private Observable<IdentityProvider> resolveSamlEntity(SamlEntity samlEntity) {
+        if (samlEntity.getEntityId() == null) {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "In order to resolve a SAML Entity, 'entityId' is required");
+        }
+
+        IdentityProviderQuery query = new IdentityProviderQuery()
+                .setType(IdentityProviderType.SAML)
+                .setEntityId(samlEntity.getEntityId());
+
+        return filter(query);
     }
 }

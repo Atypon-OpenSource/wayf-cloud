@@ -1,0 +1,784 @@
+swagger: '2.0'
+info:
+  description: >-
+    This is the server portion of the WAYF system. For information about the
+    latest builds, solution overview, or the source code visit
+    https://github.com/atypon/wayf-cloud
+  version: "DevelopmentBeta"
+  title: WAYF Cloud
+  contact:
+    email: mmason@atypon.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+host: 'localhost:8080'
+basePath: /
+tags:
+  - name: End User Actions
+    description: Endpoints that enable an end user to administer and view their data in the wayf-cloud. All of these endpoints will require the X-Device-Id header to be set.
+  - name: Publisher Actions
+    description: A set of endpoints that allow a publisher to update and read device data by a localId. These endpoints require the publisher's API token be set in the authorization header.
+  - name: Administrative Actions
+    description: The portion of the API that allows administrators to maintain the wayf-cloud. A user must have a known administrator API token set in the Authorization header to access this functionality.
+  - name: Device
+  - name: Publisher
+  - name: Session
+  - name: Identity Provider
+schemes:
+  - http
+securityDefinitions:
+  DeviceIdHeader:
+    type: apiKey
+    in: header
+    name: X-Device-Id
+  PublisherKey:
+    type: apiKey
+    in: header
+    name: Authorization
+  AdministratorKey:
+    type: apiKey
+    in: header
+    name: Authorization
+paths:
+  '/1/mydevice':
+    get:
+      tags:
+        - End User Actions
+        - Device
+      summary: Read a device by it's unique ID
+      description: Multiple status values can be provided with comma separated strings
+      operationId: readDevice
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: fields
+          in: query
+          description: The child object fields to return
+          required: false
+          type: array
+          items:
+            type: string
+            enum:
+              - activity
+              - entity
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/Device'
+        '404':
+          description: No devices found for specified ID
+      security:
+        - DeviceIdHeader: []
+  /1/devices:
+    get:
+      tags:
+        - Administrative Actions
+        - Device
+      summary: Find devices that match a set of criteria
+      description: Multiple values may be specified by a comma separated list
+      operationId: filterDevices
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: deviceIds
+          in: query
+          description: Device IDs to filter by
+          required: true
+          type: array
+          items:
+            type: string
+            format: uuid
+          collectionFormat: csv
+        - name: fields
+          in: query
+          description: The child object fields to return
+          required: false
+          type: array
+          items:
+            type: string
+            enum:
+              - sessions
+          collectionFormat: csv
+      security:
+        - AdministratorKey: []
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Device'
+  /1/publisherRegistration:
+    post:
+      tags:
+        - Administrative Actions
+        - Publisher Registration
+      summary: Creates a new publisher registration requset
+      description: Creates a new publisher on the wayf-cloud
+      operationId: createPublisherRegistration
+      consumes:
+        - application/xml
+        - application/json
+      produces:
+        - application/xml
+        - application/json
+      security:
+        - AdministratorKey: []
+      parameters:
+        - in: body
+          name: body
+          description: The registation request
+          required: true
+          schema:
+            $ref: '#/definitions/PublisherRegistration'
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/PublisherRegistration'
+  '/1/publisherRegistration/{id}':
+    put:
+      tags:
+        - Administrative Actions
+        - PublisherRegistration
+      summary: Update a publisher registration
+      description: Update a publisher registartion
+      operationId: updatePublisherRegistration
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of publisher to update
+          required: true
+          type: string
+          format: uuid
+        - in: body
+          name: body
+          description: Publishser registration information to be stored
+          required: true
+          schema:
+            $ref: '#/definitions/PublisherRegistration'
+      security:
+        - AdministratorKey: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PublisherRegistration'
+  /1/publisher:
+    post:
+      tags:
+        - Administrative Actions
+        - Publisher
+      summary: Creates a new publisher
+      description: Creates a new publisher on the wayf-cloud
+      operationId: createPublisher
+      consumes:
+        - application/xml
+        - application/json
+      produces:
+        - application/xml
+        - application/json
+      security:
+        - AdministratorKey: []
+      parameters:
+        - in: body
+          name: body
+          description: Publishser information to be stored
+          required: true
+          schema:
+            $ref: '#/definitions/Publisher'
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Publisher'
+  '/1/publisher/{id}':
+    put:
+      tags:
+        - Administrative Actions
+        - Publisher
+      summary: Update a publisher's data
+      description: Update a publisher's data
+      operationId: updatePublisher
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of publisher to update
+          required: true
+          type: string
+          format: uuid
+        - in: body
+          name: body
+          description: Publishser information to be stored
+          required: true
+          schema:
+            $ref: '#/definitions/Publisher'
+      security:
+        - AdministratorKey: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Publisher'
+    get:
+      tags:
+        - Publisher
+      summary: Read a publisher's data
+      description: Read a publisher's data
+      operationId: readPublisher
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: ID of publisher to read
+          required: true
+          type: string
+          format: uuid
+      security:
+        - AdministratorKey: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Publisher'
+    delete:
+      tags:
+        - Publisher
+        - Administrative Actions
+      summary: Remove a publisher from the wayf-cloud
+      description: Remove a publisher from the wayf-cloud
+      security:
+        - AdministratorKey: []
+      responses:
+        '202':
+          description: Success
+
+  /1/publishers:
+    get:
+      tags:
+        - Administrative Actions
+        - Publisher
+      summary: Search for publishers based upon some criteria
+      description: Search for publishers based upon some criteria
+      operationId: filterPublisher
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: ids
+          in: query
+          description: The publisher IDs to search for
+          required: true
+          type: array
+          items:
+            type: string
+            format: uuid
+        - name: codes
+          in: query
+          description: The publisher codes to search for
+          type: string
+          items:
+            type: string
+      security:
+        - AdministratorKey: []
+      responses:
+        '200':
+          description: An array of publishers that match the search criteria
+          schema:
+            $ref: '#/definitions/Publisher'
+  /1/identityProvider:
+    post:
+      tags:
+        - Administrative Actions
+        - Identity Provider
+      summary: Create a new Identity Provider
+      description: ''
+      operationId: createIdentityProvider
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Identity Provider information to be stored
+          required: true
+          schema:
+            $ref: '#/definitions/IdentityProvider'
+      security:
+        - AdministratorKey: []
+      responses:
+        '201':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/IdentityProvider'
+  '/1/identityProvider/{id}':
+    get:
+      tags:
+        - Identity Provider
+      summary: Read an Identity Provider by it's unique ID
+      operationId: readIdentityProvider
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: The unique Identity Provider ID set by the wayf-cloud
+          required: true
+          type: string
+          format: uuid
+      security:
+        - AdministratorKey: []
+        - PublisherKey: []
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/IdentityProvider'
+        '404':
+          description: No Identity Providers found for specified ID
+  '/1/device/{localId}':
+    patch:
+      tags:
+        - Publisher Actions
+        - Device
+      summary: Associate the user's device with a publisher by a localId
+      description: Associate the user's device with a publisher by a localId. This behaves the same whether this is the device's first time with the publisher or a return visit. This will log the activity as a DeviceActivity object on the device.
+      operationId: createLocalIdOrAddActivity
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: localId
+          in: path
+          description: The localId used by a publisher to identify a device
+          required: true
+          type: string
+          format: uuid
+      security:
+        - PublisherKey: []
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Device'
+  '/1/device/{localId}/history':
+    get:
+      tags:
+        - Publisher Actions
+        - Identity Provider
+      summary: Get IdentityProviders previously authenticated with.
+      description: Fetch a list of IdentityProviders a Device has previously authenticated with. In this case, the Device is resolved via a Publisher's localId.
+      operationId: identityProvidersByLocalId
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: localId
+          in: path
+          description: The localId used by a publisher to identify a device
+          required: true
+          type: string
+          format: uuid
+      security:
+        - PublisherKey: []
+      responses:
+        '200':
+          description: Succesful operation
+          schema:
+            type: array
+            xml:
+              wrapped: false
+              name: IdentityProviderUsages
+            items:
+              $ref: '#/definitions/IdentityProviderUsage'
+        '404':
+          description: No devices found for the localId
+  '/1/device/{localId}/history/idp':
+    post:
+      tags:
+        - Publisher Actions
+        - Identity Provider
+      summary: Alert the wayf-cloud of a recent authentication
+      description: Update the wayf-cloud of a recent authentication with an IdentityProvider and a device. In this case, the Device is resolved via a Publisher's localId. The Session assocaited with the authenticated Publisher and the specified localId will have its authenticateBy field updated. If the IdentityProvider specified was not previously known for this device, it will be added the device.ids list.
+      operationId: addIdentityProviderForDevice
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: localId
+          in: path
+          description: The localId used by a publisher to identify a device
+          required: true
+          type: string
+          format: uuid
+        - in: body
+          name: body
+          description: The identity provider used by the user
+          required: true
+          schema:
+            $ref: '#/definitions/IdentityProvider'
+      security:
+        - PublisherKey: []
+      responses:
+        '200':
+          description: Succesful operation
+          schema:
+            $ref: '#/definitions/IdentityProvider'
+        '404':
+          description: No devices found for the localId
+  /1/mydevice/history/idp/{id}:
+    delete:
+      tags:
+        - End User Actions
+        - Identity Provider
+      summary: Remove IdentityProvider from list of available authentication mechanisms
+      description: Invalidate all sessions that used the specified IdentityProvider as their authentication source. This will prevent the entity from coming back in on the device's idpHistory field
+      parameters:
+        - name: id
+          in: path
+          description: The IdentityProvider's ID
+          required: true
+          type: string
+          format: uuid
+      security:
+        - DeviceIdHeader: []
+      responses:
+        '204':
+          description: IdentityProvider successfully forgotton
+  /1/device/{localId}/history/idp/{id}:
+    delete:
+      tags:
+        - Publisher Actions
+        - Identity Provider
+      summary: Remove IdentityProvider from list of available authentication mechanisms
+      description: Invalidate all sessions that used the specified IdentityProvider as their authentication source. This will prevent the entity from coming back in on the device's idpHistory field
+      parameters:
+        - name: id
+          in: path
+          description: The IdentityProvider's ID
+          required: true
+          type: string
+          format: uuid
+        - name: localId
+          in: path
+          description: The local ID  assigned by the publisher
+          required: true
+          type: string
+      security:
+        - DeviceIdHeader: []
+      responses:
+        '204':
+          description: IdentityProvider successfully forgotton
+  /1/activity:
+    get:
+      tags:
+        - Device Access Activity
+      summary: Query for Session values that match a set of criteria
+      operationId: filterSession
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: localIds
+          in: query
+          description: The localIds set by the publisher
+          required: false
+          type: array
+          items:
+            type: string
+            format: uuid
+          collectionFormat: csv
+        - name: deviceIds
+          in: query
+          description: The unique Device IDs set by the wayf-cloud
+          required: false
+          type: array
+          items:
+            type: string
+            format: uuid
+          collectionFormat: csv
+        - name: fields
+          in: query
+          description: The optional child properties to fully inflate
+          required: false
+          type: array
+          items:
+            type: string
+            enum:
+              - device
+              - publisher
+              - authenticatedBy
+          collectionFormat: csv
+      security:
+        - AdministratorKey: []
+        - PublisherKey: []
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/DeviceAccess'
+        '404':
+          description: No Sessions found for specified ID
+definitions:
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      firstName:
+        type: string
+      lastName:
+        type: string
+      email:
+        type: string
+      phoneNumber:
+        type: string
+      createdDate:
+        type: string
+        format: date-time
+        readOnly: true
+      modifiedDate:
+        type: string
+        format: date-time
+        readOnly: true
+  Device:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      status:
+        type: string
+        description: Device Status
+        enum:
+          - ACTIVE
+      info:
+        $ref: '#/definitions/DeviceInfo'
+      history:
+        type: array
+        items:
+          $ref: '#/definitions/IdentityProviderUsage'
+      activity:
+        type: array
+        items:
+          $ref: '#/definitions/DeviceAccess'
+      createdDate:
+        type: string
+        format: date-time
+        readOnly: true
+      modifiedDate:
+        type: string
+        format: date-time
+        readOnly: true
+    xml:
+      name: Device
+  DeviceInfo:
+    type: object
+    properties:
+      userAgent:
+        type: string
+    xml:
+      name: DeviceInfo
+  DeviceAccess:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      localId:
+        type: string
+        description: Publisher specified unique ID
+      device:
+        $ref: '#/definitions/Device'
+      identityProvider:
+        $ref: '#/definitions/IdentityProvider'
+      publisher:
+        $ref: '#/definitions/Publisher'
+      type:
+        type: string
+        enum:
+          - REMOVE_IDP
+          - READ_IDP_HISTORY
+          - ADD_IDP
+      createdDate:
+        type: string
+        format: date-time
+        readOnly: true
+      modifiedDate:
+        type: string
+        format: date-time
+        readOnly: true
+    xml:
+      name: Session
+  PublisherRegistration:
+    type: object
+    properties:
+      status:
+        type: string
+        enum:
+          - PENDING
+          - ACTIVE
+          - DENIED
+          - REVOKED
+          - SUSPENDED
+          - TERMINATED
+      applicationDate:
+        type: string
+        format: date-time
+      approvalDate:
+        type: string
+        format: date-time
+      contact:
+        $ref: '#/definitions/User'
+  Publisher:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      code:
+        type: string
+      status:
+        type: string
+        enum:
+          - ACTIVE
+      name:
+        type: string
+      contact:
+        $ref: '#/definitions/User'
+      createdDate:
+        type: string
+        format: date-time
+        readOnly: true
+      modifiedDate:
+        type: string
+        format: date-time
+        readOnly: true
+    xml:
+      name: Publisher
+  IdentityProvider:
+    discriminator: type
+    required:
+      - type
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      type:
+        type: string
+        enum:
+          - SAML
+          - OPEN_ATHEN
+          - OAUTH
+      entityId:
+        type: string
+      createdDate:
+        type: string
+        format: date-time
+        readOnly: true
+      modifiedDate:
+        type: string
+        format: date-time
+        readOnly: true
+    xml:
+      name: IdentityProvider
+  SamlEntity:
+    description: A saml entity
+    type: object
+    allOf:
+      - $ref: '#/definitions/IdentityProvider'
+      - type: object
+        required:
+          - entityId
+        properties:
+          entityId:
+            type: string
+          federationId:
+            type: string
+          type:
+            type: string
+            enum:
+            - SAML
+  OpenAthensEntity:
+    description: An OpenAthens entity
+    type: object
+    allOf:
+      - $ref: '#/definitions/IdentityProvider'
+      - type: object
+        required:
+          - entityId
+          - organizationId
+        properties:
+          entityId:
+            type: string
+          scope:
+            type: string
+          organizationId:
+            type: string
+          type:
+            type: string
+            enum:
+            - OPEN_ATHENS
+  OauthEntity:
+    type: object
+    allOf:
+      - $ref: '#/definitions/IdentityProvider'
+      - type: object
+        required:
+          - provider
+        properties:
+          provider:
+            type: string
+            enum:
+            - FACEBOOK
+            - GOOGLE
+            - TWITTER
+            - LINKED_IN
+            - ORCID
+  IdentityProviderUsage:
+    type: object
+    properties:
+      lastActiveDate:
+        type: string
+        format: date-time
+        readOnly: true
+      frequency:
+        type: number
+        description: "The frequency of which this IdentityProvider is used. The frequency is determined as a percentage of how often this was used in comparison to the last 50 logins. For example, 40 uses in the last 50 authentications would result in a frequency of 80.0"
+        readOnly: true
+      idp:
+        $ref: '#/definitions/IdentityProvider'
+    xml:
+      name: IdentityProviderUsage

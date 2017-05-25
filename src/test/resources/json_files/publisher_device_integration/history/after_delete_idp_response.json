@@ -1,0 +1,18 @@
+[
+  {
+    "frequency":57.14,
+    "idp":{
+      "type":"OPEN_ATHENS",
+      "entityId":"sample-open-athens-entity-id",
+      "scope":"sample-scope",
+      "organizationId":"123456"
+    }
+  },
+  {
+    "frequency":42.86,
+    "idp":{
+      "type":"OAUTH",
+      "provider":"GOOGLE"
+    }
+  }
+]

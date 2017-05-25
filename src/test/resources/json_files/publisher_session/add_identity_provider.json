@@ -1,3 +1,4 @@
 {
-  "entityId": "test_identity_provider"
+  "entityId": "test_identity_provider",
+  "type": "SAML"
 }

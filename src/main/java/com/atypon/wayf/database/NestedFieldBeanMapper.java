@@ -16,6 +16,10 @@
 
 package com.atypon.wayf.database;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import io.vertx.core.cli.annotations.Name;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.slf4j.Logger;
@@ -23,13 +27,18 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
+@Singleton
 class NestedFieldBeanMapper {
     private static final Logger LOG = LoggerFactory.getLogger(NestedFieldBeanMapper.class);
 
     private static final String DELIMITER = ".";
     private static final String REGEX_DELIMITER = "\\.";
 
-    private static BeanUtilsBean beanUtilsBean = new BeanUtilsBean(new ConvertUtilsBean() {
+    @Inject
+    @Named("beanFactoryMap")
+    private Map<Class<?>, BeanFactory<?>> beanFactoryMap;
+
+    private BeanUtilsBean enumConverterUtilsBean = new BeanUtilsBean(new ConvertUtilsBean() {
         @Override
         public Object convert(String value, Class clazz) {
             if (clazz.isEnum()){
@@ -40,9 +49,18 @@ class NestedFieldBeanMapper {
         }
     });
 
+    public NestedFieldBeanMapper() {
+    }
+
     public <T> T map(Map<String, Object> row, Class<T> type) {
         try {
-            T bean = type.newInstance();
+            T bean = null;
+
+            if (beanFactoryMap.get(type) != null) {
+                bean = (T) beanFactoryMap.get(type).createInstance(row);
+            } else {
+                bean = type.newInstance();
+            }
 
             for (String key : row.keySet()) {
                 Object value = row.get(key);
@@ -56,7 +74,7 @@ class NestedFieldBeanMapper {
 
                     handleNestedValue(bean, pathFields, 0, value);
                 } else {
-                    beanUtilsBean.setProperty(bean, key, value);
+                    enumConverterUtilsBean.setProperty(bean, key, value);
                 }
             }
 
@@ -75,20 +93,20 @@ class NestedFieldBeanMapper {
             LOG.debug("Setting bean[{}] field[{}] to value[{}]", bean, fieldName, value);
 
             if (value != null) {
-                beanUtilsBean.setProperty(bean, fieldName, value);
+                enumConverterUtilsBean.setProperty(bean, fieldName, value);
             } else {
                 return null;
             }
         } else {
-            Object childBean = beanUtilsBean.getPropertyUtils().getProperty(bean, fieldName);
+            Object childBean = enumConverterUtilsBean.getPropertyUtils().getProperty(bean, fieldName);
 
             if (childBean == null) {
-                childBean = beanUtilsBean.getPropertyUtils().getPropertyType(bean, fieldName).newInstance();
+                childBean = enumConverterUtilsBean.getPropertyUtils().getPropertyType(bean, fieldName).newInstance();
             }
 
             LOG.debug("Recursing for childBean bean[{}] field[{}]", childBean, fieldName);
 
-            beanUtilsBean.setProperty(bean, fieldName, handleNestedValue(childBean, path, ++index, value));
+            enumConverterUtilsBean.setProperty(bean, fieldName, handleNestedValue(childBean, path, ++index, value));
         }
 
         return bean;

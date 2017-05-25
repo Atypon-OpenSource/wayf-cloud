@@ -17,29 +17,53 @@
 package com.atypon.wayf.database;
 
 
-import com.atypon.wayf.data.publisher.session.PublisherSession;
-import com.atypon.wayf.database.NestedFieldBeanMapper;
-import org.junit.Assert;
+import com.atypon.wayf.dao.impl.AuthenticationDaoDbImpl;
+import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.device.access.DeviceAccess;
+import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.guice.WayfGuiceModule;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 public class BeanMapperTest {
 
-    @Test
-    public void testResultSetProcessor() throws Exception {
-        NestedFieldBeanMapper processor = new NestedFieldBeanMapper();
+    @Inject
+    private NestedFieldBeanMapper beanMapper;
 
-        Map<String, Object> row = new HashMap<>();
-        row.put("id", "testId");
-        row.put("device.id", "testDeviceId");
-
-        PublisherSession publisherSession = processor.map(row, PublisherSession.class);
-
-        Assert.assertEquals("testId", publisherSession.getId());
-        Assert.assertEquals("testDeviceId", publisherSession.getDevice().getId());
+    @Before
+    public void setUp() {
+        Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
     }
 
+    @Test
+    public void testMapNested() throws Exception {
+        Map<String, Object> row = new HashMap<>();
+        row.put("localId", "testId");
+        row.put("device.globalId", "testDeviceId");
 
+        DeviceAccess deviceAccess = beanMapper.map(row, DeviceAccess.class);
+
+        assertEquals("testId", deviceAccess.getLocalId());
+        assertEquals("testDeviceId", deviceAccess.getDevice().getGlobalId());
+    }
+
+    @Test
+    public void testBeanFactory() {
+        Map<String, Object> row = new HashMap<>();
+        row.put(AuthenticationDaoDbImpl.AUTHENTICATABLE_TYPE, Authenticatable.Type.PUBLISHER.toString());
+        row.put(AuthenticationDaoDbImpl.AUTHENTICATABLE_ID, 123L);
+
+        Authenticatable authenticatable = beanMapper.map(row, Authenticatable.class);
+        assertNotNull(authenticatable);
+        assertEquals(Publisher.class, authenticatable.getClass());
+        assertEquals(new Long(123L), authenticatable.getId());
+    }
 }

@@ -20,22 +20,31 @@ import com.atypon.wayf.dao.*;
 import com.atypon.wayf.dao.impl.*;
 import com.atypon.wayf.dao.redis.RedisDao;
 import com.atypon.wayf.dao.redis.impl.RedisDaoDefaultImpl;
+import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.InflationPolicyParser;
 import com.atypon.wayf.data.InflationPolicyParserQueryParamImpl;
 import com.atypon.wayf.data.cache.CascadingCache;
+import com.atypon.wayf.data.identity.IdentityProviderType;
+import com.atypon.wayf.data.identity.OauthEntity;
+import com.atypon.wayf.data.identity.OpenAthensEntity;
+import com.atypon.wayf.data.identity.SamlEntity;
+import com.atypon.wayf.database.AuthenticatableBeanFactory;
+import com.atypon.wayf.database.BeanFactory;
+import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.facade.impl.*;
 import com.google.inject.*;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.apache.commons.dbcp.BasicDataSource;
-import org.neo4j.driver.v1.AuthTokens;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.GraphDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class WayfGuiceModule extends AbstractModule {
@@ -44,18 +53,29 @@ public class WayfGuiceModule extends AbstractModule {
     @Override
     protected void configure() {
         try {
+            Module module = this;
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
             Properties properties = new Properties();
-            properties.load(classLoader.getResourceAsStream("dao/publisher-session-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/device-access-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/publisher-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/device-dao-db.properties"));
-            properties.load(classLoader.getResourceAsStream("dao/identity-provider-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/open-athens-entity-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/oauth-entity-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/device-identity-provider-blacklist-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/authentication-dao-db.properties"));
 
             Names.bindProperties(binder(), properties);
 
-            bind(PublisherSessionFacade.class).to(PublisherSessionFacadeImpl.class);
-            bind(PublisherSessionDao.class).to(PublisherSessionDaoDbImpl.class);
+            bind(DeviceIdentityProviderBlacklistFacade.class).to(DeviceIdentityProviderBlacklistFacadeImpl.class);
+            bind(IdentityProviderUsageFacade.class).to(IdentityProviderUsageFacadeImpl.class);
+
+            bind(AuthenticationDao.class).annotatedWith(Names.named("authenticationDaoRedisImpl")).to(AuthenticationDaoRedisImpl.class);
+            bind(AuthenticationDao.class).annotatedWith(Names.named("authenticationDaoDbImpl")).to(AuthenticationDaoDbImpl.class);
+            bind(AuthenticationFacade.class).to(AuthenticatableFacadeImpl.class);
+
+            bind(DeviceAccessFacade.class).to(DeviceAccessFacadeImpl.class);
+            bind(DeviceAccessDao.class).to(DeviceAccessDaoDbImpl.class);
 
             bind(DeviceFacade.class).to(DeviceFacadeImpl.class);
             bind(DeviceDao.class).to(DeviceDaoDbImpl.class);
@@ -64,7 +84,6 @@ public class WayfGuiceModule extends AbstractModule {
             bind(PublisherDao.class).to(PublisherDaoDbImpl.class);
 
             bind(IdentityProviderFacade.class).to(IdentityProviderFacadeImpl.class);
-            bind(IdentityProviderDao.class).to(IdentityProviderDaoDbImpl.class);
 
             bind(new TypeLiteral<InflationPolicyParser<String>>(){}).to(InflationPolicyParserQueryParamImpl.class);
 
@@ -76,41 +95,8 @@ public class WayfGuiceModule extends AbstractModule {
                     .annotatedWith(Names.named("identityProviderRedisDao"))
                     .toProvider(() -> new RedisDaoDefaultImpl("IDENTITY_PROVIDER"));
 
-            bind(Driver.class).toProvider(() -> GraphDatabase.driver("bolt://localhost:7687", AuthTokens.basic("neo4j", "test")));
+            bind(DeviceIdentityProviderBlacklistDao.class).to(DeviceIdentityProviderBlacklistDaoDbImpl.class);
 
-            bind(new TypeLiteral<CascadingCache<String, String>>(){})
-                    .annotatedWith(Names.named("publisherIdCache"))
-                    .toProvider(new Provider<CascadingCache<String, String>>() {
-                        @Inject
-                        @Named("publisherIdRedisDao")
-                        private RedisDao l1;
-
-                        @Inject
-                        private PublisherSessionDaoDbImpl l2;
-
-                        @Override
-                        public CascadingCache<String, String> get() {
-                            Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
-                            return new CascadingCache(l1, l2);
-                        }
-                    });
-
-            bind(new TypeLiteral<CascadingCache<String, String>>(){})
-                    .annotatedWith(Names.named("identityProviderCache"))
-                    .toProvider(new Provider<CascadingCache<String, String>>() {
-                        @Inject
-                        @Named("identityProviderRedisDao")
-                        private RedisDao l1;
-
-                        @Inject
-                        private IdentityProviderDaoDbImpl l2;
-
-                        @Override
-                        public CascadingCache<String, String> get() {
-                            Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
-                            return new CascadingCache(l1, l2);
-                        }
-                    });
 
             BasicDataSource dataSource = new BasicDataSource();
 
@@ -128,5 +114,75 @@ public class WayfGuiceModule extends AbstractModule {
             LOG.error("Error initializing Guice", e);
             throw new RuntimeException(e);
         }
+    }
+
+    @Provides @Named("samlEntity")
+    public IdentityProviderDao provideSamlEntityDao(DbExecutor dbExecutor) throws Exception {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+        Properties properties = new Properties();
+        properties.load(classLoader.getResourceAsStream("dao/saml-entity-dao-db.properties"));
+
+        return new IdentityProviderDaoDbImpl(properties.getProperty("saml-entity.dao.db.create"),
+                properties.getProperty("saml-entity.dao.db.read"),
+                properties.getProperty("saml-entity.dao.db.filter"),
+                dbExecutor,
+                SamlEntity.class);
+    }
+
+    @Provides @Named("openAthensEntity")
+    public IdentityProviderDao provideOpenAthensEntityDao(DbExecutor dbExecutor) throws Exception {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+        Properties properties = new Properties();
+
+        properties.load(classLoader.getResourceAsStream("dao/open-athens-entity-dao-db.properties"));
+
+        return new IdentityProviderDaoDbImpl(properties.getProperty("open-athens-entity.dao.db.create"),
+                properties.getProperty("open-athens-entity.dao.db.read"),
+                properties.getProperty("open-athens-entity.dao.db.filter"),
+                dbExecutor,
+                OpenAthensEntity.class);
+    }
+
+    @Provides @Named("oauthEntity")
+    public IdentityProviderDao provideOauthEntityDao(DbExecutor dbExecutor) throws Exception {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+        Properties properties = new Properties();
+
+        properties.load(classLoader.getResourceAsStream("dao/oauth-entity-dao-db.properties"));
+
+        return new IdentityProviderDaoDbImpl(properties.getProperty("oauth-entity.dao.db.create"),
+                properties.getProperty("oauth-entity.dao.db.read"),
+                properties.getProperty("oauth-entity.dao.db.filter"),
+                dbExecutor,
+                OauthEntity.class);
+    }
+
+    @Provides @Named("identityProviderDaoMap")
+    public Map<IdentityProviderType, IdentityProviderDao> provideIdentityProviderDaoMap(
+            @Named("samlEntity") IdentityProviderDao samlDao,
+            @Named("openAthensEntity") IdentityProviderDao openAthensDao,
+            @Named("oauthEntity") IdentityProviderDao oauthDao) {
+        Map<IdentityProviderType, IdentityProviderDao> daoMap = new HashMap<>();
+        daoMap.put(IdentityProviderType.SAML, samlDao);
+        daoMap.put(IdentityProviderType.OPEN_ATHENS, openAthensDao);
+        daoMap.put(IdentityProviderType.OAUTH, oauthDao);
+        return daoMap;
+    }
+
+    @Provides @Named("beanFactoryMap")
+    public Map<Class<?>, BeanFactory<?>> provideBeanFactoryMap(AuthenticatableBeanFactory authenticatableBeanFactory) {
+        Map<Class<?>, BeanFactory<?>> beanFactoryMap = new HashMap<>();
+
+        beanFactoryMap.put(Authenticatable.class, authenticatableBeanFactory);
+
+        return beanFactoryMap;
+    }
+
+    @Provides
+    public JedisPool getJedisPool() {
+        return new JedisPool(new JedisPoolConfig(), "localhost");
     }
 }

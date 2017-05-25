@@ -25,6 +25,6 @@ import io.reactivex.Single;
 public interface IdentityProviderDao {
 
     Single<IdentityProvider> create(IdentityProvider identityProvider);
-    Maybe<IdentityProvider> read(String id);
+    Maybe<IdentityProvider> read(Long id);
     Observable<IdentityProvider> filter(IdentityProviderQuery query);
 }

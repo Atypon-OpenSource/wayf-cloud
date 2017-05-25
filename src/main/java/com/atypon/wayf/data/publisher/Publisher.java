@@ -16,24 +16,21 @@
 
 package com.atypon.wayf.data.publisher;
 
-import com.atypon.wayf.data.identity.IdentityProvider;
-import com.atypon.wayf.data.device.Platform;
+import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.user.User;
 
 import java.util.Date;
-import java.util.List;
 
-public class Publisher {
-    private String id;
+public class Publisher implements Authenticatable {
+    private Long id;
     private PublisherStatus status;
 
+    private String token;
+
+    private String code;
     private String name;
 
-    private Platform platform;
-
-    private List<IdentityProvider> identityProviders;
-
-    private List<User> admins;
+    private User contact;
 
     private Date createdDate;
     private Date modifiedDate;
@@ -41,11 +38,11 @@ public class Publisher {
     public Publisher() {
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -57,6 +54,14 @@ public class Publisher {
         this.status = status;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
     public String getName() {
         return name;
     }
@@ -65,28 +70,20 @@ public class Publisher {
         this.name = name;
     }
 
-    public Platform getPlatform() {
-        return platform;
+    public String getCode() {
+        return code;
     }
 
-    public void setPlatform(Platform platform) {
-        this.platform = platform;
+    public void setCode(String code) {
+        this.code = code;
     }
 
-    public List<IdentityProvider> getIdentityProviders() {
-        return identityProviders;
+    public User getContact() {
+        return contact;
     }
 
-    public void setIdentityProviders(List<IdentityProvider> identityProviders) {
-        this.identityProviders = identityProviders;
-    }
-
-    public List<User> getAdmins() {
-        return admins;
-    }
-
-    public void setAdmins(List<User> admins) {
-        this.admins = admins;
+    public void setContact(User contact) {
+        this.contact = contact;
     }
 
     public Date getCreatedDate() {
@@ -103,5 +100,15 @@ public class Publisher {
 
     public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.PUBLISHER;
+    }
+
+    @Override
+    public void setType(Type type) {
+
     }
 }

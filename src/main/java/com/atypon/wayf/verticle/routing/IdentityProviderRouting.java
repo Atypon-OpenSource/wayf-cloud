@@ -19,9 +19,10 @@ package com.atypon.wayf.verticle.routing;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.atypon.wayf.request.RequestReader;
-import com.atypon.wayf.verticle.WayfRequestHandler;
+import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -33,38 +34,64 @@ import org.slf4j.LoggerFactory;
 public class IdentityProviderRouting implements RoutingProvider {
     private static final Logger LOG = LoggerFactory.getLogger(IdentityProviderRouting.class);
 
-    private static final String IDENTITY_PROVIDER_BASE_URL = "/1/identityProvider";
     private static final String IDENTITY_PROVIDER_ID_PARAM_NAME = "id";
-    private static final String IDENTITY_PROVIDER_ID_PARAM = ":" + IDENTITY_PROVIDER_ID_PARAM_NAME;
+    private static final String LOCAL_ID_PARAM_NAME = "localId";
+    private static final String IDP_ID_PARAM_NAME = "idpId";
 
-    private static final String CREATE_IDENTITY_PROVIDER = IDENTITY_PROVIDER_BASE_URL;
-    private static final String READ_IDENTITY_PROVIDER = IDENTITY_PROVIDER_BASE_URL + "/" + IDENTITY_PROVIDER_ID_PARAM;
+    private static final String CREATE_IDENTITY_PROVIDER = "/1/identityProvider";
+    private static final String READ_IDENTITY_PROVIDER = "/1/identityProvider/:id";
+    private static final String ADD_IDP_TO_DEVICE = "/1/device/:localId/history/idp";
+    private static final String REMOVE_IDP_FROM_DEVICE = "/1/device/:localId/history/idp/:idpId";
 
     @Inject
     private IdentityProviderFacade identityProviderFacade;
+
+    @Inject
+    private WayfRequestHandlerFactory handlerFactory;
 
     public IdentityProviderRouting() {
     }
 
     public void addRoutings(Router router) {
-        router.route(IDENTITY_PROVIDER_BASE_URL + "*").handler(BodyHandler.create());
-        router.post(CREATE_IDENTITY_PROVIDER).handler(WayfRequestHandler.single((rc) -> createIdentityProvider(rc)));
-        router.get(READ_IDENTITY_PROVIDER).handler(WayfRequestHandler.single((rc) -> readIdentityProvider(rc)));
+        router.route("/1/identityProvider*").handler(BodyHandler.create());
+        router.route("/1/device*").handler(BodyHandler.create());
+        router.post(CREATE_IDENTITY_PROVIDER).handler(handlerFactory.single((rc) -> createIdentityProvider(rc)));
+        router.get(READ_IDENTITY_PROVIDER).handler(handlerFactory.single((rc) -> readIdentityProvider(rc)));
+        router.post(ADD_IDP_TO_DEVICE).handler(handlerFactory.single((rc) -> addIdentityProviderToDevice(rc)));
+        router.delete(REMOVE_IDP_FROM_DEVICE).handler(handlerFactory.completable((rc) -> removeIdentityProviderFromDevice(rc)));
     }
 
     public Single<IdentityProvider> createIdentityProvider(RoutingContext routingContext) {
         LOG.debug("Received create IdentityProvider request");
 
-        return Single.just(routingContext)
-                .flatMap((rc) -> RequestReader.readRequestBody(rc, IdentityProvider.class))
-                .flatMap((requestIdentityProvider) -> identityProviderFacade.create(requestIdentityProvider));
+        IdentityProvider requestBody = RequestReader.readRequestBody(routingContext, IdentityProvider.class).blockingGet();
+
+        return identityProviderFacade.create(requestBody);
     }
 
     public Single<IdentityProvider> readIdentityProvider(RoutingContext routingContext) {
         LOG.debug("Received read IdentityProvider request");
 
-        return Single.just(routingContext)
-                .map((rc) -> RequestReader.readPathArgument(rc, IDENTITY_PROVIDER_ID_PARAM_NAME))
-                .flatMap((requestIdentityProviderId) -> identityProviderFacade.read(requestIdentityProviderId));
+        Long identityProviderId = Long.valueOf(RequestReader.readPathArgument(routingContext, IDENTITY_PROVIDER_ID_PARAM_NAME));
+
+        return identityProviderFacade.read(identityProviderId);
+    }
+
+    public Single<IdentityProvider> addIdentityProviderToDevice(RoutingContext routingContext) {
+        LOG.debug("Received request to add IDP to device");
+
+        String localId = RequestReader.readPathArgument(routingContext, LOCAL_ID_PARAM_NAME);
+        IdentityProvider body = RequestReader.readRequestBody(routingContext, IdentityProvider.class).blockingGet();
+
+        return identityProviderFacade.recordIdentityProviderUse(localId, body);
+    }
+
+    public Completable removeIdentityProviderFromDevice(RoutingContext routingContext) {
+        LOG.debug("Received request to add IDP to device");
+
+        String localId = RequestReader.readPathArgument(routingContext, LOCAL_ID_PARAM_NAME);
+        Long idpId = Long.valueOf(RequestReader.readPathArgument(routingContext, IDP_ID_PARAM_NAME));
+
+        return identityProviderFacade.blockIdentityProviderForDevice(localId, idpId);
     }
 }

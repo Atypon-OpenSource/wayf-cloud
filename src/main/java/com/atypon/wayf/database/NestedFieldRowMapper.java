@@ -27,16 +27,15 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
-
-class NestedFieldRowMapper implements RowMapper {
+public class NestedFieldRowMapper implements RowMapper {
     private static final Logger LOG = LoggerFactory.getLogger(NestedFieldRowMapper.class);
 
     private Class<?> returnType;
     private NestedFieldBeanMapper beanMapper;
 
-    public NestedFieldRowMapper(Class<?> returnType) {
+    public NestedFieldRowMapper(Class<?> returnType, NestedFieldBeanMapper beanMapper) {
         this.returnType = returnType;
-        beanMapper = new NestedFieldBeanMapper();
+        this.beanMapper = beanMapper;
     }
 
     @Override
@@ -55,12 +54,21 @@ class NestedFieldRowMapper implements RowMapper {
             switch (columnType) {
                 case Types.DOUBLE:
                 case Types.DECIMAL:
+                    double doubleValue = resultSet.getDouble(columnLabel);
+
+                    if (!resultSet.wasNull()) {
+                        resultSetValues.put(columnLabel, doubleValue);
+                    }
                     resultSetValues.put(columnLabel, resultSet.getDouble(columnLabel));
                     break;
                 case Types.INTEGER:
                 case Types.TINYINT:
                 case Types.BIGINT:
-                    resultSetValues.put(columnLabel, resultSet.getInt(columnLabel));
+                    int intValue = resultSet.getInt(columnLabel);
+
+                    if (!resultSet.wasNull()) {
+                        resultSetValues.put(columnLabel, intValue);
+                    }
                     break;
                 case Types.TIMESTAMP:
                 case Types.DATE:

@@ -25,11 +25,13 @@ import com.atypon.wayf.request.RequestContext;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 public class DeviceDaoDbImplTest {
@@ -42,32 +44,57 @@ public class DeviceDaoDbImplTest {
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
 
         WayfReactivexConfig.initializePlugins();
-        RequestContextAccessor.set(new RequestContext().setLimit(5).setOffset(0));
+        RequestContextAccessor.set(new RequestContext());
     }
 
     @Test
     public void testCreate() {
         Device device = new Device();
+        device.setGlobalId(UUID.randomUUID().toString());
         device.setStatus(DeviceStatus.ACTIVE);
 
         Device createdDevice = dao.create(device).blockingGet();
 
-        Assert.assertEquals(DeviceStatus.ACTIVE, createdDevice.getStatus());
-        Assert.assertNotNull(createdDevice.getId());
-        Assert.assertNotNull(createdDevice.getCreatedDate());
+        assertNotNull(createdDevice.getGlobalId());
+        assertNotNull(createdDevice.getCreatedDate());
+
+        assertEquals(device.getGlobalId(), createdDevice.getGlobalId());
+        assertEquals(device.getStatus(), createdDevice.getStatus());
     }
 
     @Test
     public void testRead() {
         Device device = new Device();
+        device.setGlobalId(UUID.randomUUID().toString());
         device.setStatus(DeviceStatus.ACTIVE);
 
         Device createdDevice = dao.create(device).blockingGet();
-        Device readDevice = dao.read(new DeviceQuery().setId(createdDevice.getId())).blockingGet();
+        Device readDevice = dao.read(new DeviceQuery().setGlobalId(createdDevice.getGlobalId())).blockingGet();
 
-        Assert.assertEquals(createdDevice.getId(), readDevice.getId());
-        Assert.assertEquals(DeviceStatus.ACTIVE, readDevice.getStatus());
-        Assert.assertNotNull(readDevice.getId());
-        Assert.assertNotNull(readDevice.getCreatedDate());
+        assertNotNull(readDevice.getGlobalId());
+        assertNotNull(readDevice.getCreatedDate());
+
+        assertEquals(createdDevice.getGlobalId(), readDevice.getGlobalId());
+        assertEquals(createdDevice.getStatus(), readDevice.getStatus());
+    }
+
+    @Test
+    public void testXref() {
+        Device device = new Device();
+        device.setGlobalId(UUID.randomUUID().toString());
+        device.setStatus(DeviceStatus.ACTIVE);
+
+        Device createdDevice = dao.create(device).blockingGet();
+        assertNotNull(createdDevice.getId());
+
+        Long publisherId = 123L;
+        String localId = UUID.randomUUID().toString();
+
+        dao.createDevicePublisherLocalIdXref(createdDevice.getId(), publisherId, localId).blockingGet();
+
+        Device readByLocalId = dao.readByPublisherLocalId(publisherId, localId).blockingGet();
+        assertEquals(createdDevice.getId(), readByLocalId.getId());
+        assertEquals(createdDevice.getGlobalId(), readByLocalId.getGlobalId());
+        assertEquals(createdDevice.getStatus(), readByLocalId.getStatus());
     }
 }
