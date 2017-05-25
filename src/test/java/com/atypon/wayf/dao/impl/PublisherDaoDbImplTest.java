@@ -82,6 +82,7 @@ public class PublisherDaoDbImplTest {
         publisher.setName("Test Publisher");
         publisher.setStatus(PublisherStatus.ACTIVE);
         publisher.setCode("test_publisher");
+        publisher.setContact(contact);
 
         Publisher createdPublisher = dao.create(publisher).blockingGet();
         Publisher readPublisher = dao.read(createdPublisher.getId()).blockingGet();

@@ -48,7 +48,7 @@ public class AuthenticationFacadeImplTest {
     }
 
     @Test
-    public void test() {
+    public void testAllCacheLayers() {
         Publisher testPublisher = new Publisher();
         testPublisher.setId(1122L);
 

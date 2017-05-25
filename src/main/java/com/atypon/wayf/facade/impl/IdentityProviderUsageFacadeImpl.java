@@ -32,7 +32,6 @@ import com.google.inject.Singleton;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.Single;
-import io.reactivex.functions.Function3;
 import io.reactivex.functions.Function4;
 import io.reactivex.schedulers.Schedulers;
 
@@ -64,6 +63,10 @@ public class IdentityProviderUsageFacadeImpl implements IdentityProviderUsageFac
 
     public void setIdpBlacklistFacade(DeviceIdentityProviderBlacklistFacade idpBlacklistFacade) {
         this.idpBlacklistFacade = idpBlacklistFacade;
+    }
+
+    public void setIdentityProviderFacade(IdentityProviderFacade identityProviderFacade) {
+        this.identityProviderFacade = identityProviderFacade;
     }
 
     @Override

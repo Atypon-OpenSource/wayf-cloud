@@ -20,6 +20,7 @@ import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
+import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.RequestContext;
 import com.atypon.wayf.request.RequestContextAccessor;
@@ -49,6 +50,8 @@ public class IdentityProviderUsageFacadeImplTest {
 
         blacklistFacade = new DeviceIdentityProviderBlacklistFacadeMockImpl();
         usageFacade.setIdpBlacklistFacade(blacklistFacade);
+
+        usageFacade.setIdentityProviderFacade(new IdentityProviderFacadeMockImpl());
 
         WayfReactivexConfig.initializePlugins();
         RequestContextAccessor.set(new RequestContext());

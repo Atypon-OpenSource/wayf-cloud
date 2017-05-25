@@ -18,12 +18,14 @@ package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.AuthenticationDao;
 import com.atypon.wayf.data.Authenticatable;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.data.user.User;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import org.json.JSONObject;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
@@ -37,8 +39,6 @@ public class AuthenticationDaoRedisImpl implements AuthenticationDao {
 
     @Inject
     private JedisPool pool;
-
-    private ObjectMapper mapper = new ObjectMapper();
 
     private String prefix = DEFAULT_PREFIX;
 
@@ -67,7 +67,7 @@ public class AuthenticationDaoRedisImpl implements AuthenticationDao {
         if (value == null) {
             return dbDao.authenticate(token)
                     .map((authenticatable) -> {
-                        String readValue = mapper.writeValueAsString(authenticatable);
+                        String readValue = serialize(authenticatable);
 
                         try (Jedis jedis = pool.getResource()) {
                             jedis.set(buildKey(token), readValue);
@@ -79,13 +79,36 @@ public class AuthenticationDaoRedisImpl implements AuthenticationDao {
                     });
         } else {
             try {
-                Authenticatable authenticatable = mapper.readValue(value, Authenticatable.class);
+                Authenticatable authenticatable = deserialize(value);
 
                 return Maybe.just(authenticatable);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private String serialize(Authenticatable authenticatable) {
+        JSONObject object = new JSONObject();
+        object.put("type", authenticatable.getType());
+        object.put("id", authenticatable.getId());
+
+        return object.toString();
+    }
+
+    private Authenticatable deserialize(String json) {
+        JSONObject object = new JSONObject(json);
+
+        Authenticatable.Type type = object.getEnum(Authenticatable.Type.class, "type");
+
+        Authenticatable authenticatable = null;
+        if (Authenticatable.Type.PUBLISHER == type) {
+            authenticatable = new Publisher();
+        }
+
+        authenticatable.setId(object.getLong("id"));
+
+        return authenticatable;
     }
 
     private String buildKey(String token) {
