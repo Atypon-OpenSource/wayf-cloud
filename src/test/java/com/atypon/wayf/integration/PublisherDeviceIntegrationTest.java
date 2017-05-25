@@ -56,7 +56,7 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
     private static final String NEW_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/empty_history_response.json");
     private static final String INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/initial_add_idp_response.json");
     private static final String AFTER_DELETE_IDP_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/after_delete_idp_response.json");
-
+    private static final String RE_ADD_SAML_IDP_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/re-add_saml_idp_response.json");
     @Test
     public void runIntegration() throws Exception {
         // Create 2 Publishers
@@ -71,6 +71,7 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
         // Assert an empty history
         testDeviceHistory(publisherALocalId, publisherAToken, NEW_DEVICE_HISTORY_RESPONSE_JSON);
 
+        // Get the minimum last active date
         Date earliestLastActiveDate = DATE_FORMAT.parse(DATE_FORMAT.format(new Date()));
 
         // Add the IDPs to the device multiple times and validate the IDP's ID is the same each time
@@ -78,26 +79,43 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
         testAddIdpToDeviceAndIdpResolution(4, publisherALocalId, publisherAToken, CREATE_OPEN_ATHENS_IDP_REQUEST_JSON, CREATE_OPEN_ATHENS_IDP_RESPONSE_JSON);
         testAddIdpToDeviceAndIdpResolution(3, publisherALocalId, publisherAToken, CREATE_OAUTH_IDP_REQUEST_JSON, CREATE_OAUTH_IDP_RESPONSE_JSON);
 
+        // Get the maximum last active active date
         Date latestLastActiveDate = DATE_FORMAT.parse(DATE_FORMAT.format(new Date()));
 
         // Test the device history after adding the IDPs
         String deviceHistoryFromPublisherA = testDeviceHistory(publisherALocalId, publisherAToken, INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON);
         testLastActiveDateBetween(earliestLastActiveDate, latestLastActiveDate, 3, deviceHistoryFromPublisherA);
 
+        // Relate the device to publisher B
         String publisherBLocalId = "local-id-publisher-b";
         String globalIdPublisherB = relateDeviceToPublisher(publisherBLocalId, publisherBToken, globalIdPublisherA, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         assertEquals(globalIdPublisherA, globalIdPublisherB);
 
+        // Get the usage history for publisher B
         String deviceHistoryFromPublisherB = testDeviceHistory(publisherBLocalId, publisherBToken, INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON);
 
+        // Compare the usage history from publisher A to that of publisher B
         compareDeviceHistory(deviceHistoryFromPublisherA, deviceHistoryFromPublisherB);
 
+        // Remove the SAML entity from the device from publisher A
         removeIdpForDevice(publisherALocalId, publisherAToken, samlId);
 
+        // Get the usage history as publisher A and then publisher B
         deviceHistoryFromPublisherA = testDeviceHistory(publisherALocalId, publisherAToken, AFTER_DELETE_IDP_DEVICE_HISTORY_RESPONSE_JSON);
         deviceHistoryFromPublisherB = testDeviceHistory(publisherBLocalId, publisherBToken, AFTER_DELETE_IDP_DEVICE_HISTORY_RESPONSE_JSON);
 
+        // Ensure the usage history is the same for both publishers
+        compareDeviceHistory(deviceHistoryFromPublisherA, deviceHistoryFromPublisherB);
+
+        // Add back the SAML identity to the device
+        testAddIdpToDeviceAndIdpResolution(5, publisherALocalId, publisherAToken, CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
+
+        // Get the usage history as publisher A and then publisher B
+        deviceHistoryFromPublisherA = testDeviceHistory(publisherALocalId, publisherAToken, RE_ADD_SAML_IDP_HISTORY_RESPONSE_JSON);
+        deviceHistoryFromPublisherB = testDeviceHistory(publisherBLocalId, publisherBToken, RE_ADD_SAML_IDP_HISTORY_RESPONSE_JSON);
+
+        // Ensure the usage history is the same for both publishers
         compareDeviceHistory(deviceHistoryFromPublisherA, deviceHistoryFromPublisherB);
     }
 
