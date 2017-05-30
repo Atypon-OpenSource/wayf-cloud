@@ -106,7 +106,7 @@ public abstract class BaseHttpTest {
 
     protected static String getFileAsString(String path) {
         LOG.debug("Loading file: {}", path);
-        
+
         try {
             return CharStreams.toString(new InputStreamReader(BaseHttpTest.class.getClassLoader().getResourceAsStream(path), Charsets.UTF_8));
         } catch (Exception e) {
