@@ -16,6 +16,10 @@
 
 package com.atypon.wayf.verticle.routing;
 
+import com.atypon.wayf.integration.DeviceAccessTestUtil;
+import com.atypon.wayf.integration.DeviceTestUtil;
+import com.atypon.wayf.integration.IdentityProviderTestUtil;
+import com.atypon.wayf.integration.PublisherTestUtil;
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.WayfVerticle;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -55,10 +59,25 @@ import static org.junit.Assert.assertThat;
 @RunWith(VertxUnitRunner.class)
 public abstract class BaseHttpTest {
     private static final Logger LOG = LoggerFactory.getLogger(BaseHttpTest.class);
+
     private static Vertx vertx;
     private static Integer port;
 
-    protected static final DateFormat DATE_FORMAT = ResponseWriter.DATE_FORMAT;
+    public static final DateFormat DATE_FORMAT = ResponseWriter.DATE_FORMAT;
+
+    protected PublisherTestUtil publisherTestUtil;
+    protected DeviceTestUtil deviceTestUtil;
+    protected DeviceAccessTestUtil deviceAccessTestUtil;
+    protected IdentityProviderTestUtil identityProviderTestUtil;
+
+    public BaseHttpTest(String httpLoggingFilename) {
+        LoggingHttpRequest request = new LoggingHttpRequest(httpLoggingFilename);
+
+        publisherTestUtil = new PublisherTestUtil(request);
+        deviceTestUtil = new DeviceTestUtil(request);
+        deviceAccessTestUtil = new DeviceAccessTestUtil(request);
+        identityProviderTestUtil = new IdentityProviderTestUtil(request);
+    }
 
     @BeforeClass
     public static void setUpClass(TestContext context) throws IOException {
@@ -82,68 +101,11 @@ public abstract class BaseHttpTest {
         vertx.close();
     }
 
-    protected Predicate ALWAYS_TRUE_PREDICATE = (arg) -> true;
-
 
     protected static String getFileAsString(String path) {
         LOG.debug("Loading file: {}", path);
         try {
             return CharStreams.toString(new InputStreamReader(BaseHttpTest.class.getClassLoader().getResourceAsStream(path), Charsets.UTF_8));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    protected String readField(String json, String field) {
-        Object value = JsonPath.read(json, field, ALWAYS_TRUE_PREDICATE);
-
-        if (value == null) {
-            return null;
-        }
-
-        if (Map.class.isAssignableFrom(value.getClass())) {
-            return JsonPath.parse(value).jsonString();
-        } else {
-            return String.valueOf(value);
-        }
-    }
-
-    protected String setField(String json, String field, String value) {
-        return JsonPath.parse(json).set(field, value, ALWAYS_TRUE_PREDICATE).jsonString();
-    }
-
-    protected void assertNotNullPaths(String json, String... fields) {
-        for (String field : fields) {
-            assertThat(json, JsonPathMatchers.hasJsonPath(field, IsNull.notNullValue()));
-        }
-    }
-
-    protected void removeFields(DocumentContext document, String... fields) {
-        for (String field : fields) {
-            try {
-                document.delete(field, ALWAYS_TRUE_PREDICATE);
-            } catch (PathNotFoundException e) {
-                // ignore
-            }
-        }
-    }
-
-    protected void assertJsonEquals(String expected, String actual, String... blacklistedFields) {
-        DocumentContext expectedDocument = JsonPath.parse(expected);
-        DocumentContext actualDocument = JsonPath.parse(actual);
-
-        if (blacklistedFields != null) {
-            removeFields(expectedDocument, blacklistedFields);
-            removeFields(actualDocument, blacklistedFields);
-        }
-
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-
-            JsonNode expectedNode = mapper.readTree(expectedDocument.jsonString());
-            JsonNode actualNode = mapper.readTree(actualDocument.jsonString());
-
-            assertEquals(expectedNode, actualNode);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

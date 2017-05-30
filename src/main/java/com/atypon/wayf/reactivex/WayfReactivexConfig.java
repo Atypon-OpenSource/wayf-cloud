@@ -16,8 +16,10 @@
 
 package com.atypon.wayf.reactivex;
 
+import com.atypon.wayf.data.ServiceException;
 import hu.akarnokd.rxjava2.debug.RxJavaAssemblyTracking;
 import io.reactivex.plugins.RxJavaPlugins;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,5 @@ public class WayfReactivexConfig {
         LOG.debug("Initializing ReactiveX plugins");
 
         RxJavaPlugins.setScheduleHandler((runnable) -> new WayfRunnable(runnable));
-       //  RxJavaAssemblyTracking.enable();
     }
 }
