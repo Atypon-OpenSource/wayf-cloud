@@ -90,7 +90,7 @@ public class DeviceDaoDbImplTest {
         Long publisherId = 123L;
         String localId = UUID.randomUUID().toString();
 
-        dao.createDevicePublisherLocalIdXref(createdDevice.getId(), publisherId, localId).blockingGet();
+        dao.replaceDevicePublisherLocalIdXref(createdDevice.getId(), publisherId, localId).blockingGet();
 
         Device readByLocalId = dao.readByPublisherLocalId(publisherId, localId).blockingGet();
         assertEquals(createdDevice.getId(), readByLocalId.getId());

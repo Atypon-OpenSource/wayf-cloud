@@ -53,7 +53,7 @@ public class DbExecutor {
     }
 
     public <T> Maybe<T> executeSelectFirst(String query, Map<String, Object> arguments, Class<T> returnType) {
-        return executeSelect(query, arguments, returnType).singleElement();
+        return executeSelect(query, arguments, returnType).firstElement();
     }
 
     public <T> Observable<T> executeSelect(String query, Object arguments, Class<T> returnType) {

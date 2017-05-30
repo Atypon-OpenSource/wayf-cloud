@@ -17,10 +17,7 @@
 package com.atypon.wayf.data;
 
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.http.HttpStatus;
 
 /*

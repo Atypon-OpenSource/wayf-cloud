@@ -115,13 +115,13 @@ DROP TABLE IF EXISTS `publisher_local_id_device_xref`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `publisher_local_id_device_xref` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `unique_publisher_key` VARCHAR (150),
   `publisher_id` int(11) NOT NULL,
-  `local_id` VARCHAR(50) NOT NULL,
+  `local_id` VARCHAR(100) NOT NULL,
   `device_id` int(11) NOT NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`unique_publisher_key`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
 
@@ -155,7 +155,7 @@ DROP TABLE IF EXISTS `device_access`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `device_access` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `local_id` varchar(45) NOT NULL,
+  `local_id` varchar(100) NOT NULL,
   `type` varchar(30) NOT NULL,
   `device_id` int(11) NOT NULL,
   `identity_provider_id` varchar(36) DEFAULT NULL,

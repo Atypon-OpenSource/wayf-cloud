@@ -78,8 +78,7 @@ public class WayfVerticle extends AbstractVerticle {
 
         LOG.debug("Starting HTTP server");
         // Create the HTTP server and pass the "accept" method to the request handler.
-        vertx
-                .createHttpServer()
+        vertx.createHttpServer()
                 .requestHandler(router::accept)
                 .listen(
                         // Retrieve the port from the configuration,

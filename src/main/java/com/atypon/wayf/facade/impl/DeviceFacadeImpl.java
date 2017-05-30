@@ -18,7 +18,6 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.DeviceDao;
 import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceInfo;
 import com.atypon.wayf.data.device.DeviceQuery;
@@ -38,9 +37,9 @@ import com.google.inject.Singleton;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -64,36 +63,47 @@ public class DeviceFacadeImpl implements DeviceFacade {
         LOG.debug("Creating device [{}]", device);
 
         device.setStatus(DeviceStatus.ACTIVE);
+
+        // Generate a global ID
         device.setGlobalId(UUID.randomUUID().toString());
 
         DeviceInfo info = device.getInfo();
-
         if (info == null) {
             info = new DeviceInfo();
             device.setInfo(info);
         }
 
+        // Set the user to that of the request
         info.setUserAgent(RequestContextAccessor.get().getUserAgent());
 
+        // Create the device
         return deviceDao.create(device);
     }
 
     @Override
     public Single<Device> read(DeviceQuery query) {
         LOG.debug("Reading device with query [{}]", query);
+
         return deviceDao.read(query)
                 .toSingle()
                 .flatMap((device) -> populate(device, query).toSingle(() -> device));
-
     }
 
     @Override
     public Observable<Device> filter(DeviceQuery query) {
-        return Observable.just(query)
-                .flatMap((_query) -> deviceDao.filter(_query))
+        LOG.debug("Filtering for devices that match query [{}]", query);
+
+        return deviceDao.filter(query) // Filter for devices that match the query
+
+                // Collect the elements into a list so that the call to populate is batched
                 .toList()
+
                 .flatMapObservable((devices) ->
+
+                        // Populate the required fields on devices
                         populate(devices, query)
+
+                                // Convert the completable result to an Observable and fill it with the devices so they can be returned
                                 .toObservable()
                                 .cast(Device.class)
                                 .concatWith(Observable.fromIterable(devices)));
@@ -101,16 +111,36 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
     @Override
     public Single<Device> createOrUpdateForPublisher(String localId) {
-        Device device = createOrRead().blockingGet();
-        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+        return resolveFromRequest(localId) // Read the device contained in the request or create a new one
 
-        return deviceDao.createDevicePublisherLocalIdXref(device.getId(), publisher.getId(), localId).toSingleDefault(device);
+                // Apply the following logic to the device
+                .flatMap((device) -> {
+
+                    // Get the currently authenticated publisher
+                    Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+
+
+                    // Create an XREF linking the publisher and local ID to the device
+                    return deviceDao.replaceDevicePublisherLocalIdXref(device.getId(), publisher.getId(), localId)
+
+                            // Since the above method has no return value, return the resolved device on completion
+                            .toSingleDefault(device);
+                });
     }
 
-    private Single<Device> createOrRead() {
+    private Single<Device> resolveFromRequest(String localId) {
         String deviceGlobalId = RequestContextAccessor.get().getDeviceId();
 
-        return deviceGlobalId == null? create(new Device()) : read(new DeviceQuery().setGlobalId(deviceGlobalId));
+        if (deviceGlobalId != null) {
+            return read(new DeviceQuery().setGlobalId(deviceGlobalId));
+        }
+
+        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+
+        // If the localId has already been used, return the device associated with it. Otherwise, create a new Device
+        return deviceDao.readByPublisherLocalId(publisher.getId(), localId)
+                .concatWith(create(new Device()).toMaybe())
+                .firstOrError();
     }
 
     @Override
@@ -118,8 +148,11 @@ public class DeviceFacadeImpl implements DeviceFacade {
         Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
 
         return deviceDao.readByPublisherLocalId(publisher.getId(), localId)
-                .toSingle()
-                .doOnError((e) -> {throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not find device associated with localId [" + localId + "]");});
+
+                // Add in Standard 404 error on no element
+                .compose((maybe) -> FacadePolicies.daoReadOnIdMiss(maybe,  MessageFormatter.format("Could not find device associated with localId [{}]", localId)))
+
+                .toSingle();
     }
 
     private Completable populate(Device device, DeviceQuery query) {

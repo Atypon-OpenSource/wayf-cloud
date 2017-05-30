@@ -21,6 +21,8 @@ import io.reactivex.*;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import org.apache.http.HttpStatus;
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
 
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
@@ -63,15 +65,13 @@ public class FacadePolicies {
                 .timeout(TIMEOUT,TIMEOUT_UNIT);
     }
 
-    public static final <T> Maybe<T> daoReadOnIdMiss(Maybe<T> maybe) {
+    public static final <T> Maybe<T> daoReadOnIdMiss(Maybe<T> maybe, FormattingTuple errorMessage) {
         return maybe.doOnError((e) -> {
             if (NoSuchElementException.class.isAssignableFrom(e.getClass())) {
-                throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not find document for ID");
+                throw new ServiceException(HttpStatus.SC_NOT_FOUND, errorMessage.getMessage());
             }
 
             throw new RuntimeException(e);
         });
     }
-
-
 }

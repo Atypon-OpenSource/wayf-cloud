@@ -73,7 +73,7 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
                 .compose((maybe) -> FacadePolicies.applyMaybe(maybe))
 
                 // Add in a custom exception on error
-                .compose((maybe) -> FacadePolicies.daoReadOnIdMiss(maybe))
+                .compose((maybe) -> FacadePolicies.daoReadOnIdMiss(maybe, null))
 
                 // Ensure one element is emitted
                 .toSingle()
