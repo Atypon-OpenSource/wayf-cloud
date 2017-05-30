@@ -43,12 +43,15 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
+import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 public class WayfGuiceModule extends AbstractModule {
     private static final Logger LOG = LoggerFactory.getLogger(WayfGuiceModule.class);
+
+    private static final String WAYF_CONFIG_FILE = "wayf.properties";
 
     @Override
     protected void configure() {
@@ -57,6 +60,15 @@ public class WayfGuiceModule extends AbstractModule {
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
             Properties properties = new Properties();
+
+            String configDirectory = System.getProperty("wayf.conf.dir");
+            String configFile = configDirectory == null? WAYF_CONFIG_FILE : configDirectory + "/" + WAYF_CONFIG_FILE;
+
+            LOG.info("Loading wayf config file from location [{}]", configFile);
+
+            FileReader reader = new FileReader(configFile);
+            properties.load(reader);
+
             properties.load(classLoader.getResourceAsStream("dao/device-access-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/publisher-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/device-dao-db.properties"));
@@ -96,20 +108,6 @@ public class WayfGuiceModule extends AbstractModule {
                     .toProvider(() -> new RedisDaoDefaultImpl("IDENTITY_PROVIDER"));
 
             bind(DeviceIdentityProviderBlacklistDao.class).to(DeviceIdentityProviderBlacklistDaoDbImpl.class);
-
-
-            BasicDataSource dataSource = new BasicDataSource();
-
-            dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-            dataSource.setUsername("root");
-            dataSource.setPassword("test");
-            dataSource.setUrl("jdbc:mysql://localhost:3306/wayf");
-            dataSource.setMaxActive(10);
-            dataSource.setMaxIdle(5);
-            dataSource.setInitialSize(5);
-            dataSource.setValidationQuery("SELECT 1");
-
-            bind(NamedParameterJdbcTemplate.class).toProvider(() -> new NamedParameterJdbcTemplate(dataSource));
         } catch (Exception e) {
             LOG.error("Error initializing Guice", e);
             throw new RuntimeException(e);
@@ -182,7 +180,31 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides
-    public JedisPool getJedisPool() {
-        return new JedisPool(new JedisPoolConfig(), "localhost");
+    public JedisPool getJedisPool(@Named("redis.host") String redisHost) {
+        return new JedisPool(new JedisPoolConfig(), redisHost);
+    }
+
+    @Provides
+    public NamedParameterJdbcTemplate getJdbcTemplate(
+            @Named("jdbc.driver") String driver,
+            @Named("jdbc.username") String username,
+            @Named("jdbc.password") String password,
+            @Named("jdbc.url") String url,
+            @Named("jdbc.maxActive") Integer maxActive,
+            @Named("jdbc.maxIdle") Integer maxIdle,
+            @Named("jdbc.initialSize") Integer initialSize,
+            @Named("jdbc.validationQuery") String validationQuery) {
+        BasicDataSource dataSource = new BasicDataSource();
+
+        dataSource.setDriverClassName(driver);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+        dataSource.setUrl(url);
+        dataSource.setMaxActive(maxActive);
+        dataSource.setMaxIdle(maxIdle);
+        dataSource.setInitialSize(initialSize);
+        dataSource.setValidationQuery(validationQuery);
+
+        return new NamedParameterJdbcTemplate(dataSource);
     }
 }

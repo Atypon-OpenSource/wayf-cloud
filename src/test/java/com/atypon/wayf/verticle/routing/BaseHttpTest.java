@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.verticle.routing;
 
+import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.integration.DeviceAccessTestUtil;
 import com.atypon.wayf.integration.DeviceTestUtil;
 import com.atypon.wayf.integration.IdentityProviderTestUtil;
@@ -26,6 +27,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
@@ -61,7 +65,10 @@ public abstract class BaseHttpTest {
     private static final Logger LOG = LoggerFactory.getLogger(BaseHttpTest.class);
 
     private static Vertx vertx;
-    private static Integer port;
+
+    @Inject
+    @Named("wayf.port")
+    private Integer port;
 
     public static final DateFormat DATE_FORMAT = ResponseWriter.DATE_FORMAT;
 
@@ -73,6 +80,10 @@ public abstract class BaseHttpTest {
     public BaseHttpTest(String httpLoggingFilename) {
         LoggingHttpRequest request = new LoggingHttpRequest(httpLoggingFilename);
 
+        Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
+
+        RestAssured.port = port;
+
         publisherTestUtil = new PublisherTestUtil(request);
         deviceTestUtil = new DeviceTestUtil(request);
         deviceAccessTestUtil = new DeviceAccessTestUtil(request);
@@ -83,16 +94,7 @@ public abstract class BaseHttpTest {
     public static void setUpClass(TestContext context) throws IOException {
         vertx = Vertx.vertx();
 
-        ServerSocket socket = new ServerSocket(0);
-        port = socket.getLocalPort();
-        socket.close();
-
-        DeploymentOptions options = new DeploymentOptions().setConfig(new JsonObject().put("http.port", port));
-
-        vertx.deployVerticle(WayfVerticle.class.getName(), options, context.asyncAssertSuccess());
-
-        RestAssured.baseURI = "http://localhost";
-        RestAssured.port = port;
+        vertx.deployVerticle(WayfVerticle.class.getName(), context.asyncAssertSuccess());
     }
 
     @AfterClass
@@ -104,6 +106,7 @@ public abstract class BaseHttpTest {
 
     protected static String getFileAsString(String path) {
         LOG.debug("Loading file: {}", path);
+        
         try {
             return CharStreams.toString(new InputStreamReader(BaseHttpTest.class.getClassLoader().getResourceAsStream(path), Charsets.UTF_8));
         } catch (Exception e) {
