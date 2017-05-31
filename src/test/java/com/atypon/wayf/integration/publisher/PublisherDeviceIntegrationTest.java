@@ -62,7 +62,6 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
         super(HTTP_LOGGING_FILE);
     }
 
-
     @Before
     public void createPublishers() {
         if (publisherAToken == null) {

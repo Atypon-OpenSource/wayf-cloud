@@ -23,6 +23,7 @@ import com.atypon.wayf.verticle.routing.*;
 import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -49,6 +50,10 @@ public class WayfVerticle extends AbstractVerticle {
 
     @Inject
     private PublisherRouting publisherRouting;
+
+    @Inject
+    @Named("wayf.port")
+    private Integer wayfPort;
 
     private List<RoutingProvider> routingProviders;
 
@@ -81,9 +86,7 @@ public class WayfVerticle extends AbstractVerticle {
         vertx.createHttpServer()
                 .requestHandler(router::accept)
                 .listen(
-                        // Retrieve the port from the configuration,
-                        // default to 8080.
-                        config().getInteger("http.port", 8080),
+                        wayfPort,
                         next::handle
                 );
     }
