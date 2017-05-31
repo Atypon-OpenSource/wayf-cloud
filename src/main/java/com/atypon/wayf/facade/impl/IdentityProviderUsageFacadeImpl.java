@@ -34,6 +34,8 @@ import io.reactivex.ObservableSource;
 import io.reactivex.Single;
 import io.reactivex.functions.Function4;
 import io.reactivex.schedulers.Schedulers;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -41,6 +43,8 @@ import java.util.*;
 
 @Singleton
 public class IdentityProviderUsageFacadeImpl implements IdentityProviderUsageFacade {
+    private static final Logger LOG = LoggerFactory.getLogger(IdentityProviderUsageFacadeImpl.class);
+
     private static final Integer DEFAULT_RECENT_HISTORY_CUTOFF = 50;
     private static final Integer DEFAULT_FREQUENCY_SCALE = 4;
     private static final BigDecimal HUNDRED = new BigDecimal(100L);

@@ -18,12 +18,9 @@ package com.atypon.wayf.guice;
 
 import com.atypon.wayf.dao.*;
 import com.atypon.wayf.dao.impl.*;
-import com.atypon.wayf.dao.redis.RedisDao;
-import com.atypon.wayf.dao.redis.impl.RedisDaoDefaultImpl;
 import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.InflationPolicyParser;
 import com.atypon.wayf.data.InflationPolicyParserQueryParamImpl;
-import com.atypon.wayf.data.cache.CascadingCache;
 import com.atypon.wayf.data.identity.IdentityProviderType;
 import com.atypon.wayf.data.identity.OauthEntity;
 import com.atypon.wayf.data.identity.OpenAthensEntity;
@@ -33,7 +30,10 @@ import com.atypon.wayf.database.BeanFactory;
 import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.facade.impl.*;
-import com.google.inject.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.Module;
+import com.google.inject.Provides;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.apache.commons.dbcp.BasicDataSource;
@@ -56,7 +56,6 @@ public class WayfGuiceModule extends AbstractModule {
     @Override
     protected void configure() {
         try {
-            Module module = this;
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
             Properties properties = new Properties();
@@ -98,14 +97,6 @@ public class WayfGuiceModule extends AbstractModule {
             bind(IdentityProviderFacade.class).to(IdentityProviderFacadeImpl.class);
 
             bind(new TypeLiteral<InflationPolicyParser<String>>(){}).to(InflationPolicyParserQueryParamImpl.class);
-
-            bind(RedisDao.class)
-                    .annotatedWith(Names.named("publisherIdRedisDao"))
-                    .toProvider(() -> new RedisDaoDefaultImpl("PUBLISHER_ID"));
-
-            bind(RedisDao.class)
-                    .annotatedWith(Names.named("identityProviderRedisDao"))
-                    .toProvider(() -> new RedisDaoDefaultImpl("IDENTITY_PROVIDER"));
 
             bind(DeviceIdentityProviderBlacklistDao.class).to(DeviceIdentityProviderBlacklistDaoDbImpl.class);
         } catch (Exception e) {

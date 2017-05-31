@@ -11,10 +11,3 @@ The wayf-cloud is accessible via a RESTful API. The inbound requests are service
 
 ### Reactive Back-end
 Each client request is processed asynchronously on the back-end via the use of [ReactiveX](http://reactivex.io/). ReactiveX provides a functional framework for processing requests via observable streams. Asynchronous processing and concurrency are central to the library's implmentation. This abstracts away low-level threading and concurrency issues while exposing useful hooks in deciding where to execute logic. For instance, long running IO bound work, such as database reads, can be performed in an unbounded IO threadpool. Work that is more CPU intensive can be performed in a threadpool optimized for the machine's processor. The end result is an implemantation that is concise, easy to read, and maximizes performance.
-
-## What's Next
-* Continue adding feature to fully support the system's requirements
-* Mature exsiting architectural patterns
-* Secure the solution
-* Expand test coverage
-* Document API (likely with Swagger)

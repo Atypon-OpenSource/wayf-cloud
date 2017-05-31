@@ -16,16 +16,11 @@
 
 package com.atypon.wayf.dao.impl;
 
-import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.dao.IdentityProviderDao;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderQuery;
-import com.atypon.wayf.data.cache.KeyValueCache;
+import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.reactivex.DaoPolicies;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;

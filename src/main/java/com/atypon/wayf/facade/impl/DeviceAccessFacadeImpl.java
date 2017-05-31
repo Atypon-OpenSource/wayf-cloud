@@ -39,6 +39,8 @@ import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.atypon.wayf.reactivex.FacadePolicies.onError404;
+
 @Singleton
 public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
     private static Logger LOG = LoggerFactory.getLogger(DeviceAccessFacadeImpl.class);
@@ -73,7 +75,7 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
                 .compose((maybe) -> FacadePolicies.applyMaybe(maybe))
 
                 // Add in a custom exception on error
-                .compose((maybe) -> FacadePolicies.daoReadOnIdMiss(maybe, null))
+                .compose((maybe) -> onError404(maybe, "Could not read device for query [{}]", query))
 
                 // Ensure one element is emitted
                 .toSingle()
