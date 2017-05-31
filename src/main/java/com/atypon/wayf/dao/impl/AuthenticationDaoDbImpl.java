@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.atypon.wayf.reactivex.FacadePolicies.onError401;
+
 public class AuthenticationDaoDbImpl implements AuthenticationDao {
     private static final Logger LOG = LoggerFactory.getLogger(AuthenticationDaoDbImpl.class);
 
@@ -69,6 +71,6 @@ public class AuthenticationDaoDbImpl implements AuthenticationDao {
         args.put(TOKEN, token);
 
         return dbExecutor.executeSelectFirst(authenticateSql, args, Authenticatable.class)
-                .doOnError((e) -> {throw new ServiceException(HttpStatus.SC_UNAUTHORIZED);});
+                .compose((maybe) -> onError401(maybe, "Could not authenticate token [{}]", token));
     }
 }

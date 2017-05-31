@@ -91,7 +91,7 @@ public class ResponseWriter {
         errorResponse.setMessage(failure.getMessage());
 
         try {
-            errorResponse.setStackTrace(outputStream.toString("utf-8"));
+            errorResponse.setStacktrace(outputStream.toString("utf-8"));
         } catch (UnsupportedEncodingException e) {
             LOG.error("Could not build stack trace", e);
         }

@@ -36,6 +36,28 @@ public class DeviceAccessTestUtil {
         this.request = request;
     }
 
+    public void testDeviceHistory401(String localId, String publisherToken, String expectedHistoryJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", publisherToken);
+
+        String historyResponse =
+                request
+                        .contentType(ContentType.JSON)
+                        .headers(headers)
+                        .url("/1/device/" + localId + "/history")
+                        .method(Method.GET)
+                        .execute()
+                        .statusCode(401)
+                        .extract().response().asString();
+
+        String[] addDeviceHistoryGeneratedFields = {
+                "$.stacktrace"
+        };
+
+        assertJsonEquals(expectedHistoryJson, historyResponse, addDeviceHistoryGeneratedFields);
+    }
+
+
     public String testDeviceHistory(String localId, String publisherToken, String expectedHistoryJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", publisherToken);

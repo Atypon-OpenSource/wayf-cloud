@@ -18,6 +18,7 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.AuthenticationDao;
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.facade.AuthenticationFacade;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -25,11 +26,14 @@ import com.google.common.cache.LoadingCache;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.reactivex.Single;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import static com.atypon.wayf.reactivex.FacadePolicies.onError401;
 
 public class AuthenticatableFacadeImpl implements AuthenticationFacade {
     private static final Logger LOG = LoggerFactory.getLogger(AuthenticatableFacadeImpl.class);
@@ -42,6 +46,7 @@ public class AuthenticatableFacadeImpl implements AuthenticationFacade {
                         @Override
                         public Authenticatable load(String token) throws Exception {
                             LOG.debug("Reading from Redis Cache");
+
                             return redisCache.authenticate(token).blockingGet();
                         }
                     }
@@ -63,9 +68,13 @@ public class AuthenticatableFacadeImpl implements AuthenticationFacade {
     }
 
     @Override
-    public Single<Authenticatable> authenticate(String token) {
+    public Authenticatable authenticate(String token) {
         LOG.debug("Authenticating token");
 
-        return Single.fromCallable(() -> l1Cache.get(token)).retry(3); // Retry in case of concurrent execution issues
+        try {
+            return l1Cache.get(token);
+        } catch (Exception e) {
+            throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Could not authenticate token", e);
+        }
     }
 }

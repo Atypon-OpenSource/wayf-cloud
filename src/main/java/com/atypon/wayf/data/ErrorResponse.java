@@ -18,7 +18,7 @@ package com.atypon.wayf.data;
 
 public class ErrorResponse {
     private String message;
-    private String stackTrace;
+    private String stacktrace;
 
     public ErrorResponse() {
 
@@ -32,11 +32,11 @@ public class ErrorResponse {
         this.message = message;
     }
 
-    public String getStackTrace() {
-        return stackTrace;
+    public String getStacktrace() {
+        return stacktrace;
     }
 
-    public void setStackTrace(String stackTrace) {
-        this.stackTrace = stackTrace;
+    public void setStacktrace(String stacktrace) {
+        this.stacktrace = stacktrace;
     }
 }

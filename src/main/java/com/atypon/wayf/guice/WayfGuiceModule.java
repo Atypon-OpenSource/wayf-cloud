@@ -61,12 +61,16 @@ public class WayfGuiceModule extends AbstractModule {
             Properties properties = new Properties();
 
             String configDirectory = System.getProperty("wayf.conf.dir");
-            String configFile = configDirectory == null? WAYF_CONFIG_FILE : configDirectory + "/" + WAYF_CONFIG_FILE;
+            if (configDirectory != null) {
+                String configFile = configDirectory + "/" + WAYF_CONFIG_FILE;
+                LOG.info("Loading wayf config file from location [{}]", configFile);
 
-            LOG.info("Loading wayf config file from location [{}]", configFile);
-
-            FileReader reader = new FileReader(configFile);
-            properties.load(reader);
+                FileReader reader = new FileReader(configFile);
+                properties.load(reader);
+            } else {
+                LOG.info("Loading wayf config file from classpath");
+                properties.load(classLoader.getResourceAsStream(WAYF_CONFIG_FILE));
+            }
 
             properties.load(classLoader.getResourceAsStream("dao/device-access-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/publisher-dao-db.properties"));

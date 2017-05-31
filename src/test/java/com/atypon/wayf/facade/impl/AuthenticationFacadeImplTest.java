@@ -57,7 +57,7 @@ public class AuthenticationFacadeImplTest {
         assertNotNull(token);
 
         // Test Read
-        Authenticatable authenticated = facade.authenticate(token).blockingGet();
+        Authenticatable authenticated = facade.authenticate(token);
         assertNotNull(authenticated);
         assertEquals(Publisher.class, authenticated.getClass());
         assertEquals(testPublisher.getId(), authenticated.getId());
@@ -66,7 +66,7 @@ public class AuthenticationFacadeImplTest {
         AuthenticationDao l2Dao = facade.getRedisDao();
         facade.setRedisDao(null);
 
-        Authenticatable authenticatedFromL1 = facade.authenticate(token).blockingGet();
+        Authenticatable authenticatedFromL1 = facade.authenticate(token);
         assertNotNull(authenticatedFromL1);
         assertEquals(Publisher.class, authenticatedFromL1.getClass());
         assertEquals(testPublisher.getId(), authenticatedFromL1.getId());
@@ -78,7 +78,7 @@ public class AuthenticationFacadeImplTest {
         facade.getL1Cache().invalidateAll();
         ((AuthenticationDaoRedisImpl)facade.getRedisDao()).setDbDao(null);
 
-        Authenticatable authenticatedFromL2 = facade.authenticate(token).blockingGet();
+        Authenticatable authenticatedFromL2 = facade.authenticate(token);
         assertNotNull(authenticatedFromL2);
         assertEquals(Publisher.class, authenticatedFromL2.getClass());
         assertEquals(testPublisher.getId(), authenticatedFromL2.getId());

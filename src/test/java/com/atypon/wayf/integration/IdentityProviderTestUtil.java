@@ -36,6 +36,28 @@ public class IdentityProviderTestUtil {
         this.request = request;
     }
 
+    public void addIdpToDeviceBadToken(String localId, String publisherToken, String idpBodyJson, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", publisherToken);
+
+        String addIdpResponse =
+                request
+                        .contentType(ContentType.JSON)
+                        .headers(headers)
+                        .body(idpBodyJson)
+                        .method(Method.POST)
+                        .url("/1/device/" + localId + "/history/idp")
+                        .execute()
+                        .statusCode(401)
+                        .extract().response().asString();
+
+        String[] addIdpResponseGeneratedFields = {
+                "$.stacktrace"
+        };
+
+        assertJsonEquals(expectedResponseJson, addIdpResponse, addIdpResponseGeneratedFields);
+    }
+
     public Long addIdpToDevice(String localId, String publisherToken, String idpBodyJson, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", publisherToken);
@@ -77,11 +99,32 @@ public class IdentityProviderTestUtil {
         return ids[0];
     }
 
+    public void removeIdpForDeviceBadToken(String localId, String publisherToken, Long idpId, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", publisherToken);
+
+        String removeIdpResponse =
+                request
+                        .contentType(ContentType.JSON)
+                        .headers(headers)
+                        .method(Method.DELETE)
+                        .url("/1/device/" + localId + "/history/idp/" + idpId)
+                        .execute()
+                        .statusCode(401)
+                        .extract().response().asString();
+
+        String[] removeIdpResponseGeneratedFields = {
+                "$.stacktrace"
+        };
+
+        assertJsonEquals(expectedResponseJson, removeIdpResponse, removeIdpResponseGeneratedFields);
+    }
+
     public void removeIdpForDevice(String localId, String publisherToken, Long idpId) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", publisherToken);
 
-        String addIdpResponse =
+        String removeIdpResponse =
                 request
                         .contentType(ContentType.JSON)
                         .headers(headers)
@@ -91,6 +134,6 @@ public class IdentityProviderTestUtil {
                         .statusCode(200)
                         .extract().response().asString();
 
-        assertTrue(addIdpResponse.isEmpty());
+        assertTrue(removeIdpResponse.isEmpty());
     }
 }

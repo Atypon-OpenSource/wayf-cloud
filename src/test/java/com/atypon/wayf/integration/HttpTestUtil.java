@@ -27,6 +27,8 @@ import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.Predicate;
 import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import org.hamcrest.core.IsNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStreamReader;
 import java.util.Map;
@@ -35,6 +37,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class HttpTestUtil {
+    private static final Logger LOG = LoggerFactory.getLogger(HttpTestUtil.class);
 
     public static Predicate ALWAYS_TRUE_PREDICATE = (arg) -> true;
 
@@ -82,6 +85,7 @@ public class HttpTestUtil {
     }
 
     public static void assertJsonEquals(String expected, String actual, String... blacklistedFields) {
+        LOG.debug("Comparing expected [{}] to actual [{}]", expected, actual);
         DocumentContext expectedDocument = JsonPath.parse(expected);
         DocumentContext actualDocument = JsonPath.parse(actual);
 
