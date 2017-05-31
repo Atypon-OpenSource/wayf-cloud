@@ -21,5 +21,5 @@ import io.reactivex.Single;
 
 public interface AuthenticationFacade {
     Single<String> createToken(Authenticatable authenticatable);
-    Single<Authenticatable> authenticate(String token);
+    Authenticatable authenticate(String token);
 }

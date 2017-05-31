@@ -64,4 +64,23 @@ public class DeviceTestUtil {
         return deviceIdHeader;
     }
 
+    public void deviceQueryBadPublisherToken(String localId, String publisherToken, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", publisherToken);
+        headers.put("User-Agent", "Test-Agent");
+
+        ExtractableResponse relateBadTokenResponse = request
+                .headers(headers)
+                .url("/1/device/" + localId)
+                .method(Method.PATCH)
+                .execute()
+                .statusCode(401)
+                .extract();
+
+        String[] relateResponseGeneratedFields = {
+                "$.stacktrace"
+        };
+
+        assertJsonEquals(expectedResponseJson, relateBadTokenResponse.body().asString(), relateResponseGeneratedFields);
+    }
 }

@@ -18,6 +18,7 @@ package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.AuthenticationDao;
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.user.User;
 import com.google.inject.Inject;
@@ -25,12 +26,16 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import org.apache.http.HttpStatus;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 @Singleton
 public class AuthenticationDaoRedisImpl implements AuthenticationDao {
+    private static final Logger LOG = LoggerFactory.getLogger(AuthenticationDaoRedisImpl.class);
     private static final String DEFAULT_PREFIX = "AUTHENTICATION_";
 
     @Inject
@@ -48,7 +53,16 @@ public class AuthenticationDaoRedisImpl implements AuthenticationDao {
 
     @Override
     public Completable create(String token, Authenticatable authenticatable) {
-        throw new UnsupportedOperationException("Cannot create via Redis implementation");
+        return Completable.fromAction(() -> {
+            String valueToWrite = serialize(authenticatable);
+
+            try (Jedis jedis = pool.getResource()) {
+                jedis.set(buildKey(token), valueToWrite);
+            } catch (Exception e) {
+                LOG.error("Could not write to Redis", e);
+                throw new ServiceException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e);
+            }
+        });
     }
 
     @Override
@@ -65,27 +79,19 @@ public class AuthenticationDaoRedisImpl implements AuthenticationDao {
         // If nothing was found in Redis, check the database. If a value is found, store it in Redis and return
         // If something was found in Redis, transform it to a POJO
         if (value == null) {
-            return dbDao.authenticate(token)
-                    .map((authenticatable) -> {
-                        String readValue = serialize(authenticatable);
-
-                        try (Jedis jedis = pool.getResource()) {
-                            jedis.set(buildKey(token), readValue);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-
-                        return authenticatable;
-                    });
-        } else {
-            try {
-                Authenticatable authenticatable = deserialize(value);
-
-                return Maybe.just(authenticatable);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            return load(token);
         }
+
+        return Maybe.just(deserialize(value));
+    }
+
+    private Maybe<Authenticatable> load(String token) {
+        return dbDao.authenticate(token)
+                .map((authenticatable) -> {
+                    create(token, authenticatable).subscribe(() -> {}, (e) -> LOG.error("Failed to write to Redis", e));
+
+                    return authenticatable;
+                });
     }
 
     private String serialize(Authenticatable authenticatable) {

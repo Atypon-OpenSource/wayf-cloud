@@ -49,6 +49,8 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
 
     private static final String RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/device/relate_new_device_publisher_a_response.json");
 
+    private static final String ERROR_401_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/authentication/401.json");
+
     private static final String NEW_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/empty_history_response.json");
     private static final String INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/initial_add_idp_response.json");
     private static final String AFTER_DELETE_IDP_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/after_delete_idp_response.json");
@@ -201,6 +203,27 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
 
         // Test to make sure Device X still has data for publisher B
         deviceAccessTestUtil.testDeviceHistory(publisherBDeviceXLocalId, publisherBToken, ONE_OATH_HISTORY_RESPONSE_JSON);
+    }
 
+    @Test
+    public void testBadPublisherToken() {
+        // Try to relate device to publisher with a bad publisher token
+        String badToken = "obviously-bad-token";
+        deviceTestUtil.deviceQueryBadPublisherToken("test-local-Id", badToken, ERROR_401_RESPONSE_JSON);
+
+        // Create device
+        String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
+        deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherAToken, null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+
+        // Read History with bad token
+        deviceAccessTestUtil.testDeviceHistory401(publisherALocalId, badToken, ERROR_401_RESPONSE_JSON);
+
+        // Test adding an IDP with a bad token
+        identityProviderTestUtil.addIdpToDeviceBadToken(publisherALocalId, badToken, CREATE_OAUTH_IDP_REQUEST_JSON, ERROR_401_RESPONSE_JSON);
+
+        Long samlId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(1, publisherALocalId, publisherAToken, CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
+
+        // Test removing IDP with bad token
+        identityProviderTestUtil.removeIdpForDeviceBadToken(publisherALocalId, badToken, samlId, ERROR_401_RESPONSE_JSON);
     }
 }
