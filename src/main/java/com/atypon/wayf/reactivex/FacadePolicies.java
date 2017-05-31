@@ -21,6 +21,8 @@ import io.reactivex.*;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 
@@ -28,6 +30,8 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 public class FacadePolicies {
+    private static final Logger LOG = LoggerFactory.getLogger(FacadePolicies.class);
+
     private static Scheduler subscribeOnScheduler = Schedulers.io();
     private static final long TIMEOUT = 10l;
     private static final TimeUnit TIMEOUT_UNIT = TimeUnit.SECONDS;
@@ -65,13 +69,21 @@ public class FacadePolicies {
                 .timeout(TIMEOUT,TIMEOUT_UNIT);
     }
 
-    public static final <T> Maybe<T> daoReadOnIdMiss(Maybe<T> maybe, FormattingTuple errorMessage) {
+    public static final <T> Maybe<T> onError404(Maybe<T> maybe, String message, Object... args) {
         return maybe.doOnError((e) -> {
             if (NoSuchElementException.class.isAssignableFrom(e.getClass())) {
-                throw new ServiceException(HttpStatus.SC_NOT_FOUND, errorMessage.getMessage());
+                FormattingTuple formattedMessage = MessageFormatter.arrayFormat(message, args);
+
+                ServiceException serviceException = new ServiceException(HttpStatus.SC_NOT_FOUND, formattedMessage.getMessage());
+
+                LOG.error("Encountered NoSuchElementException, rethrowing as 404 ServiceException", serviceException);
+
+                throw serviceException;
             }
 
-            throw new RuntimeException(e);
+            LOG.error("Encountered unknown exception, rethrowing", e);
+
+            throw (Exception) e;
         });
     }
 }

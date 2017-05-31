@@ -19,11 +19,9 @@ package com.atypon.wayf.facade.impl;
 import com.atypon.wayf.dao.IdentityProviderDao;
 import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.ServiceException;
-import com.atypon.wayf.data.cache.KeyValueCache;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessType;
 import com.atypon.wayf.data.identity.*;
-import com.atypon.wayf.data.cache.CascadingCache;
 import com.atypon.wayf.facade.DeviceAccessFacade;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.DeviceIdentityProviderBlacklistFacade;
@@ -33,7 +31,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.reactivex.Completable;
-import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
@@ -42,9 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.Map;
-import java.util.UUID;
 
 @Singleton
 public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
@@ -70,14 +65,18 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     public Single<IdentityProvider> create(IdentityProvider identityProvider) {
         IdentityProviderDao dao = daosByType.get(identityProvider.getType());
 
-        return Single.just(identityProvider)
-                .flatMap(o_identityProvider -> dao.create(o_identityProvider));
+        if (dao == null) {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "IdentityProvider of type [" + identityProvider.getType() + "] not supported");
+        }
+
+        return dao.create(identityProvider);
     }
 
     @Override
     public Single<IdentityProvider> read(Long id) {
         Collection<IdentityProviderDao> daos = daosByType.values();
 
+        // Loop through the DAOs and try to read the ID from each. Return the first entry found
         return Observable.fromIterable(daos)
                 .flatMapMaybe((dao) -> dao.read(id))
                 .firstOrError();
@@ -86,6 +85,7 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     @Override
     public Single<IdentityProvider> resolve(IdentityProvider identityProvider) {
         LOG.debug("Attempting to resolve IdentityProvider [{}]", identityProvider);
+
         if (identityProvider.getType() == null) {
             throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "In order to resolve an IdentityProvider, 'type' is required");
         }
@@ -102,7 +102,9 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
             throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "IdentityProvider of type [" + identityProvider.getType() + "] not supported");
         }
 
-        return foundProviders.switchIfEmpty(create(identityProvider).toObservable())
+
+        return foundProviders
+                .switchIfEmpty(create(identityProvider).toObservable())
                 .firstOrError().doOnError((e) -> {
             throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Could not determine a unique IdentityProvider from input", e);
         });
@@ -150,7 +152,7 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
         return deviceFacade.readByLocalId(localId)
                 .flatMapCompletable((device) ->
                     Single.zip(
-                            // Remove the IDP from the blacklist if it was on it
+                            // Add to the blacklist
                             blacklistFacade.add(device, identityProvider).toSingleDefault(device).subscribeOn(Schedulers.io()),
 
                             // Log the device access

@@ -45,6 +45,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.atypon.wayf.reactivex.FacadePolicies.onError404;
+
 @Singleton
 public class DeviceFacadeImpl implements DeviceFacade {
     private static final Logger LOG = LoggerFactory.getLogger(DeviceFacadeImpl.class);
@@ -145,12 +147,16 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
     @Override
     public Single<Device> readByLocalId(String localId) {
+        LOG.debug("Reading device with local ID [{}]", localId);
+
         Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+
+        LOG.debug("Reading device with local ID [{}] and publisher ID [{}]", localId, publisher.getId());
 
         return deviceDao.readByPublisherLocalId(publisher.getId(), localId)
 
                 // Add in Standard 404 error on no element
-                .compose((maybe) -> FacadePolicies.daoReadOnIdMiss(maybe,  MessageFormatter.format("Could not find device associated with localId [{}]", localId)))
+                .compose((maybe) -> onError404(maybe,  "Could not find device associated with localId [{}]", localId))
 
                 .toSingle();
     }
