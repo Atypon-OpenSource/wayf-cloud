@@ -15,8 +15,6 @@ before_script:
   - echo "USE mysql;\nUPDATE user SET password=PASSWORD('test') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
   - mysql -h localhost -u root -ptest < src/test/resources/create_wayf_db.sql
   - mysql -h localhost -u root -ptest wayf < src/test/resources/create_wayf_tables.sql
-  - ls /home/travis/build/Atypon-OpenSource/wayf-cloud/target/
-  - ls /home/travis/build/Atypon-OpenSource/wayf-cloud/target/test-classes
-  
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)
