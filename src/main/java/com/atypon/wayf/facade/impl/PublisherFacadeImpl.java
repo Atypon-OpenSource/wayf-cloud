@@ -25,6 +25,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import org.apache.http.HttpStatus;
+
+import static com.atypon.wayf.reactivex.FacadePolicies.singleOrException;
 
 @Singleton
 public class PublisherFacadeImpl implements PublisherFacade {
@@ -38,19 +41,17 @@ public class PublisherFacadeImpl implements PublisherFacade {
     @Override
     public Single<Publisher> create(Publisher publisher) {
         publisher.setStatus(PublisherStatus.ACTIVE);
+
         return publisherDao.create(publisher);
     }
 
     @Override
     public Single<Publisher> read(Long id) {
-        return Single.just(id)
-                .flatMapMaybe((_id) -> publisherDao.read(_id))
-                .toSingle();
+        return singleOrException(publisherDao.read(id), HttpStatus.SC_NOT_FOUND, "Invalid Publisher ID");
     }
 
     @Override
     public Observable<Publisher> filter(PublisherQuery filter) {
-        return Single.just(filter)
-                .flatMapObservable((_filter) -> publisherDao.filter(_filter));
+        return publisherDao.filter(filter);
     }
 }
