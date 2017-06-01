@@ -41,6 +41,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.Map;
 
+import static com.atypon.wayf.reactivex.FacadePolicies.singleOrException;
+
 @Singleton
 public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     private static final Logger LOG = LoggerFactory.getLogger(IdentityProviderFacadeImpl.class);
@@ -77,9 +79,8 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
         Collection<IdentityProviderDao> daos = daosByType.values();
 
         // Loop through the DAOs and try to read the ID from each. Return the first entry found
-        return Observable.fromIterable(daos)
-                .flatMapMaybe((dao) -> dao.read(id))
-                .firstOrError();
+        return singleOrException(Observable.fromIterable(daos)
+                .flatMapMaybe((dao) -> dao.read(id)), HttpStatus.SC_BAD_REQUEST, "Invalid IdentityProvider ID");
     }
 
     @Override
@@ -103,11 +104,10 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
         }
 
 
-        return foundProviders
-                .switchIfEmpty(create(identityProvider).toObservable())
-                .firstOrError().doOnError((e) -> {
-            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Could not determine a unique IdentityProvider from input", e);
-        });
+        return singleOrException(
+                foundProviders.switchIfEmpty(create(identityProvider).toObservable()),
+                HttpStatus.SC_BAD_REQUEST,
+                "Could not determine a unique IdentityProvider from input");
     }
 
     @Override
@@ -130,43 +130,37 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
                                 .type(DeviceAccessType.ADD_IDP)
                                 .build()
             ).flatMap((deviceAccess) ->
-                    // Map the DeviceAccess containing the read Device and the resolved IdentityProvider
-                    Single.zip(
-                            // Remove the IDP from the blacklist if it was on it
-                            blacklistFacade.remove(deviceAccess.getDevice(), deviceAccess.getIdentityProvider()).toSingleDefault(deviceAccess.getDevice()).subscribeOn(Schedulers.io()),
+                // Run some tasks and return the IDP when they complete
+                Completable.mergeArray(
+                        // Remove the IDP from the blacklist if it was on it
+                        blacklistFacade.remove(deviceAccess.getDevice(), deviceAccess.getIdentityProvider()).subscribeOn(Schedulers.io()),
 
-                            // Log the device access
-                            deviceAccessFacade.create(deviceAccess).subscribeOn(Schedulers.io()),
-
-                            // Only care about that the processes terminated, not their results, return the resolved IDP
-                            (ignored, createdDeviceAccess) -> deviceAccess.getIdentityProvider()
-                    )
-        ); // Java generics type erasure fix
+                        // Log the device access
+                        deviceAccessFacade.create(deviceAccess).toCompletable().subscribeOn(Schedulers.io())
+                ).toSingleDefault(deviceAccess.getIdentityProvider())
+        );
     }
 
     @Override
     public Completable blockIdentityProviderForDevice(String localId, Long idpId) {
-        IdentityProvider identityProvider = new IdentityProvider();
-        identityProvider.setId(idpId);
 
-        return deviceFacade.readByLocalId(localId)
-                .flatMapCompletable((device) ->
-                    Single.zip(
-                            // Add to the blacklist
-                            blacklistFacade.add(device, identityProvider).toSingleDefault(device).subscribeOn(Schedulers.io()),
+        return Single.zip(read(idpId),
+                deviceFacade.readByLocalId(localId),
 
-                            // Log the device access
-                            deviceAccessFacade.create(new DeviceAccess.Builder()
-                                    .device(device)
-                                    .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
-                                    .localId(localId)
-                                    .identityProvider(identityProvider)
-                                    .type(DeviceAccessType.ADD_IDP)
-                                    .build()).subscribeOn(Schedulers.io()),
-
-                            (ignored, deviceAccess) -> ignored
-                    ).toCompletable()
-                );
+                (identityProvider, device) ->
+                    new DeviceAccess.Builder()
+                            .device(device)
+                            .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
+                            .localId(localId)
+                            .identityProvider(identityProvider)
+                            .type(DeviceAccessType.ADD_IDP)
+                            .build()
+        ).flatMapCompletable((deviceAccess) ->
+                Completable.mergeArray(
+                    blacklistFacade.add(deviceAccess.getDevice(), deviceAccess.getIdentityProvider()).subscribeOn(Schedulers.io()),
+                    deviceAccessFacade.create(deviceAccess).toCompletable().subscribeOn(Schedulers.io())
+                )
+        );
     }
 
     @Override

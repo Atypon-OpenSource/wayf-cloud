@@ -33,8 +33,6 @@ import org.slf4j.LoggerFactory;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static com.atypon.wayf.reactivex.FacadePolicies.onError401;
-
 public class AuthenticatableFacadeImpl implements AuthenticationFacade {
     private static final Logger LOG = LoggerFactory.getLogger(AuthenticatableFacadeImpl.class);
 

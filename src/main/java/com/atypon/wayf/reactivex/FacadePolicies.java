@@ -69,57 +69,31 @@ public class FacadePolicies {
                 .timeout(TIMEOUT,TIMEOUT_UNIT);
     }
 
-    public static final <T> Maybe<T> onError401(Maybe<T> maybe, String message, Object... args) {
-        return maybe.doOnError((e) -> {
-            if (NoSuchElementException.class.isAssignableFrom(e.getClass())) {
+    public static final <T> Single<T> singleOrException(Maybe<T> maybe, int statusCode, String message, Object... args) {
+        Single<Boolean> isEmpty = maybe.isEmpty();
+
+        return isEmpty.flatMap((_isEmpty) -> {
+            if (_isEmpty) {
                 FormattingTuple formattedMessage = MessageFormatter.arrayFormat(message, args);
 
-                ServiceException serviceException = new ServiceException(HttpStatus.SC_UNAUTHORIZED, formattedMessage.getMessage());
-
-                LOG.error("Encountered NoSuchElementException, rethrowing as 401 ServiceException", serviceException);
-
-                throw serviceException;
+                throw new ServiceException(statusCode, formattedMessage.getMessage());
             }
 
-            LOG.error("Encountered unknown exception, rethrowing", e);
-
-            throw (Exception) e;
+            return maybe.toSingle();
         });
     }
 
-    public static final <T> Single<T> onError401(Single<T> single, String message, Object... args) {
-        return single.doOnError((e) -> {
-            if (NoSuchElementException.class.isAssignableFrom(e.getClass())) {
+    public static final <T> Single<T> singleOrException(Observable<T> observable, int statusCode, String message, Object... args) {
+        Single<Boolean> isEmpty = observable.isEmpty();
+
+        return isEmpty.flatMap((_isEmpty) -> {
+            if (_isEmpty) {
                 FormattingTuple formattedMessage = MessageFormatter.arrayFormat(message, args);
 
-                ServiceException serviceException = new ServiceException(HttpStatus.SC_UNAUTHORIZED, formattedMessage.getMessage());
-
-                LOG.error("Encountered NoSuchElementException, rethrowing as 401 ServiceException", serviceException);
-
-                throw serviceException;
+                throw new ServiceException(statusCode, formattedMessage.getMessage());
             }
 
-            LOG.error("Encountered unknown exception, rethrowing", e);
-
-            throw (Exception) e;
-        });
-    }
-
-    public static final <T> Maybe<T> onError404(Maybe<T> maybe, String message, Object... args) {
-        return maybe.doOnError((e) -> {
-            if (NoSuchElementException.class.isAssignableFrom(e.getClass())) {
-                FormattingTuple formattedMessage = MessageFormatter.arrayFormat(message, args);
-
-                ServiceException serviceException = new ServiceException(HttpStatus.SC_NOT_FOUND, formattedMessage.getMessage());
-
-                LOG.error("Encountered NoSuchElementException, rethrowing as 404 ServiceException", serviceException);
-
-                throw serviceException;
-            }
-
-            LOG.error("Encountered unknown exception, rethrowing", e);
-
-            throw (Exception) e;
+            return observable.singleOrError();
         });
     }
 }

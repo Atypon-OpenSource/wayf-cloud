@@ -36,7 +36,7 @@ public class DeviceAccessTestUtil {
         this.request = request;
     }
 
-    public void testDeviceHistory401(String localId, String publisherToken, String expectedHistoryJson) {
+    public void testDeviceHistoryError(int statusCode, String localId, String publisherToken, String expectedHistoryJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", publisherToken);
 
@@ -47,7 +47,7 @@ public class DeviceAccessTestUtil {
                         .url("/1/device/" + localId + "/history")
                         .method(Method.GET)
                         .execute()
-                        .statusCode(401)
+                        .statusCode(statusCode)
                         .extract().response().asString();
 
         String[] addDeviceHistoryGeneratedFields = {

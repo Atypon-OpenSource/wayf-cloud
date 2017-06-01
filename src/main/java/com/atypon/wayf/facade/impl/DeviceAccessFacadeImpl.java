@@ -33,13 +33,15 @@ import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.atypon.wayf.reactivex.FacadePolicies.onError404;
+import static com.atypon.wayf.reactivex.FacadePolicies.singleOrException;
 
 @Singleton
 public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
@@ -62,7 +64,7 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
 
     @Override
     public Single<DeviceAccess> create(DeviceAccess deviceAcccess) {
-        LOG.debug("Creating institution [{}]", deviceAcccess);
+        LOG.debug("Creating DeviceAccess [{}]", deviceAcccess);
 
         return deviceAccessDao.create(deviceAcccess)
                 .compose((single) -> FacadePolicies.applySingle(single));
@@ -70,18 +72,13 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
 
     @Override
     public Single<DeviceAccess> read(DeviceAccessQuery query) {
-        // Read publisher session by ID
-        return deviceAccessDao.read(query.getId())
-                .compose((maybe) -> FacadePolicies.applyMaybe(maybe))
+        Maybe<DeviceAccess> deviceAccessMaybe =
+                deviceAccessDao.read(query.getId()).compose((maybe) -> FacadePolicies.applyMaybe(maybe));
 
-                // Add in a custom exception on error
-                .compose((maybe) -> onError404(maybe, "Could not read device for query [{}]", query))
-
-                // Ensure one element is emitted
-                .toSingle()
+        return singleOrException(deviceAccessMaybe, HttpStatus.SC_NOT_FOUND, "Could not read device for query [{}]", query)
 
                 // Inflate the publisher session and emit it
-                .flatMap((_deviceAccess) -> populate(_deviceAccess, query).toSingle(() -> _deviceAccess));
+                .flatMap((deviceAccess) -> populate(deviceAccess, query).toSingle(() -> deviceAccess));
     }
 
     @Override

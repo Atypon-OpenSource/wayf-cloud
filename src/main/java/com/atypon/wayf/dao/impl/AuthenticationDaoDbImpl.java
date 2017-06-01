@@ -18,20 +18,16 @@ package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.AuthenticationDao;
 import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.database.DbExecutor;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.atypon.wayf.reactivex.FacadePolicies.onError401;
 
 public class AuthenticationDaoDbImpl implements AuthenticationDao {
     private static final Logger LOG = LoggerFactory.getLogger(AuthenticationDaoDbImpl.class);
@@ -70,7 +66,6 @@ public class AuthenticationDaoDbImpl implements AuthenticationDao {
         Map<String, Object> args = new HashMap<>();
         args.put(TOKEN, token);
 
-        return dbExecutor.executeSelectFirst(authenticateSql, args, Authenticatable.class)
-                .compose((maybe) -> onError401(maybe, "Could not authenticate token [{}]", token));
+        return dbExecutor.executeSelectFirst(authenticateSql, args, Authenticatable.class);
     }
 }
