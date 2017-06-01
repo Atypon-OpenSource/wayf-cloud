@@ -37,15 +37,15 @@ import com.google.inject.Singleton;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.helpers.MessageFormatter;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
-import static com.atypon.wayf.reactivex.FacadePolicies.onError404;
+import static com.atypon.wayf.reactivex.FacadePolicies.singleOrException;
 
 @Singleton
 public class DeviceFacadeImpl implements DeviceFacade {
@@ -86,8 +86,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
     public Single<Device> read(DeviceQuery query) {
         LOG.debug("Reading device with query [{}]", query);
 
-        return deviceDao.read(query)
-                .toSingle()
+        return singleOrException(deviceDao.read(query), HttpStatus.SC_NOT_FOUND, "Invalid Global ID")
                 .flatMap((device) -> populate(device, query).toSingle(() -> device));
     }
 
@@ -153,12 +152,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
         LOG.debug("Reading device with local ID [{}] and publisher ID [{}]", localId, publisher.getId());
 
-        return deviceDao.readByPublisherLocalId(publisher.getId(), localId)
-
-                // Add in Standard 404 error on no element
-                .compose((maybe) -> onError404(maybe,  "Could not find device associated with localId [{}]", localId))
-
-                .toSingle();
+        return singleOrException(deviceDao.readByPublisherLocalId(publisher.getId(), localId), HttpStatus.SC_NOT_FOUND, "Invalid local ID");
     }
 
     private Completable populate(Device device, DeviceQuery query) {

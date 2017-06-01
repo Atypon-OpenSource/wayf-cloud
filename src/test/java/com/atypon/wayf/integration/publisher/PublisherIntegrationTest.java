@@ -18,6 +18,7 @@ package com.atypon.wayf.integration.publisher;
 
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.routing.BaseHttpTest;
+import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,7 +27,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
-public class PublisherDeviceIntegrationTest extends BaseHttpTest {
+public class PublisherIntegrationTest extends BaseHttpTest {
 
     private static final String HTTP_LOGGING_FILE = "publisher_integration_test";
 
@@ -50,6 +51,9 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
     private static final String RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/device/relate_new_device_publisher_a_response.json");
 
     private static final String ERROR_401_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/authentication/401.json");
+    private static final String ERROR_404_BAD_LOCAL_ID_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/authentication/404_bad_local_id.json");
+    private static final String ERROR_404_BAD_GLOBAL_ID_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/authentication/404_bad_global_id.json");
+    private static final String ERROR_400_BAD_IDENTITY_PROVIDER_ID_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/authentication/400_invalid_identity_provider_id.json");
 
     private static final String NEW_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/empty_history_response.json");
     private static final String INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/initial_add_idp_response.json");
@@ -60,7 +64,7 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
     private String publisherAToken;
     private String publisherBToken;
 
-    public PublisherDeviceIntegrationTest() {
+    public PublisherIntegrationTest() {
         super(HTTP_LOGGING_FILE);
     }
 
@@ -132,7 +136,7 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
     }
 
     @Test
-    public void testExistingDeviceDeletePublisherLocalId() {
+    public void existingDeviceDeletePublisherLocalId() {
         String publisherAFirstLocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
         // Create device
@@ -148,7 +152,7 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
     }
 
     @Test
-    public void testExistingDeviceDeleteGlobalId() {
+    public void existingDeviceDeleteGlobalId() {
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
         // Create device for local ID
@@ -168,7 +172,7 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
     }
 
     @Test
-    public void testNonUniqueLocalId() {
+    public void nonUniqueLocalId() {
         // Generate Device X for Publisher A
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
         String deviceXGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherAToken, null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
@@ -206,24 +210,58 @@ public class PublisherDeviceIntegrationTest extends BaseHttpTest {
     }
 
     @Test
-    public void testBadPublisherToken() {
+    public void badPublisherToken() {
+        String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
+
         // Try to relate device to publisher with a bad publisher token
         String badToken = "obviously-bad-token";
-        deviceTestUtil.deviceQueryBadPublisherToken("test-local-Id", badToken, ERROR_401_RESPONSE_JSON);
+        deviceTestUtil.deviceQueryBadPublisherToken(publisherALocalId, badToken, ERROR_401_RESPONSE_JSON);
 
         // Create device
-        String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
         deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherAToken, null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Read History with bad token
-        deviceAccessTestUtil.testDeviceHistory401(publisherALocalId, badToken, ERROR_401_RESPONSE_JSON);
+        deviceAccessTestUtil.testDeviceHistoryError(HttpStatus.SC_UNAUTHORIZED, publisherALocalId, badToken, ERROR_401_RESPONSE_JSON);
 
         // Test adding an IDP with a bad token
-        identityProviderTestUtil.addIdpToDeviceBadToken(publisherALocalId, badToken, CREATE_OAUTH_IDP_REQUEST_JSON, ERROR_401_RESPONSE_JSON);
+        identityProviderTestUtil.addIdpToDeviceError(HttpStatus.SC_UNAUTHORIZED, publisherALocalId, badToken, CREATE_OAUTH_IDP_REQUEST_JSON, ERROR_401_RESPONSE_JSON);
 
         Long samlId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(1, publisherALocalId, publisherAToken, CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
 
         // Test removing IDP with bad token
-        identityProviderTestUtil.removeIdpForDeviceBadToken(publisherALocalId, badToken, samlId, ERROR_401_RESPONSE_JSON);
+        identityProviderTestUtil.removeIdpForDeviceError(HttpStatus.SC_UNAUTHORIZED, publisherALocalId, badToken, samlId, ERROR_401_RESPONSE_JSON);
+    }
+
+    @Test
+    public void badLocalId() {
+        String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
+
+        deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherAToken, null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+
+        String badLocalId = "obviously-bad-local-id";
+        deviceAccessTestUtil.testDeviceHistoryError(HttpStatus.SC_NOT_FOUND, badLocalId, publisherAToken, ERROR_404_BAD_LOCAL_ID_RESPONSE_JSON);
+
+        identityProviderTestUtil.addIdpToDeviceError(HttpStatus.SC_NOT_FOUND, badLocalId, publisherAToken, CREATE_OAUTH_IDP_REQUEST_JSON, ERROR_404_BAD_LOCAL_ID_RESPONSE_JSON);
+
+        Long samlId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(1, publisherALocalId, publisherAToken, CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
+
+        identityProviderTestUtil.removeIdpForDeviceError(HttpStatus.SC_NOT_FOUND, badLocalId, publisherAToken, samlId, ERROR_404_BAD_LOCAL_ID_RESPONSE_JSON);
+    }
+
+    @Test
+    public void badIdentityProviderId() {
+        String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
+        deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherAToken, null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+
+        identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(1, publisherALocalId, publisherAToken, CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
+        identityProviderTestUtil.removeIdpForDeviceError(HttpStatus.SC_BAD_REQUEST, publisherALocalId, publisherAToken, 0L, ERROR_400_BAD_IDENTITY_PROVIDER_ID_RESPONSE_JSON);
+    }
+
+    @Test
+    public void badGlobalId() {
+        String badGlobalId = "obviously-bad-global-id";
+        String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
+
+        deviceTestUtil.relateDeviceToPublisherError(HttpStatus.SC_NOT_FOUND, publisherALocalId, publisherAToken, badGlobalId, ERROR_404_BAD_GLOBAL_ID_RESPONSE_JSON);
     }
 }

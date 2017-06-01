@@ -33,6 +33,35 @@ public class DeviceTestUtil {
         this.request = request;
     }
 
+    public String relateDeviceToPublisherError(int statusCode, String localId, String publisherToken, String globalId, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", publisherToken);
+        headers.put("User-Agent", "Test-Agent");
+        if (globalId != null) {
+            headers.put("X-Device-Id", globalId);
+        }
+
+        ExtractableResponse relateResponse = request
+                .headers(headers)
+                .url("/1/device/" + localId)
+                .method(Method.PATCH)
+                .execute()
+                .statusCode(statusCode)
+                .extract();
+
+        String deviceIdHeader = relateResponse.header("X-Device-Id");
+
+        String deviceBody = relateResponse.response().body().asString();
+
+        String[] relateResponseGeneratedFields = {
+                "$.stacktrace"
+        };
+
+        assertJsonEquals(expectedResponseJson, deviceBody, relateResponseGeneratedFields);
+
+        return deviceIdHeader;
+    }
+
     public String relateDeviceToPublisher(String localId, String publisherToken, String globalId, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", publisherToken);

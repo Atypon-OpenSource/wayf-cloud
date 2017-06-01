@@ -36,7 +36,7 @@ public class IdentityProviderTestUtil {
         this.request = request;
     }
 
-    public void addIdpToDeviceBadToken(String localId, String publisherToken, String idpBodyJson, String expectedResponseJson) {
+    public void addIdpToDeviceError(int statusCode, String localId, String publisherToken, String idpBodyJson, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", publisherToken);
 
@@ -48,7 +48,7 @@ public class IdentityProviderTestUtil {
                         .method(Method.POST)
                         .url("/1/device/" + localId + "/history/idp")
                         .execute()
-                        .statusCode(401)
+                        .statusCode(statusCode)
                         .extract().response().asString();
 
         String[] addIdpResponseGeneratedFields = {
@@ -99,7 +99,7 @@ public class IdentityProviderTestUtil {
         return ids[0];
     }
 
-    public void removeIdpForDeviceBadToken(String localId, String publisherToken, Long idpId, String expectedResponseJson) {
+    public void removeIdpForDeviceError(int statusCode, String localId, String publisherToken, Long idpId, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", publisherToken);
 
@@ -110,7 +110,7 @@ public class IdentityProviderTestUtil {
                         .method(Method.DELETE)
                         .url("/1/device/" + localId + "/history/idp/" + idpId)
                         .execute()
-                        .statusCode(401)
+                        .statusCode(statusCode)
                         .extract().response().asString();
 
         String[] removeIdpResponseGeneratedFields = {
