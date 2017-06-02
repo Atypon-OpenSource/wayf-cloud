@@ -18,7 +18,10 @@ package com.atypon.wayf.request;
 
 import com.atypon.wayf.data.ErrorResponse;
 import com.atypon.wayf.data.ServiceException;
+import com.atypon.wayf.facade.ErrorLoggerFacade;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
 import io.reactivex.schedulers.Schedulers;
@@ -39,6 +42,7 @@ import java.text.SimpleDateFormat;
 /**
  * A utility class to write responses to VertX
  */
+@Singleton
 public class ResponseWriter {
     private static final Logger LOG = LoggerFactory.getLogger(ResponseWriter.class);
 
@@ -47,22 +51,27 @@ public class ResponseWriter {
     private static final String CONTENT_TYPE_KEY = "content-type";
     private static final String CONTENT_TYPE_VALUE = "application/json; charset=utf-8";
 
-    public static void setDeviceIdHeader(RoutingContext routingContext, String globalId) {
+    @Inject
+    private ErrorLoggerFacade errorLoggerFacade;
+
+    public ResponseWriter() {
+        Json.prettyMapper.setDateFormat(DATE_FORMAT);
+        Json.prettyMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    }
+
+    public void setDeviceIdHeader(RoutingContext routingContext, String globalId) {
         routingContext.response().putHeader(RequestReader.DEVICE_ID_HEADER, globalId);
     }
 
-    public static <B> void buildSuccess(RoutingContext routingContext, B body) {
+    public <B> void buildSuccess(RoutingContext routingContext, B body) {
         LOG.debug("Building success message");
-
-        Json.prettyMapper.setDateFormat(DATE_FORMAT);
-        Json.prettyMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         Completable.fromAction(
                 () ->
                         routingContext.response()
                                 .setStatusCode(200)
                                 .putHeader(CONTENT_TYPE_KEY, CONTENT_TYPE_VALUE)
-                                .putHeader("Link", getLinkHeaderValue())
+                                .putHeader("Link", buildLinkHeaderValue())
                                 .end(body != null ? Json.encodePrettily(body) : StringUtils.EMPTY))
                 .subscribeOn(Schedulers.io())
                 .subscribe(
@@ -71,7 +80,7 @@ public class ResponseWriter {
                 );
     }
 
-    public static void buildFailure(RoutingContext routingContext) {
+    public void buildFailure(RoutingContext routingContext) {
         Throwable failure = routingContext.failure();
 
         LOG.error("Error processing request", failure);
@@ -104,6 +113,16 @@ public class ResponseWriter {
 
         final int statusCodeToUse = statusCode;
 
+        try {
+            errorLoggerFacade.buildAndLogError(statusCode, failure)
+                    .subscribe(
+                            () -> {}, 
+                            (e) -> LOG.error("Could not log error", e)
+                    );
+        } catch(Exception e) {
+            LOG.error("Could not log exception", e);
+        }
+
         Completable.fromAction(
                 () -> routingContext.response()
                         .setStatusCode(statusCodeToUse)
@@ -116,7 +135,7 @@ public class ResponseWriter {
                 );
     }
 
-    protected static String getLinkHeaderValue() {
+    protected String buildLinkHeaderValue() {
         Boolean hasAnotherPage = RequestContextAccessor.get().getHasAnotherDbPage();
 
         if (hasAnotherPage) {

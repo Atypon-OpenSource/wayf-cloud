@@ -176,3 +176,25 @@ CREATE TABLE `device_access` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2017-05-04 14:13:29
+
+DROP TABLE IF EXISTS `error_log`;
+
+CREATE TABLE `error_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `authenticated_party` VARCHAR(45) NULL,
+  `device_global_id` VARCHAR(36) NULL,
+  `http_method` VARCHAR(6) NULL,
+  `request_url` VARCHAR(200) NULL,
+  `headers` VARCHAR(450) NULL,
+  `caller_ip` VARCHAR(45) NULL,
+  `server_ip` VARCHAR(20) NULL,
+  `response_code` VARCHAR(45) NULL,
+  `exception_type` VARCHAR(100) NULL,
+  `exception_message` VARCHAR(250) NULL,
+  `exception_stacktrace` LONGTEXT NULL,
+  `error_date` DATETIME NULL,
+  `created_date` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_date` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+UNIQUE KEY `id_UNIQUE` (`id`)
+);

@@ -16,6 +16,9 @@
 
 package com.atypon.wayf.verticle;
 
+import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.facade.AuthenticationFacade;
+import com.atypon.wayf.request.RequestContext;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.atypon.wayf.request.RequestContextFactory;
 import com.atypon.wayf.request.ResponseWriter;
@@ -44,7 +47,13 @@ public class WayfRequestHandlerFactory {
     private static final Logger LOG = LoggerFactory.getLogger(WayfRequestHandlerFactory.class);
 
     @Inject
+    private ResponseWriter responseWriter;
+
+    @Inject
     private RequestContextFactory requestContextFactory;
+
+    @Inject
+    private AuthenticationFacade authenticationFacade;
 
     public WayfRequestHandlerFactory() {
         Json.prettyMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S"));
@@ -62,7 +71,7 @@ public class WayfRequestHandlerFactory {
         return new WayfRequestHandlerCompletableImpl(requestContextFactory, delegate);
     }
 
-    private static class WayfRequestHandlerSingleImpl<T> implements Handler<RoutingContext> {
+    private class WayfRequestHandlerSingleImpl<T> implements Handler<RoutingContext> {
         private Function<RoutingContext, Single<T>> singleDelegate;
         private RequestContextFactory requestContextFactory;
 
@@ -73,13 +82,14 @@ public class WayfRequestHandlerFactory {
 
         public void handle(RoutingContext event) {
             RequestContextAccessor.set(requestContextFactory.fromRoutingContext(event));
+            authenticate();
 
             Single.just(event)
                     .observeOn(Schedulers.io())
                     .flatMap((s_event) -> singleDelegate.apply(s_event))
                     .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
                     .subscribe(
-                            (result) -> ResponseWriter.buildSuccess(event, result),
+                            (result) -> responseWriter.buildSuccess(event, result),
                             (e) -> event.fail(e)
                     );
 
@@ -87,7 +97,7 @@ public class WayfRequestHandlerFactory {
         }
     }
 
-    private static class WayfRequestHandlerObservableImpl<T> implements Handler<RoutingContext> {
+    private class WayfRequestHandlerObservableImpl<T> implements Handler<RoutingContext> {
         private RequestContextFactory requestContextFactory;
         private Function<RoutingContext, Observable<T>> observableDelegate;
 
@@ -98,6 +108,7 @@ public class WayfRequestHandlerFactory {
 
         public void handle(RoutingContext event) {
             RequestContextAccessor.set(requestContextFactory.fromRoutingContext(event));
+            authenticate();
 
             Single.just(event)
                     .observeOn(Schedulers.io())
@@ -105,7 +116,7 @@ public class WayfRequestHandlerFactory {
                     .toList()
                     .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
                     .subscribe(
-                            (result) -> ResponseWriter.buildSuccess(event, result),
+                            (result) -> responseWriter.buildSuccess(event, result),
                             (e) -> event.fail(e)
                     );
 
@@ -113,7 +124,7 @@ public class WayfRequestHandlerFactory {
         }
     }
 
-    private static class WayfRequestHandlerCompletableImpl implements Handler<RoutingContext> {
+    private class WayfRequestHandlerCompletableImpl implements Handler<RoutingContext> {
         private RequestContextFactory requestContextFactory;
         private Function<RoutingContext, Completable> completableDelgate;
 
@@ -124,17 +135,26 @@ public class WayfRequestHandlerFactory {
 
         public void handle(RoutingContext event) {
             RequestContextAccessor.set(requestContextFactory.fromRoutingContext(event));
+            authenticate();
 
             Single.just(event)
                     .observeOn(Schedulers.io())
                     .flatMapCompletable((s_event) -> completableDelgate.apply(s_event))
                     .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
                     .subscribe(
-                            () -> ResponseWriter.buildSuccess(event, null),
+                            () -> responseWriter.buildSuccess(event, null),
                             (e) -> event.fail(e)
                     );
 
             RequestContextAccessor.remove();
+        }
+    }
+
+    private final void authenticate() {
+        String apiToken = RequestContextAccessor.get().getApiToken();
+        if (apiToken != null && !apiToken.isEmpty()) {
+            Authenticatable authenticated = authenticationFacade.authenticate(apiToken);
+            RequestContextAccessor.get().setAuthenticated(authenticated);
         }
     }
 }

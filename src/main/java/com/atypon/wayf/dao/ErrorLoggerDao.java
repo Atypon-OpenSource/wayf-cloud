@@ -14,23 +14,12 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.guice;
+package com.atypon.wayf.dao;
 
-import com.google.inject.AbstractModule;
-import org.junit.ClassRule;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.util.TestNeo4j;
+import com.atypon.wayf.data.ErrorLogEntry;
+import io.reactivex.Completable;
 
-public class TestGuiceModule extends AbstractModule {
+public interface ErrorLoggerDao {
 
-    @ClassRule
-    public TestNeo4j neo4j;
-    public TestGuiceModule(TestNeo4j neo4j) {
-        this.neo4j = neo4j;
-    }
-
-    @Override
-    protected void configure() {
-        bind(Driver.class).toProvider(() -> neo4j.driver());
-    }
+    Completable logError(ErrorLogEntry logEntry);
 }

@@ -20,6 +20,9 @@ import com.atypon.wayf.data.Authenticatable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.Map;
+
 public class RequestContext {
     private static final Logger LOG = LoggerFactory.getLogger(RequestContext.class);
 
@@ -29,16 +32,56 @@ public class RequestContext {
     private Integer limit = DEFAULT_LIMIT;
     private Integer offset = DEFAULT_OFFSET;
 
+    private String apiToken;
+    private String httpMethod;
+    private String requestBody;
     private String userAgent;
     private String deviceId;
     private String requestUrl;
     private String requestUri;
+    private Map<String, List<String>> headers;
 
     private Authenticatable authenticated;
 
     private Boolean hasAnotherDbPage = Boolean.FALSE;
 
     public RequestContext() {
+    }
+
+    public String getApiToken() {
+        return apiToken;
+    }
+
+    public RequestContext setApiToken(String apiToken) {
+        this.apiToken = apiToken;
+        return this;
+    }
+
+    public String getHttpMethod() {
+        return httpMethod;
+    }
+
+    public RequestContext setHttpMethod(String httpMethod) {
+        this.httpMethod = httpMethod;
+        return this;
+    }
+
+    public String getRequestBody() {
+        return requestBody;
+    }
+
+    public RequestContext setRequestBody(String requestBody) {
+        this.requestBody = requestBody;
+        return this;
+    }
+
+    public Map<String, List<String>> getHeaders() {
+        return headers;
+    }
+
+    public RequestContext setHeaders(Map<String, List<String>> headers) {
+        this.headers = headers;
+        return this;
     }
 
     public String getRequestUrl() {

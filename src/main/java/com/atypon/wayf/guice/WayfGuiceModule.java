@@ -79,6 +79,7 @@ public class WayfGuiceModule extends AbstractModule {
             properties.load(classLoader.getResourceAsStream("dao/oauth-entity-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/device-identity-provider-blacklist-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/authentication-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/error-logger-dao-db.properties"));
 
             Names.bindProperties(binder(), properties);
 
@@ -99,6 +100,9 @@ public class WayfGuiceModule extends AbstractModule {
             bind(PublisherDao.class).to(PublisherDaoDbImpl.class);
 
             bind(IdentityProviderFacade.class).to(IdentityProviderFacadeImpl.class);
+
+            bind(ErrorLoggerFacade.class).to(ErrorLoggerFacadeImpl.class);
+            bind(ErrorLoggerDao.class).to(ErrorLoggerDaoDbImpl.class);
 
             bind(new TypeLiteral<InflationPolicyParser<String>>(){}).to(InflationPolicyParserQueryParamImpl.class);
 

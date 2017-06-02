@@ -23,7 +23,7 @@ import org.junit.Test;
 public class ResponseWriterTest {
     private class ResponseWriterMock extends ResponseWriter {
         public String _getLinkHeaderValue() {
-            return super.getLinkHeaderValue();
+            return super.buildLinkHeaderValue();
         }
     }
 

@@ -46,6 +46,9 @@ public class DeviceRoutingProvider implements RoutingProvider {
     private static final String ADD_DEVICE_PUBLISHER_RELATIONSHIP = "/1/device/:localId";
 
     @Inject
+    private ResponseWriter responseWriter;
+
+    @Inject
     private DeviceFacade deviceFacade;
 
     @Inject
@@ -63,7 +66,6 @@ public class DeviceRoutingProvider implements RoutingProvider {
         router.get(FILTER_DEVICE).handler(handlerFactory.observable((rc) -> filterDevice(rc)));
         router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.single((rc) -> createPublisherDeviceRelationship(rc)));
     }
-
 
     public Single<Device> readDevice(RoutingContext routingContext) {
         LOG.debug("Received read Device request");
@@ -89,7 +91,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
         return deviceFacade.createOrUpdateForPublisher(localId)
                 .map((device) -> {
                     String globalId = device.getGlobalId();
-                    ResponseWriter.setDeviceIdHeader(routingContext, globalId);
+                    responseWriter.setDeviceIdHeader(routingContext, globalId);
                     device.setGlobalId(null);
                     return device;
                 });
