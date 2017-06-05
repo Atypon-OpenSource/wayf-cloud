@@ -18,101 +18,56 @@
       <artifactId>vertx-web</artifactId>
       <version>3.2.1</version>
     </dependency>
-
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-mongo-client</artifactId>
-      <version>3.2.1</version>
-    </dependency>
-
     <dependency>
       <groupId>io.reactivex.rxjava2</groupId>
       <artifactId>rxjava</artifactId>
       <version>2.0.8</version>
     </dependency>
-
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>21.0</version>
     </dependency>
-
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-jdbc</artifactId>
       <version>2.0.6</version>
     </dependency>
-
     <dependency>
       <groupId>com.github.akarnokd</groupId>
       <artifactId>rxjava2-extensions</artifactId>
       <version>0.17.0</version>
     </dependency>
-
-    <!-- Test dependencies -->
-
-
-
-    <dependency>
-      <groupId>org.neo4j.driver</groupId>
-      <artifactId>neo4j-java-driver</artifactId>
-      <version>1.2.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.neo4j.driver</groupId>
-      <artifactId>neo4j-java-driver</artifactId>
-      <version>1.2.0</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-
-
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
       <version>2.9.0</version>
     </dependency>
-
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
       <version>5.1.39</version>
     </dependency>
-
     <dependency>
       <groupId>commons-dbcp</groupId>
       <artifactId>commons-dbcp</artifactId>
       <version>1.4</version>
     </dependency>
-
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <version>4.5.3</version>
     </dependency>
-
     <dependency>
-      <groupId>org.quartz-scheduler</groupId>
-      <artifactId>quartz</artifactId>
-      <version>2.2.1</version>
+        <groupId>com.google.inject</groupId>
+        <artifactId>guice</artifactId>
+        <version>4.1.0</version>
     </dependency>
     <dependency>
-      <groupId>org.quartz-scheduler</groupId>
-      <artifactId>quartz-jobs</artifactId>
-      <version>2.2.1</version>
+        <groupId>commons-beanutils</groupId>
+        <artifactId>commons-beanutils</artifactId>
+        <version>1.9.2</version>
     </dependency>
-      <dependency>
-          <groupId>com.google.inject</groupId>
-          <artifactId>guice</artifactId>
-          <version>4.1.0</version>
-      </dependency>
-      <dependency>
-          <groupId>commons-beanutils</groupId>
-          <artifactId>commons-beanutils</artifactId>
-          <version>1.9.2</version>
-      </dependency>
-    <!-- For the tests -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -125,7 +80,6 @@
       <version>3.2.1</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -141,19 +95,16 @@
       <artifactId>rest-assured</artifactId>
       <version>3.0.2</version>
     </dependency>
-
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
       <version>20160810</version>
     </dependency>
-
     <dependency>
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path</artifactId>
       <version>2.2.0</version>
     </dependency>
-
     <dependency>
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path-assert</artifactId>
@@ -163,14 +114,6 @@
 
 
   <build>
-    <!-- Need to enable the filtering of the src/test/resources to inject the random port -->
-    <testResources>
-      <testResource>
-        <directory>src/test/resources</directory>
-        <filtering>true</filtering>
-      </testResource>
-    </testResources>
-
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -207,26 +150,6 @@
             <goals>
               <goal>report</goal>
             </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <!-- Pick an unused random port, the selected port is set into the "http.port" variable -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.9.1</version>
-        <executions>
-          <execution>
-            <id>reserve-network-port</id>
-            <goals>
-              <goal>reserve-network-port</goal>
-            </goals>
-            <phase>process-sources</phase>
-            <configuration>
-              <portNames>
-                <portName>http.port</portName>
-              </portNames>
-            </configuration>
           </execution>
         </executions>
       </plugin>

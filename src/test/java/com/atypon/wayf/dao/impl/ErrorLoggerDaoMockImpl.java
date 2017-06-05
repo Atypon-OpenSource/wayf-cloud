@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.reactivex;
+package com.atypon.wayf.dao.impl;
 
-import io.reactivex.plugins.RxJavaPlugins;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.atypon.wayf.dao.ErrorLoggerDao;
+import com.atypon.wayf.data.ErrorLogEntry;
+import io.reactivex.Completable;
 
-/**
- * A class to manage any configurations required for the ReactiveX library.
- */
-public class WayfReactivexConfig {
-    private static final Logger LOG = LoggerFactory.getLogger(WayfReactivexConfig.class);
+public class ErrorLoggerDaoMockImpl implements ErrorLoggerDao {
 
-    public static void initializePlugins() {
-        LOG.debug("Initializing ReactiveX plugins");
+    private ErrorLogEntry lastLoggedError;
 
-        RxJavaPlugins.setScheduleHandler((runnable) -> new WayfRunnable(runnable));
+    public ErrorLogEntry getLastLoggedError() {
+        return lastLoggedError;
+    }
+
+    @Override
+    public Completable logError(ErrorLogEntry logEntry) {
+        this.lastLoggedError = logEntry;
+        return Completable.complete();
     }
 }

@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.reactivex;
+package com.atypon.wayf.facade;
 
-import io.reactivex.plugins.RxJavaPlugins;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.reactivex.Completable;
 
-/**
- * A class to manage any configurations required for the ReactiveX library.
- */
-public class WayfReactivexConfig {
-    private static final Logger LOG = LoggerFactory.getLogger(WayfReactivexConfig.class);
-
-    public static void initializePlugins() {
-        LOG.debug("Initializing ReactiveX plugins");
-
-        RxJavaPlugins.setScheduleHandler((runnable) -> new WayfRunnable(runnable));
-    }
+public interface ErrorLoggerFacade {
+    Completable buildAndLogError(int statusCode, Throwable t);
 }

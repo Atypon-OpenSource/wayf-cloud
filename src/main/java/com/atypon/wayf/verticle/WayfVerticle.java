@@ -52,6 +52,9 @@ public class WayfVerticle extends AbstractVerticle {
     private PublisherRouting publisherRouting;
 
     @Inject
+    private ResponseWriter responseWriter;
+
+    @Inject
     @Named("wayf.port")
     private Integer wayfPort;
 
@@ -77,7 +80,7 @@ public class WayfVerticle extends AbstractVerticle {
 
         LOG.debug("Adding default error handler to routes");
         for (Route route : router.getRoutes()) {
-            route.failureHandler((rc) -> ResponseWriter.buildFailure(rc));
+            route.failureHandler((rc) -> responseWriter.buildFailure(rc));
             LOG.debug("Found path {}", route);
         }
 

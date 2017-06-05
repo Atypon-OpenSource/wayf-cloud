@@ -23,11 +23,13 @@ import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 public class RequestContextFactory {
     private static final Logger LOG = LoggerFactory.getLogger(RequestContextFactory.class);
-
-    @Inject
-    private AuthenticationFacade authenticationFacade;
 
     public RequestContext fromRoutingContext(RoutingContext routingContext) {
         RequestContext requestContext = new RequestContext();
@@ -35,6 +37,22 @@ public class RequestContextFactory {
         requestContext.setUserAgent(RequestReader.getHeaderValue(routingContext, RequestReader.USER_AGENT_HEADER));
         requestContext.setRequestUri(routingContext.request().uri());
         requestContext.setRequestUrl(routingContext.request().absoluteURI());
+        requestContext.setRequestBody(routingContext.getBodyAsString());
+        requestContext.setHttpMethod(routingContext.request().method().toString());
+
+        Map<String, List<String>> headers = new HashMap<>();
+
+        // Don't want to propagate the Vert.x Multimap into the application code
+        routingContext.request().headers().forEach((entry) -> {
+            List<String> values = headers.get(entry.getKey());
+            if (values == null) {
+                values = new LinkedList<>();
+                headers.put(entry.getKey(), values);
+            }
+            values.add(entry.getValue());
+        });
+
+        requestContext.setHeaders(headers);
 
         String limit = RequestReader.getQueryValue(routingContext, RequestReader.LIMIT_QUERY_PARAM);
         if (limit != null && !limit.isEmpty()) {
@@ -51,11 +69,8 @@ public class RequestContextFactory {
             requestContext.setDeviceId(deviceId);
         }
 
-        String apiKey = RequestReader.getHeaderValue(routingContext, RequestReader.AUTHORIZATION_HEADER);
-        if (apiKey != null && !apiKey.isEmpty()) {
-            Authenticatable authenticatable = authenticationFacade.authenticate(apiKey);
-            requestContext.setAuthenticated(authenticatable);
-        }
+        String apiToken = RequestReader.getHeaderValue(routingContext, RequestReader.AUTHORIZATION_HEADER);
+        requestContext.setApiToken(apiToken);
 
         return requestContext;
     }
