@@ -52,7 +52,7 @@ public class ResponseWriter {
     private static final String CONTENT_TYPE_VALUE = "application/json; charset=utf-8";
 
     @Inject
-    private ErrorLoggerFacade errorLoggerFacade;
+    protected ErrorLoggerFacade errorLoggerFacade;
 
     public ResponseWriter() {
         Json.prettyMapper.setDateFormat(DATE_FORMAT);

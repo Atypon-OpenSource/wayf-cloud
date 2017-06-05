@@ -56,6 +56,10 @@ public class ErrorLoggerFacadeImpl implements ErrorLoggerFacade {
         }
     }
 
+    public void setErrorLoggerDao(ErrorLoggerDao errorLoggerDao) {
+        this.errorLoggerDao = errorLoggerDao;
+    }
+
     public Completable buildAndLogError(int statusCode, Throwable t) {
         ErrorLogEntry logEntry = new ErrorLogEntry();
         logEntry.setResponseCode(statusCode);
@@ -103,6 +107,6 @@ public class ErrorLoggerFacadeImpl implements ErrorLoggerFacade {
             return null;
         }
 
-        return string.substring(0, length);
+        return (string.length() > length)? string.substring(0, length) : string;
     }
 }
