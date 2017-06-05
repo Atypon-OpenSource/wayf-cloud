@@ -191,7 +191,7 @@ CREATE TABLE `error_log` (
   `response_code` VARCHAR(45) NULL,
   `exception_type` VARCHAR(100) NULL,
   `exception_message` VARCHAR(250) NULL,
-  `exception_stacktrace` LONGTEXT NULL,
+  `exception_stacktrace` TEXT NULL,
   `error_date` DATETIME NULL,
   `created_date` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,

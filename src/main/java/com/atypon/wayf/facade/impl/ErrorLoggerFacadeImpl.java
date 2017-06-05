@@ -38,15 +38,19 @@ import java.util.List;
 public class ErrorLoggerFacadeImpl implements ErrorLoggerFacade {
     private static final Logger LOG = LoggerFactory.getLogger(ErrorLoggerFacadeImpl.class);
 
+    private static final int HEADERS_MAX_LENGTH = 400;
+    private static final int ERROR_MESSAGE_MAX_LENGTH = 250;
+    private static final int REQUEST_URL_MAX_LENGTH = 200;
+
     @Inject
     private ErrorLoggerDao errorLoggerDao;
 
-    private String ipAddress;
+    private String serverIpAddress;
 
     public ErrorLoggerFacadeImpl() {
         try {
             InetAddress ipAddr = InetAddress.getLocalHost();
-            ipAddress = ipAddr.getHostAddress();
+            serverIpAddress = ipAddr.getHostAddress();
         } catch (Exception e) {
             LOG.error("Could not get IP address of server", e);
         }
@@ -57,7 +61,7 @@ public class ErrorLoggerFacadeImpl implements ErrorLoggerFacade {
         logEntry.setResponseCode(statusCode);
 
         logEntry.setExceptionType(t.getClass().getCanonicalName());
-        logEntry.setExceptionMessage(t.getMessage());
+        logEntry.setExceptionMessage(trim(t.getMessage(), ERROR_MESSAGE_MAX_LENGTH));
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(outputStream);
@@ -80,15 +84,25 @@ public class ErrorLoggerFacadeImpl implements ErrorLoggerFacade {
             logEntry.setAuthenticatedParty(authenticated.getType() + "-" + authenticated.getId());
         }
 
-        logEntry.setHeaders(requestContext.getHeaders().toString());
+        logEntry.setHeaders(trim(requestContext.getHeaders().toString(), HEADERS_MAX_LENGTH));
+
         List<String> forwardedFor = requestContext.getHeaders().get("X-Forwarded-For");
         if (forwardedFor != null && !forwardedFor.isEmpty()) {
             logEntry.setCallerIp(forwardedFor.get(0).toString());
         }
-        logEntry.setServerIp(ipAddress);
+
+        logEntry.setServerIp(serverIpAddress);
         logEntry.setHttpMethod(requestContext.getHttpMethod());
-        logEntry.setRequestUrl(requestContext.getRequestUrl());
+        logEntry.setRequestUrl(trim(requestContext.getRequestUrl(), REQUEST_URL_MAX_LENGTH));
 
         return errorLoggerDao.logError(logEntry);
+    }
+
+    private String trim(String string, int length) {
+        if (string == null) {
+            return null;
+        }
+
+        return string.substring(0, length);
     }
 }
