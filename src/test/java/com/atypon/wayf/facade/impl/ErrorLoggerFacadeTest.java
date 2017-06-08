@@ -17,6 +17,8 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.impl.ErrorLoggerDaoMockImpl;
+import com.atypon.wayf.data.AuthorizationToken;
+import com.atypon.wayf.data.AuthorizationTokenType;
 import com.atypon.wayf.data.ErrorLogEntry;
 import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.publisher.Publisher;
@@ -78,7 +80,7 @@ public class ErrorLoggerFacadeTest {
                 .setRequestUrl(url)
                 .setHeaders(headers)
                 .setDeviceId(globalId)
-                .setApiToken(token)
+                .setAuthorizationToken(new AuthorizationToken().setType(AuthorizationTokenType.API_TOKEN).setValue(token))
                 .setAuthenticated(authenticatable)
                 .setHttpMethod(httpMethod)
                 .setUserAgent(userAgent)

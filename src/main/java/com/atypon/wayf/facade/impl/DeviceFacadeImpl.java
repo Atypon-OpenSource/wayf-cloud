@@ -27,6 +27,7 @@ import com.atypon.wayf.data.device.access.DeviceAccessQuery;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.DeviceAccessFacade;
 import com.atypon.wayf.facade.DeviceFacade;
+import com.atypon.wayf.facade.PublisherFacade;
 import com.atypon.wayf.reactivex.FacadePolicies;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.HashMultimap;
@@ -56,6 +57,9 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
     @Inject
     private DeviceAccessFacade deviceAccessFacade;
+
+    @Inject
+    private PublisherFacade publisherFacade;
 
     public DeviceFacadeImpl() {
     }
@@ -111,32 +115,35 @@ public class DeviceFacadeImpl implements DeviceFacade {
     }
 
     @Override
-    public Single<Device> createOrUpdateForPublisher(String localId) {
-        return resolveFromRequest(localId) // Read the device contained in the request or create a new one
+    public Single<Device> createOrUpdateForPublisher(String publisherCode, String localId) {
+        return publisherFacade.lookupCode(publisherCode) // Get the publisher associated with the code
+                .flatMap((_publisher) ->
+                        // Using the publisher and the local ID, get the device
+                        resolveFromRequest(_publisher, localId)
 
-                // Apply the following logic to the device
-                .flatMap((device) -> {
+                                // Create a DeviceAccess object to store the resolved Device and Publisher. This may be
+                                // a little clunky but the alternative would be to create a new type to wrap the two
+                                .map((device) ->  new DeviceAccess.Builder().device(device).publisher(_publisher).build()))
 
-                    // Get the currently authenticated publisher
-                    Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
-
-
-                    // Create an XREF linking the publisher and local ID to the device
-                    return deviceDao.replaceDevicePublisherLocalIdXref(device.getId(), publisher.getId(), localId)
-
-                            // Since the above method has no return value, return the resolved device on completion
-                            .toSingleDefault(device);
-                });
+                .flatMap((deviceAccess) ->
+                        // Now that all the required data is available, point the local ID at the device
+                        deviceDao.updateDevicePublisherLocalIdXref(deviceAccess.getDevice().getId(), deviceAccess.getPublisher().getId(), localId)
+                                .toSingleDefault(deviceAccess.getDevice()));
     }
 
-    private Single<Device> resolveFromRequest(String localId) {
+    @Override
+    public Completable registerLocalId(String localId) {
+        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+
+        return deviceDao.registerLocalId(publisher.getId(), localId);
+    }
+
+    private Single<Device> resolveFromRequest(Publisher publisher, String localId) {
         String deviceGlobalId = RequestContextAccessor.get().getDeviceId();
 
         if (deviceGlobalId != null) {
             return read(new DeviceQuery().setGlobalId(deviceGlobalId));
         }
-
-        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
 
         // If the localId has already been used, return the device associated with it. Otherwise, create a new Device
         return deviceDao.readByPublisherLocalId(publisher.getId(), localId)

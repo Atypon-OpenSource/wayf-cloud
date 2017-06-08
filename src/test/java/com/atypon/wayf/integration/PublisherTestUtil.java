@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.integration;
 
+import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
@@ -30,7 +31,7 @@ public class PublisherTestUtil {
         this.request = request;
     }
 
-    public String testCreatePublisher(String requestBody, String response) {
+    public Publisher testCreatePublisher(String requestBody, String response) {
         String createResponse =
                 request
                         .contentType(ContentType.JSON)
@@ -43,6 +44,7 @@ public class PublisherTestUtil {
 
         String[] createResponseGeneratedFields = {
                 "$.id",
+                "$.code",
                 "$.token",
                 "$.createdDate"
         };
@@ -50,9 +52,14 @@ public class PublisherTestUtil {
         assertNotNullPaths(createResponse, createResponseGeneratedFields);
 
         String token = readField(createResponse, "$.token");
+        String code = readField(createResponse, "$.code");
 
         assertJsonEquals(response, createResponse, createResponseGeneratedFields);
 
-        return token;
+        Publisher publisher = new Publisher();
+        publisher.setCode(code);
+        publisher.setToken(token);
+
+        return publisher;
     }
 }

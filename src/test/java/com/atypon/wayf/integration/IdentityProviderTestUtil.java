@@ -38,7 +38,7 @@ public class IdentityProviderTestUtil {
 
     public void addIdpToDeviceError(int statusCode, String localId, String publisherToken, String idpBodyJson, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", publisherToken);
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
         String addIdpResponse =
                 request
@@ -60,7 +60,7 @@ public class IdentityProviderTestUtil {
 
     public Long addIdpToDevice(String localId, String publisherToken, String idpBodyJson, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", publisherToken);
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
         String addIdpResponse =
                 request
@@ -101,7 +101,7 @@ public class IdentityProviderTestUtil {
 
     public void removeIdpForDeviceError(int statusCode, String localId, String publisherToken, Long idpId, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", publisherToken);
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
         String removeIdpResponse =
                 request
@@ -122,7 +122,7 @@ public class IdentityProviderTestUtil {
 
     public void removeIdpForDevice(String localId, String publisherToken, Long idpId) {
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", publisherToken);
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
         String removeIdpResponse =
                 request

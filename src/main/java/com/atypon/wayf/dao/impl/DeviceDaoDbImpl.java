@@ -63,8 +63,12 @@ public class DeviceDaoDbImpl implements DeviceDao {
     private String filterSql;
 
     @Inject
-    @Named("device.dao.db.create-publisher-local-id-xref")
+    @Named("device.dao.db.update-publisher-local-id-xref")
     private String replacePublisherLocalIdXrefSql;
+
+    @Inject
+    @Named("device.dao.db.register-local-id-xref")
+    private String registerLocalIdSql;
 
     @Inject
     @Named("device.dao.db.read-by-publisher-local-id")
@@ -89,7 +93,6 @@ public class DeviceDaoDbImpl implements DeviceDao {
 
     @Override
     public Maybe<Device> read(DeviceQuery query) {
-
         return Single.just(query)
                 .compose((single) -> DaoPolicies.applySingle(single))
                 .flatMapMaybe((_query) -> dbExecutor.executeSelectFirst(readSql, _query, Device.class));
@@ -117,7 +120,7 @@ public class DeviceDaoDbImpl implements DeviceDao {
     }
 
     @Override
-    public Completable replaceDevicePublisherLocalIdXref(Long deviceId, Long publisherId, String localId) {
+    public Completable updateDevicePublisherLocalIdXref(Long deviceId, Long publisherId, String localId) {
         Map<String, Object> args = new HashMap<>();
         args.put(DEVICE_ID, deviceId);
         args.put(PUBLISHER_ID, publisherId);
@@ -127,6 +130,18 @@ public class DeviceDaoDbImpl implements DeviceDao {
         return Completable.fromSingle(dbExecutor.executeUpdate(replacePublisherLocalIdXrefSql, args))
                 .compose((completable) -> DaoPolicies.applyCompletable(completable));
     }
+
+    @Override
+    public Completable registerLocalId(Long publisherId, String localId) {
+        Map<String, Object> args = new HashMap<>();
+        args.put(PUBLISHER_ID, publisherId);
+        args.put(PUBLISHER_LOCAL_ID, localId);
+        args.put(UNIQUE_PUBLISHER_KEY, publisherId + "-" + localId);
+
+        return Completable.fromSingle(dbExecutor.executeUpdate(registerLocalIdSql, args))
+                .compose((completable) -> DaoPolicies.applyCompletable(completable));
+    }
+
 
     @Override
     public Maybe<Device> readByPublisherLocalId(Long publisherId, String localId) {

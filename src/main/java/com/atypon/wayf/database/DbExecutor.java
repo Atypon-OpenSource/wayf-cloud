@@ -88,7 +88,7 @@ public class DbExecutor {
 
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         return Single.just(query)
-                .map((ignored) ->  namedParameterJdbcTemplate.update(query, new MapSqlParameterSource(arguments), keyHolder))
+                .map((ignored) -> namedParameterJdbcTemplate.update(query, new MapSqlParameterSource(arguments), keyHolder))
                 .map((ignored) -> keyHolder.getKey() == null? null : keyHolder.getKey().longValue());
 
     }

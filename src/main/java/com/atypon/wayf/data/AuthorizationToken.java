@@ -14,17 +14,31 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.facade;
+package com.atypon.wayf.data;
 
-import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherQuery;
-import io.reactivex.Observable;
-import io.reactivex.Single;
+public class AuthorizationToken {
 
-public interface PublisherFacade {
-    Single<Publisher> create(Publisher publisher);
-    Single<Publisher> read(Long id);
-    Observable<Publisher> filter(PublisherQuery filter);
+    private AuthorizationTokenType type;
+    private String value;
 
-    Single<Publisher> lookupCode(String publisherCode);
+    public AuthorizationToken() {
+    }
+
+    public AuthorizationTokenType getType() {
+        return type;
+    }
+
+    public AuthorizationToken setType(AuthorizationTokenType type) {
+        this.type = type;
+        return this;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public AuthorizationToken setValue(String value) {
+        this.value = value;
+        return this;
+    }
 }
