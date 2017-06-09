@@ -20,6 +20,7 @@ import java.util.Collection;
 
 public class PublisherQuery {
     private Collection<Long> ids;
+    private Collection<String> codes;
 
     public PublisherQuery() {
     }
@@ -39,5 +40,18 @@ public class PublisherQuery {
      */
     public boolean isNullIds() {
         return ids == null;
+    }
+
+    public Collection<String> getCodes() {
+        return codes;
+    }
+
+    public PublisherQuery setCodes(Collection<String> codes) {
+        this.codes = codes;
+        return this;
+    }
+
+    public boolean isNullCodes() {
+        return codes == null;
     }
 }

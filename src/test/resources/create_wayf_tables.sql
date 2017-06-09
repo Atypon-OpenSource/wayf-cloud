@@ -118,7 +118,7 @@ CREATE TABLE `publisher_local_id_device_xref` (
   `unique_publisher_key` VARCHAR (150),
   `publisher_id` int(11) NOT NULL,
   `local_id` VARCHAR(100) NOT NULL,
-  `device_id` int(11) NOT NULL,
+  `device_id` int(11) NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`unique_publisher_key`)

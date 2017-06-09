@@ -33,9 +33,9 @@ public class DeviceTestUtil {
         this.request = request;
     }
 
-    public String relateDeviceToPublisherError(int statusCode, String localId, String publisherToken, String globalId, String expectedResponseJson) {
+    public String relateDeviceToPublisherError(int statusCode, String localId, String publisherCode, String globalId, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", publisherToken);
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateJwtTokenHeaderValue(publisherCode));
         headers.put("User-Agent", "Test-Agent");
         if (globalId != null) {
             headers.put("X-Device-Id", globalId);
@@ -62,9 +62,23 @@ public class DeviceTestUtil {
         return deviceIdHeader;
     }
 
-    public String relateDeviceToPublisher(String localId, String publisherToken, String globalId, String expectedResponseJson) {
+    public void registerLocalId(String localId, String publisherToken) {
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", publisherToken);
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
+        headers.put("User-Agent", "Test-Agent");
+
+        ExtractableResponse relateResponse = request
+                .headers(headers)
+                .url("/1/device/" + localId)
+                .method(Method.POST)
+                .execute()
+                .statusCode(200)
+                .extract();
+    }
+
+    public String relateDeviceToPublisher(String localId, String publisherCode, String globalId, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateJwtTokenHeaderValue(publisherCode));
         headers.put("User-Agent", "Test-Agent");
         if (globalId != null) {
             headers.put("X-Device-Id", globalId);
@@ -95,7 +109,7 @@ public class DeviceTestUtil {
 
     public void deviceQueryBadPublisherToken(String localId, String publisherToken, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", publisherToken);
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
         headers.put("User-Agent", "Test-Agent");
 
         ExtractableResponse relateBadTokenResponse = request

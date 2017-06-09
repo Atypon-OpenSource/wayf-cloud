@@ -19,8 +19,10 @@ package com.atypon.wayf.facade.impl;
 import com.atypon.wayf.dao.AuthenticationDao;
 import com.atypon.wayf.dao.impl.AuthenticationDaoRedisImpl;
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthorizationToken;
+import com.atypon.wayf.data.AuthorizationTokenType;
+import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.facade.AuthenticationFacade;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.RequestContext;
@@ -29,6 +31,8 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -53,8 +57,10 @@ public class AuthenticationFacadeImplTest {
         testPublisher.setId(1122L);
 
         // Test Create
-        String token = facade.createToken(testPublisher).blockingGet();
-        assertNotNull(token);
+        String tokenValue = facade.createToken(testPublisher).blockingGet();
+        assertNotNull(tokenValue);
+
+        AuthorizationToken token = new AuthorizationToken().setType(AuthorizationTokenType.API_TOKEN).setValue(tokenValue);
 
         // Test Read
         Authenticatable authenticated = facade.authenticate(token);
@@ -82,5 +88,37 @@ public class AuthenticationFacadeImplTest {
         assertNotNull(authenticatedFromL2);
         assertEquals(Publisher.class, authenticatedFromL2.getClass());
         assertEquals(testPublisher.getId(), authenticatedFromL2.getId());
+    }
+
+    @Test
+    public void testParseJwtToken() {
+        String jwtTokenValue = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
+
+        String jwt = "Bearer " + jwtTokenValue;
+
+        AuthorizationToken token = facade.parseAuthenticationValue(jwt);
+
+        assertNotNull(token);
+        assertEquals(AuthorizationTokenType.JWT, token.getType());
+        assertEquals(jwtTokenValue, token.getValue());
+    }
+
+    @Test
+    public void testParseApiToken() {
+        String apiTokenValue = UUID.randomUUID().toString();
+        String apiToken = "API " + apiTokenValue;
+
+        AuthorizationToken token = facade.parseAuthenticationValue(apiToken);
+
+        assertNotNull(token);
+        assertEquals(AuthorizationTokenType.API_TOKEN, token.getType());
+        assertEquals(apiTokenValue, token.getValue());
+    }
+
+    @Test(expected = ServiceException.class)
+    public void testBadToken() {
+        String badToken = "gobble-gook";
+
+        facade.parseAuthenticationValue(badToken);
     }
 }

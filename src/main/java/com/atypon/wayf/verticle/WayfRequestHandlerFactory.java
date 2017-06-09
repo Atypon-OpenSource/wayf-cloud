@@ -17,6 +17,7 @@
 package com.atypon.wayf.verticle;
 
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.facade.AuthenticationFacade;
 import com.atypon.wayf.request.RequestContext;
 import com.atypon.wayf.request.RequestContextAccessor;
@@ -151,9 +152,9 @@ public class WayfRequestHandlerFactory {
     }
 
     private final void authenticate() {
-        String apiToken = RequestContextAccessor.get().getApiToken();
-        if (apiToken != null && !apiToken.isEmpty()) {
-            Authenticatable authenticated = authenticationFacade.authenticate(apiToken);
+        AuthorizationToken token = RequestContextAccessor.get().getAuthorizationToken();
+        if (token != null) {
+            Authenticatable authenticated = authenticationFacade.authenticate(token);
             RequestContextAccessor.get().setAuthenticated(authenticated);
         }
     }

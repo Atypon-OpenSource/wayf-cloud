@@ -21,6 +21,7 @@ import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.data.publisher.PublisherStatus;
 import com.atypon.wayf.facade.PublisherFacade;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Observable;
@@ -53,5 +54,12 @@ public class PublisherFacadeImpl implements PublisherFacade {
     @Override
     public Observable<Publisher> filter(PublisherQuery filter) {
         return publisherDao.filter(filter);
+    }
+
+    @Override
+    public Single<Publisher> lookupCode(String publisherCode) {
+        PublisherQuery query = new PublisherQuery().setCodes(Lists.newArrayList(publisherCode));
+
+        return singleOrException(filter(query), HttpStatus.SC_BAD_REQUEST, "Could not find publisher for code [{}]", publisherCode);
     }
 }

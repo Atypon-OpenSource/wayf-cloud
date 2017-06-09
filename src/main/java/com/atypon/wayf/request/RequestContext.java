@@ -17,6 +17,7 @@
 package com.atypon.wayf.request;
 
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthorizationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +33,7 @@ public class RequestContext {
     private Integer limit = DEFAULT_LIMIT;
     private Integer offset = DEFAULT_OFFSET;
 
-    private String apiToken;
+    private AuthorizationToken authorizationToken;
     private String httpMethod;
     private String requestBody;
     private String userAgent;
@@ -48,12 +49,12 @@ public class RequestContext {
     public RequestContext() {
     }
 
-    public String getApiToken() {
-        return apiToken;
+    public AuthorizationToken getAuthorizationToken() {
+        return authorizationToken;
     }
 
-    public RequestContext setApiToken(String apiToken) {
-        this.apiToken = apiToken;
+    public RequestContext setAuthorizationToken(AuthorizationToken authorizationToken) {
+        this.authorizationToken = authorizationToken;
         return this;
     }
 

@@ -84,14 +84,15 @@ public class FacadePolicies {
     }
 
     public static final <T> Single<T> singleOrException(Observable<T> observable, int statusCode, String message, Object... args) {
-        Single<Boolean> isEmpty = observable.isEmpty();
+        Single<Long> count = observable.count();
 
-        return isEmpty.flatMap((_isEmpty) -> {
-            if (_isEmpty) {
+        return count.flatMap((_count) -> {
+            if (_count != 1) {
                 FormattingTuple formattedMessage = MessageFormatter.arrayFormat(message, args);
 
                 throw new ServiceException(statusCode, formattedMessage.getMessage());
             }
+
 
             return observable.singleOrError();
         });

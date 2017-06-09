@@ -38,7 +38,7 @@ public class DeviceAccessTestUtil {
 
     public void testDeviceHistoryError(int statusCode, String localId, String publisherToken, String expectedHistoryJson) {
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", publisherToken);
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
         String historyResponse =
                 request
@@ -60,7 +60,7 @@ public class DeviceAccessTestUtil {
 
     public String testDeviceHistory(String localId, String publisherToken, String expectedHistoryJson) {
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", publisherToken);
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
         String historyResponse =
                 request

@@ -16,23 +16,32 @@
 
 package com.atypon.wayf.verticle.routing;
 
+import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.data.InflationPolicyParser;
+import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.facade.DeviceFacade;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.DatatypeConverter;
 
 @Singleton
 public class DeviceRoutingProvider implements RoutingProvider {
@@ -44,6 +53,9 @@ public class DeviceRoutingProvider implements RoutingProvider {
     private static final String READ_DEVICE = "/1/device/:id";
     private static final String FILTER_DEVICE = "/1/devices";
     private static final String ADD_DEVICE_PUBLISHER_RELATIONSHIP = "/1/device/:localId";
+
+    private static final String PUBLISHER_CODE_KEY = "publisherCode";
+    private static final String SECRET_JWT_KEY = "shh_its_a_secret";
 
     @Inject
     private ResponseWriter responseWriter;
@@ -64,6 +76,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
         router.route("/1/device*").handler(BodyHandler.create());
         router.get(READ_DEVICE).handler(handlerFactory.single((rc) -> readDevice(rc)));
         router.get(FILTER_DEVICE).handler(handlerFactory.observable((rc) -> filterDevice(rc)));
+        router.post(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.completable((rc) -> registerLocalId(rc)));
         router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.single((rc) -> createPublisherDeviceRelationship(rc)));
     }
 
@@ -83,12 +96,30 @@ public class DeviceRoutingProvider implements RoutingProvider {
         return deviceFacade.filter(query);
     }
 
+    public Completable registerLocalId(RoutingContext routingContext) {
+        String localId = RequestReader.readPathArgument(routingContext, LOCAL_ID_PARAM);
+
+        return deviceFacade.registerLocalId(localId);
+    }
+
     public Single<Device> createPublisherDeviceRelationship(RoutingContext routingContext) {
         LOG.debug("Received request to create publisher/device relationship");
 
         String localId = RequestReader.readPathArgument(routingContext, LOCAL_ID_PARAM);
 
-        return deviceFacade.createOrUpdateForPublisher(localId)
+        AuthorizationToken token = RequestContextAccessor.get().getAuthorizationToken();
+        if (token == null) {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "An Authorization token is required");
+        }
+
+        Claims claims = Jwts.parser()
+                .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_JWT_KEY))
+                .parseClaimsJws(token.getValue())
+                .getBody();
+
+        String publisherCode = claims.get(PUBLISHER_CODE_KEY, String.class);
+
+        return deviceFacade.relateLocalIdToDevice(publisherCode, localId)
                 .map((device) -> {
                     String globalId = device.getGlobalId();
                     responseWriter.setDeviceIdHeader(routingContext, globalId);
