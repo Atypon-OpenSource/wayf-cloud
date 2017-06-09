@@ -20,7 +20,7 @@ Each client request is processed asynchronously on the back-end via the use of [
 4. Maven
 
 ### Environment Configuration
-The WAYF cloud is configured via a properties file named `wayf.properties`. A sample file may look like:
+The WAYF cloud is configured via a properties file named `wayf.properties`. A typical file may look like:
 ```properties
 jdbc.driver=com.mysql.jdbc.Driver
 jdbc.username=root
