@@ -23,18 +23,18 @@ Each client request is processed asynchronously on the back-end via the use of [
 The WAYF cloud is configured via a properties file named `wayf.properties`. A sample file may look like:
 ```properties
 jdbc.driver=com.mysql.jdbc.Driver
- jdbc.username=root
- jdbc.password=test
- jdbc.url=jdbc:mysql://localhost:3306/wayf
- jdbc.maxActive=10
- jdbc.maxIdle=5
- jdbc.initialSize=5
- jdbc.validationQuery=SELECT 1
+jdbc.username=root
+jdbc.password=test
+jdbc.url=jdbc:mysql://localhost:3306/wayf
+jdbc.maxActive=10
+jdbc.maxIdle=5
+jdbc.initialSize=5
+jdbc.validationQuery=SELECT 1
  
- redis.host=localhost
- redis.port=6379
- 
- wayf.port=8080
+redis.host=localhost
+redis.port=6379
+
+wayf.port=8080
 ```
 The values may be overriden but all of the keys are required. Create this file in an easily accessible location.
 
