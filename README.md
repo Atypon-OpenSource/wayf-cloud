@@ -11,3 +11,42 @@ The wayf-cloud is accessible via a RESTful API. The inbound requests are service
 
 ### Reactive Back-end
 Each client request is processed asynchronously on the back-end via the use of [ReactiveX](http://reactivex.io/). ReactiveX provides a functional framework for processing requests via observable streams. Asynchronous processing and concurrency are central to the library's implmentation. This abstracts away low-level threading and concurrency issues while exposing useful hooks in deciding where to execute logic. For instance, long running IO bound work, such as database reads, can be performed in an unbounded IO threadpool. Work that is more CPU intensive can be performed in a threadpool optimized for the machine's processor. The end result is an implemantation that is concise, easy to read, and maximizes performance.
+
+## Building and Running WAYF Cloud
+### Service Dependencies
+1. MySQL (Version 5.6.+)
+2. Redis
+3. Java 8
+4. Maven
+
+### Environment Configuration
+The WAYF cloud is configured via a properties file named `wayf.properties`. A typical file may look like:
+```properties
+jdbc.driver=com.mysql.jdbc.Driver
+jdbc.username=root
+jdbc.password=test
+jdbc.url=jdbc:mysql://localhost:3306/wayf
+jdbc.maxActive=10
+jdbc.maxIdle=5
+jdbc.initialSize=5
+jdbc.validationQuery=SELECT 1
+ 
+redis.host=localhost
+redis.port=6379
+
+wayf.port=8080
+```
+The values may be overriden but all of the keys are required. Create this file in an easily accessible location.
+
+### Build and Deploy Instructions
+1. Checkout the desired branch from Github.
+2. Open a command line prompt located in the top-level project directory where "pom.xml" is located
+3. Execute the command `mvn package -DskipTests`. This will build a fat jar containing the service and all of its dependencies while skipping the test cases.
+4. Start MySQL
+    1. Determine which MySQL username and password you'd like to use
+    2. Create the WAYF database: `mysql -h localhost -u [MYSQL_USER] -p[MYSQL_PASS] < src/test/resources/create_wayf_db.sql`
+    3. Create the WAYF tables: `mysql -h localhost -u [MYSQL_USER] -p[MYSQL_PASS] wayf < src/test/resources/create_wayf_tables.sql`
+5. Start Redis
+6. Start the WAY application: `java -jar -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory target/wayf-cloud-1.0-SNAPSHOT-fat.jar -Dwayf.conf.dir=[PATH_TO_WAYF.PROPERTIES]`
+    1. `vertx.logger-delegate-factory-class-name` enables the vert.x logging to work with WAYF cloud's logging system
+    2. `wayf.conf.dir` tells the application where to load the wayf environment configuration from. If no value is specified, the application will attempt to load it from the classpath
