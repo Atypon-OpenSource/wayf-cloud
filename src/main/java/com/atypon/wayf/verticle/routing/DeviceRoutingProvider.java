@@ -119,7 +119,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
         String publisherCode = claims.get(PUBLISHER_CODE_KEY, String.class);
 
-        return deviceFacade.createOrUpdateForPublisher(publisherCode, localId)
+        return deviceFacade.relateLocalIdToDevice(publisherCode, localId)
                 .map((device) -> {
                     String globalId = device.getGlobalId();
                     responseWriter.setDeviceIdHeader(routingContext, globalId);

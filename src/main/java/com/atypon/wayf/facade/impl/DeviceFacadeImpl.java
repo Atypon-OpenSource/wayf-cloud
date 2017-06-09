@@ -18,6 +18,7 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.DeviceDao;
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceInfo;
 import com.atypon.wayf.data.device.DeviceQuery;
@@ -42,6 +43,7 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.ws.Service;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -115,7 +117,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
     }
 
     @Override
-    public Single<Device> createOrUpdateForPublisher(String publisherCode, String localId) {
+    public Single<Device> relateLocalIdToDevice(String publisherCode, String localId) {
         return publisherFacade.lookupCode(publisherCode) // Get the publisher associated with the code
                 .flatMap((_publisher) ->
                         // Using the publisher and the local ID, get the device
@@ -128,7 +130,13 @@ public class DeviceFacadeImpl implements DeviceFacade {
                 .flatMap((deviceAccess) ->
                         // Now that all the required data is available, point the local ID at the device
                         deviceDao.updateDevicePublisherLocalIdXref(deviceAccess.getDevice().getId(), deviceAccess.getPublisher().getId(), localId)
-                                .toSingleDefault(deviceAccess.getDevice()));
+                                .map((numAffectedRows) -> {
+                                        if (numAffectedRows != 1) {
+                                            throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not find local ID");
+                                        }
+
+                                        return deviceAccess.getDevice();
+                                }));
     }
 
     @Override

@@ -120,15 +120,15 @@ public class DeviceDaoDbImpl implements DeviceDao {
     }
 
     @Override
-    public Completable updateDevicePublisherLocalIdXref(Long deviceId, Long publisherId, String localId) {
+    public Single<Integer> updateDevicePublisherLocalIdXref(Long deviceId, Long publisherId, String localId) {
         Map<String, Object> args = new HashMap<>();
         args.put(DEVICE_ID, deviceId);
         args.put(PUBLISHER_ID, publisherId);
         args.put(PUBLISHER_LOCAL_ID, localId);
         args.put(UNIQUE_PUBLISHER_KEY, publisherId + "-" + localId);
 
-        return Completable.fromSingle(dbExecutor.executeUpdate(replacePublisherLocalIdXrefSql, args))
-                .compose((completable) -> DaoPolicies.applyCompletable(completable));
+        return dbExecutor.executeUpdateRowCount(replacePublisherLocalIdXrefSql, args)
+                .compose((single) -> DaoPolicies.applySingle(single));
     }
 
     @Override

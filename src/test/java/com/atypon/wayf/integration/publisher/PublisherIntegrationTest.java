@@ -56,6 +56,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
     private static final String ERROR_404_BAD_LOCAL_ID_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/authentication/404_bad_local_id.json");
     private static final String ERROR_404_BAD_GLOBAL_ID_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/authentication/404_bad_global_id.json");
     private static final String ERROR_400_BAD_IDENTITY_PROVIDER_ID_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/authentication/400_invalid_identity_provider_id.json");
+    private static final String ERROR_404_LOCAL_ID_NOT_FOUND_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/device/404_local_id_not_found.json");
 
     private static final String NEW_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/empty_history_response.json");
     private static final String INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_FILE_PATH + "/history/initial_add_idp_response.json");
@@ -147,6 +148,14 @@ public class PublisherIntegrationTest extends BaseHttpTest {
     }
 
     @Test
+    public void relateDeviceBeforeRegisteringLocalId() {
+        String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
+
+        deviceTestUtil.relateDeviceToPublisherError(HttpStatus.SC_NOT_FOUND, publisherALocalId, publisherA.getCode(), null, ERROR_404_LOCAL_ID_NOT_FOUND_RESPONSE_JSON);
+
+    }
+
+    @Test
     public void existingDeviceDeletePublisherLocalId() {
         String publisherAFirstLocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
         deviceTestUtil.registerLocalId(publisherAFirstLocalId, publisherA.getToken());
@@ -178,7 +187,11 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         // Ensure the system resolved to the same global ID each time
         assertEquals(firstGlobalId, secondGlobalId);
 
-        // Try passing in the same local ID but this time with a different publisher
+        // Try passing in the same local ID but this time with a different publisher without registering it
+        deviceTestUtil.relateDeviceToPublisherError(HttpStatus.SC_NOT_FOUND, publisherALocalId, publisherB.getCode(), null, ERROR_404_LOCAL_ID_NOT_FOUND_RESPONSE_JSON);
+
+        deviceTestUtil.registerLocalId(publisherALocalId, publisherB.getToken());
+
         String thirdGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherB.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Test that the system did not resolve to the same device because this was for a different publisher

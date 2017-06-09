@@ -90,6 +90,16 @@ public class DbExecutor {
         return Single.just(query)
                 .map((ignored) -> namedParameterJdbcTemplate.update(query, new MapSqlParameterSource(arguments), keyHolder))
                 .map((ignored) -> keyHolder.getKey() == null? null : keyHolder.getKey().longValue());
+    }
 
+    public Single<Integer> executeUpdateRowCount(String query, Object arguments) {
+        return executeUpdateRowCount(query, QueryMapper.buildQueryArguments(query, arguments));
+    }
+
+    public Single<Integer> executeUpdateRowCount(String query, Map<String, Object> arguments) {
+        LOG.debug("Running update [{}] with values [{}]", query, arguments);
+
+        return Single.just(query)
+                .map((ignored) -> namedParameterJdbcTemplate.update(query, new MapSqlParameterSource(arguments)));
     }
 }

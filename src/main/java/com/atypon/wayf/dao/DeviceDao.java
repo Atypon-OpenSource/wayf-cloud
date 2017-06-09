@@ -30,7 +30,7 @@ public interface DeviceDao {
     Completable delete(String id);
     Observable<Device> filter(DeviceQuery query);
 
-    Completable updateDevicePublisherLocalIdXref(Long deviceId, Long publisherId, String localId);
+    Single<Integer> updateDevicePublisherLocalIdXref(Long deviceId, Long publisherId, String localId);
 
     Completable registerLocalId(Long publisherId, String localId);
 
