@@ -179,8 +179,8 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides
-    public JedisPool getJedisPool(@Named("redis.host") String redisHost) {
-        return new JedisPool(new JedisPoolConfig(), redisHost);
+    public JedisPool getJedisPool(@Named("redis.host") String redisHost, @Named("redis.port") int redisPort) {
+        return new JedisPool(new JedisPoolConfig(), redisHost, redisPort);
     }
 
     @Provides
