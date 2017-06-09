@@ -115,6 +115,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
 
         // Relate the device to publisher B
         String publisherBLocalId = "local-id-publisher-b-" + UUID.randomUUID().toString();
+
         deviceTestUtil.registerLocalId(publisherBLocalId, publisherB.getToken());
         String globalIdPublisherB = deviceTestUtil.relateDeviceToPublisher(publisherBLocalId, publisherB.getCode(), globalIdPublisherA, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
@@ -152,11 +153,51 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
         deviceTestUtil.relateDeviceToPublisherError(HttpStatus.SC_NOT_FOUND, publisherALocalId, publisherA.getCode(), null, ERROR_404_LOCAL_ID_NOT_FOUND_RESPONSE_JSON);
-
     }
 
     @Test
-    public void existingDeviceDeletePublisherLocalId() {
+    public void testDuplicateRegisterPreservesExistingMapping() {
+        String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
+
+        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());
+
+        // Create device
+        String globalIdPublisherA = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+
+        // Assert an empty history
+        deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
+
+        // Register local ID again
+        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());
+
+        // Ensure that we can still resolve the device
+        deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
+    }
+
+    @Test
+    public void multipleLocalIdsForSameDevice() {
+        String publisherALocalId1 = "local-id-publisher-a-" + UUID.randomUUID().toString();
+
+        // Register the local ID and create a device for it
+        deviceTestUtil.registerLocalId(publisherALocalId1, publisherA.getToken());
+        String globalIdPublisherAFirstCall = deviceTestUtil.relateDeviceToPublisher(publisherALocalId1, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+
+        String publisherALocalId2 = "local-id-publisher-a-" + UUID.randomUUID().toString();
+
+        // Relate the exisitng device against a new local ID
+        deviceTestUtil.registerLocalId(publisherALocalId2, publisherA.getToken());
+        String globalIdPublisherASecondCall = deviceTestUtil.relateDeviceToPublisher(publisherALocalId2, publisherA.getCode(), globalIdPublisherAFirstCall, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+
+        // Ensure the same device is stored against both local IDs
+        assertEquals(globalIdPublisherAFirstCall, globalIdPublisherASecondCall);
+
+        // Ensure that we can still resolve the device
+        deviceAccessTestUtil.testDeviceHistory(publisherALocalId1, publisherA.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
+        deviceAccessTestUtil.testDeviceHistory(publisherALocalId2, publisherA.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
+    }
+
+    @Test
+    public void existingDeviceUserDeletesPublisherLocalId() {
         String publisherAFirstLocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
         deviceTestUtil.registerLocalId(publisherAFirstLocalId, publisherA.getToken());
 
@@ -174,7 +215,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
     }
 
     @Test
-    public void existingDeviceDeleteGlobalId() {
+    public void existingDeviceUserDeletesGlobalId() {
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
         deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());
 
