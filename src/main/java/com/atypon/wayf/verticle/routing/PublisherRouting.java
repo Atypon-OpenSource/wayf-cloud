@@ -46,6 +46,8 @@ public class PublisherRouting implements RoutingProvider {
     private static final String READ_PUBLISHER = PUBLISHER_BASE_URL + "/" +  PUBLISHER_ID_PARAM;
     private static final String FILTER_PUBLISHERS = PUBLISHER_BASE_URL + "s";
 
+    private static final String PUBLISHER_ID_ARG_DESCRIPTION = "Publisher ID";
+
     @Inject
     private PublisherFacade publisherFacade;
 
@@ -82,9 +84,9 @@ public class PublisherRouting implements RoutingProvider {
     public Single<Publisher> readPublisher(RoutingContext routingContext) {
         LOG.debug("Received read PublisherSession request");
 
-        return Single.just(routingContext)
-                .map((rc) -> RequestReader.readPathArgument(rc, PUBLISHER_ID_PARAM_NAME))
-                .flatMap((publisherId) -> publisherFacade.read(Long.valueOf(publisherId)));
+        Long publisherId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, PUBLISHER_ID_PARAM_NAME, PUBLISHER_ID_ARG_DESCRIPTION));
+
+        return publisherFacade.read(publisherId);
     }
 
     public Observable<Publisher> filterPublishers(RoutingContext routingContext) {

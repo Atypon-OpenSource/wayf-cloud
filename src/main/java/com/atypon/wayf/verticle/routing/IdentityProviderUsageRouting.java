@@ -41,11 +41,14 @@ public class IdentityProviderUsageRouting implements RoutingProvider {
 
     private static final String READ_DEVICE_RECENT_HISTORY = "/1/device/:localId/history";
 
+    private static final String LOCAL_ID_ARG_DESCRIPTION = "Local ID";
+
     @Inject
     private IdentityProviderUsageFacade identityProviderUsageFacade;
 
     @Inject
     private WayfRequestHandlerFactory handlerFactory;
+
 
     public IdentityProviderUsageRouting() {
     }
@@ -57,7 +60,7 @@ public class IdentityProviderUsageRouting implements RoutingProvider {
     public Observable<IdentityProviderUsage> readDeviceLocalHistory(RoutingContext routingContext) {
         LOG.debug("Received create IdentityProvider request");
 
-        String localId = RequestReader.readPathArgument(routingContext, LOCAL_ID_PARAM_NAME);
+        String localId = RequestReader.readRequiredPathParameter(routingContext, LOCAL_ID_PARAM_NAME, LOCAL_ID_ARG_DESCRIPTION);
 
         return identityProviderUsageFacade.buildRecentHistory(localId);
     }
