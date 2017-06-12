@@ -70,5 +70,7 @@ public class RequestReader {
         if (parameter == null || parameter.isEmpty()) {
             throw new ServiceException(HttpStatus.SC_BAD_REQUEST, argDescription + " is a required URL parameter");
         }
+
+        return parameter;
     }
 }
