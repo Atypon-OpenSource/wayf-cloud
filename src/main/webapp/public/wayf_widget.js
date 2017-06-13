@@ -37,7 +37,7 @@ function registerLocalId(localId) {
 	}
 
 	request.onreadystatechange = function() {
-	    if(request.readyState === XMLHttpRequest.DONE) {
+	    if (request.readyState === XMLHttpRequest.DONE) {
 	    	if (request.status > 299) {
 	    		console.log(request.status + " " + request.responseText);
 
@@ -77,7 +77,7 @@ function setGlobalId(globalId) {
 function readCookieValue(cookieName) {
     var cookieArray = document.cookie.split(';');
 
-    for(var i=0; i < cookieArray.length; i++) {
+    for (var i=0; i < cookieArray.length; i++) {
         var cookie = cookieArray[i];
 
         // Trim leading whitespace
