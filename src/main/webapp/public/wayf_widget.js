@@ -49,7 +49,6 @@ function registerLocalId(localId) {
 	    }
 	}
 
-
 	request.send(null);
 }
 
@@ -63,8 +62,16 @@ function readLocalId() {
     return readCookieValue(LOCAL_ID_COOKIE_NAME);
 }
 
+function setLocalId(localIdValue) {
+	setCookieValue(LOCAL_ID_COOKIE_NAME + "=" + localIdValue);
+}
+
 function readGlobalId() {
 	return readCookieValue(GLOBAL_ID_COOKIE_NAME);
+}
+
+function setGlobalId(globalId) {
+	setCookieValue(GLOBAL_ID_COOKIE_NAME + "=" + globalId);
 }
 
 function readCookieValue(cookieName) {
@@ -88,20 +95,12 @@ function readCookieValue(cookieName) {
     return null;
 }
 
-function setLocalId(localIdValue) {
-	setCookieValue(LOCAL_ID_COOKIE_NAME + "=" + localIdValue);
-}
-
-function setGlobalId(globalId) {
-	setCookieValue(GLOBAL_ID_COOKIE_NAME + "=" + globalId);
-}
-
 function setCookieValue(value) {
 	document.cookie = value;
 }
 
-
 window.onload = function() {
+	// Test code, this should be done by the publisher
 	setLocalId("local-id-publisher-a-85e53ff4-8701-4d4d-8d06-011668ce5365");
 
 	var localId = readLocalId();
