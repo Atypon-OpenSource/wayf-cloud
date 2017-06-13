@@ -77,7 +77,7 @@ function setGlobalId(globalId) {
 function readCookieValue(cookieName) {
     var cookieArray = document.cookie.split(';');
 
-    for (var i=0; i < cookieArray.length; i++) {
+    for (var i = 0; i < cookieArray.length; i++) {
         var cookie = cookieArray[i];
 
         // Trim leading whitespace
