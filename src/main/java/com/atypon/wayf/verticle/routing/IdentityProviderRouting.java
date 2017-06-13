@@ -43,6 +43,9 @@ public class IdentityProviderRouting implements RoutingProvider {
     private static final String ADD_IDP_TO_DEVICE = "/1/device/:localId/history/idp";
     private static final String REMOVE_IDP_FROM_DEVICE = "/1/device/:localId/history/idp/:idpId";
 
+    private static final String LOCAL_ID_ARG_DESCRIPTION = "Local ID";
+    private static final String IDP_ID_ARG_DESCRIPTION = "Identity Provider ID";
+
     @Inject
     private IdentityProviderFacade identityProviderFacade;
 
@@ -72,7 +75,7 @@ public class IdentityProviderRouting implements RoutingProvider {
     public Single<IdentityProvider> readIdentityProvider(RoutingContext routingContext) {
         LOG.debug("Received read IdentityProvider request");
 
-        Long identityProviderId = Long.valueOf(RequestReader.readPathArgument(routingContext, IDENTITY_PROVIDER_ID_PARAM_NAME));
+        Long identityProviderId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, IDENTITY_PROVIDER_ID_PARAM_NAME, IDP_ID_ARG_DESCRIPTION));
 
         return identityProviderFacade.read(identityProviderId);
     }
@@ -80,7 +83,7 @@ public class IdentityProviderRouting implements RoutingProvider {
     public Single<IdentityProvider> addIdentityProviderToDevice(RoutingContext routingContext) {
         LOG.debug("Received request to add IDP to device");
 
-        String localId = RequestReader.readPathArgument(routingContext, LOCAL_ID_PARAM_NAME);
+        String localId = RequestReader.readRequiredPathParameter(routingContext, LOCAL_ID_PARAM_NAME, LOCAL_ID_ARG_DESCRIPTION);
         IdentityProvider body = RequestReader.readRequestBody(routingContext, IdentityProvider.class).blockingGet();
 
         return identityProviderFacade.recordIdentityProviderUse(localId, body);
@@ -89,8 +92,9 @@ public class IdentityProviderRouting implements RoutingProvider {
     public Completable removeIdentityProviderFromDevice(RoutingContext routingContext) {
         LOG.debug("Received request to add IDP to device");
 
-        String localId = RequestReader.readPathArgument(routingContext, LOCAL_ID_PARAM_NAME);
-        Long idpId = Long.valueOf(RequestReader.readPathArgument(routingContext, IDP_ID_PARAM_NAME));
+        String localId = RequestReader.readRequiredPathParameter(routingContext, LOCAL_ID_PARAM_NAME, LOCAL_ID_ARG_DESCRIPTION);
+
+        Long idpId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, IDP_ID_PARAM_NAME, IDP_ID_ARG_DESCRIPTION));
 
         return identityProviderFacade.blockIdentityProviderForDevice(localId, idpId);
     }

@@ -16,10 +16,12 @@
 
 package com.atypon.wayf.request;
 
+import com.atypon.wayf.data.ServiceException;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,5 +62,15 @@ public class RequestReader {
     public static String getHeaderValue(RoutingContext routingContext, String headerName) {
         LOG.debug("Reading header value [{}] from request", headerName);
         return routingContext.request().getHeader(headerName);
+    }
+
+    public static String readRequiredPathParameter(RoutingContext routingContext, String argumentName, String argDescription) {
+        String parameter = readPathArgument(routingContext, argumentName);
+
+        if (parameter == null || parameter.isEmpty()) {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, argDescription + " is a required URL parameter");
+        }
+
+        return parameter;
     }
 }

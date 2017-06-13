@@ -44,7 +44,7 @@ public interface Authenticatable {
     void setType(Type type);
 
     static Publisher asPublisher(Authenticatable authenticatable) {
-        if (Publisher.class.isAssignableFrom(authenticatable.getClass())) {
+        if (authenticatable != null && Publisher.class.isAssignableFrom(authenticatable.getClass())) {
             return (Publisher) authenticatable;
         }
 
