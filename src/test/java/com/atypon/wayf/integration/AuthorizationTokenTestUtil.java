@@ -17,13 +17,10 @@
 package com.atypon.wayf.integration;
 
 import com.atypon.wayf.data.AuthorizationTokenType;
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 
-import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
-import java.security.Key;
 import java.util.Date;
 
 public class AuthorizationTokenTestUtil {
@@ -34,21 +31,24 @@ public class AuthorizationTokenTestUtil {
     }
 
     public static String generateJwtTokenHeaderValue(String publisherCode) {
-
-        //The JWT signature algorithm we will be using to sign the token
-        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
-
         long nowMillis = System.currentTimeMillis();
         Date now = new Date(nowMillis);
 
         //We will sign our JWT with our ApiKey secret
         byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(SECRET_JWT_KEY);
-        Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
 
-        //Let's set the JWT Claims
-        JwtBuilder builder = Jwts.builder().claim("publisherCode", publisherCode)
-                .signWith(signatureAlgorithm, signingKey);
+        Algorithm algorithm = null;
 
-        return AuthorizationTokenType.JWT.getPrefix() + " " + builder.compact();
+        try {
+            algorithm = Algorithm.HMAC256(SECRET_JWT_KEY);
+
+            String token = JWT.create()
+                    .withClaim("publisherCode", publisherCode)
+                    .sign(algorithm);
+
+            return AuthorizationTokenType.JWT.getPrefix() + " " + token;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

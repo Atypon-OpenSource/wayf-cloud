@@ -117,23 +117,24 @@ public class DeviceRoutingProvider implements RoutingProvider {
         String publisherCode = null;
 
         try {
-            Algorithm algorithm = Algorithm.HMAC256(SECRET_JWT_KEY);
-            JWTVerifier verifier = JWT.require(algorithm)
-                    .build();
-
+            Algorithm.HMAC256(SECRET_JWT_KEY);
             DecodedJWT jwt = JWT.decode(token.getValue());
-            LOG.debug("claims {} ", jwt.getClaims());
+
             publisherCode = jwt.getClaim(PUBLISHER_CODE_KEY).asString();
         } catch (Exception e) {
             throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Invalid Authorization header", e);
         }
 
         LOG.debug("Publisher code {}", publisherCode);
+
         return deviceFacade.relateLocalIdToDevice(publisherCode, localId)
                 .map((device) -> {
                     String globalId = device.getGlobalId();
+
                     responseWriter.setDeviceIdHeader(routingContext, globalId);
+
                     device.setGlobalId(null);
+
                     return device;
                 });
     }
