@@ -149,6 +149,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
     private Single<Device> resolveFromRequest(Publisher publisher, String localId) {
         String deviceGlobalId = RequestContextAccessor.get().getDeviceId();
 
+        LOG.debug("Found global ID from client [{}]", deviceGlobalId);
         if (deviceGlobalId != null) {
             return read(new DeviceQuery().setGlobalId(deviceGlobalId));
         }

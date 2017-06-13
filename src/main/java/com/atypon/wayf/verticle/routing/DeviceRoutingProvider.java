@@ -26,11 +26,13 @@ import com.atypon.wayf.request.RequestContextAccessor;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -40,8 +42,6 @@ import io.vertx.ext.web.handler.BodyHandler;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.xml.bind.DatatypeConverter;
 
 @Singleton
 public class DeviceRoutingProvider implements RoutingProvider {
@@ -112,13 +112,23 @@ public class DeviceRoutingProvider implements RoutingProvider {
             throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "An Authorization token is required");
         }
 
-        Claims claims = Jwts.parser()
-                .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_JWT_KEY))
-                .parseClaimsJws(token.getValue())
-                .getBody();
+        LOG.debug("Token value [{}]", token.getValue());
 
-        String publisherCode = claims.get(PUBLISHER_CODE_KEY, String.class);
+        String publisherCode = null;
 
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(SECRET_JWT_KEY);
+            JWTVerifier verifier = JWT.require(algorithm)
+                    .build();
+
+            DecodedJWT jwt = JWT.decode(token.getValue());
+            LOG.debug("claims {} ", jwt.getClaims());
+            publisherCode = jwt.getClaim(PUBLISHER_CODE_KEY).asString();
+        } catch (Exception e) {
+            throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Invalid Authorization header", e);
+        }
+
+        LOG.debug("Publisher code {}", publisherCode);
         return deviceFacade.relateLocalIdToDevice(publisherCode, localId)
                 .map((device) -> {
                     String globalId = device.getGlobalId();

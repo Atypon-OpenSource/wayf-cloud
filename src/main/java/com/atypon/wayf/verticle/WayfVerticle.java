@@ -31,6 +31,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.StaticHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,6 +84,8 @@ public class WayfVerticle extends AbstractVerticle {
             route.failureHandler((rc) -> responseWriter.buildFailure(rc));
             LOG.debug("Found path {}", route);
         }
+
+        router.route("/public/*").handler(StaticHandler.create("public"));
 
         LOG.debug("Starting HTTP server");
         // Create the HTTP server and pass the "accept" method to the request handler.
