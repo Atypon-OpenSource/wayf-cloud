@@ -39,6 +39,10 @@ securityDefinitions:
     type: apiKey
     in: header
     name: Authorization
+  PublisherJWT:
+    type: apiKey
+    in: header
+    name: PublisherJWT
 paths:
   '/1/mydevice':
     get:
@@ -360,13 +364,13 @@ paths:
         '404':
           description: No Identity Providers found for specified ID
   '/1/device/{localId}':
-    patch:
+    post:
       tags:
         - Publisher Actions
         - Device
-      summary: Associate the user's device with a publisher by a localId
-      description: Associate the user's device with a publisher by a localId. This behaves the same whether this is the device's first time with the publisher or a return visit. This will log the activity as a DeviceActivity object on the device.
-      operationId: createLocalIdOrAddActivity
+      summary: Register a local ID with the WAYF service
+      description: Register a local ID with the WAYF service. This will alert the service to expect a device to use the local ID. This must be completed before the PATCH call to relate the local ID to the device
+      operationId: registerLocalIdOrAddActivity
       produces:
         - application/xml
         - application/json
@@ -379,6 +383,28 @@ paths:
           format: uuid
       security:
         - PublisherKey: []
+      responses:
+        '200':
+          description: Success
+    patch:
+      tags:
+        - Publisher Actions
+        - Device
+      summary: Associate the user's device with a publisher by a localId
+      description: Associate the user's device with a publisher by a registered localId. This behaves the same whether this is the device's first time with the publisher or a return visit. This will log the activity as a DeviceActivity object on the device.
+      operationId: createLocalIdOrAddActivity
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: localId
+          in: path
+          description: The localId used by a publisher to identify a device
+          required: true
+          type: string
+          format: uuid
+      security:
+        - PublisherJWT: []
       responses:
         '200':
           description: Successful operation
