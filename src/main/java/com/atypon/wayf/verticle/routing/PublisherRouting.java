@@ -52,9 +52,6 @@ public class PublisherRouting implements RoutingProvider {
     private PublisherFacade publisherFacade;
 
     @Inject
-    private AuthenticationFacade authenticationFacade;
-
-    @Inject
     private WayfRequestHandlerFactory handlerFactory;
 
     public PublisherRouting() {
@@ -73,12 +70,7 @@ public class PublisherRouting implements RoutingProvider {
 
         return Single.just(routingContext)
                 .flatMap((rc) -> RequestReader.readRequestBody(rc, Publisher.class))
-                .flatMap((requestPublisher) -> publisherFacade.create(requestPublisher))
-                .map((createdPublisher) -> {
-                    String token = authenticationFacade.createToken(createdPublisher).blockingGet();
-                    createdPublisher.setToken(token);
-                    return  createdPublisher;
-                });
+                .flatMap((requestPublisher) -> publisherFacade.create(requestPublisher));
     }
 
     public Single<Publisher> readPublisher(RoutingContext routingContext) {
