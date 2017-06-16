@@ -20,7 +20,11 @@ import com.atypon.wayf.dao.PublisherDao;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.data.publisher.PublisherStatus;
+import com.atypon.wayf.facade.AuthenticationFacade;
 import com.atypon.wayf.facade.PublisherFacade;
+import com.atypon.wayf.facade.ClientJsFacade;
+import com.atypon.wayf.reactivex.DaoPolicies;
+import com.atypon.wayf.reactivex.FacadePolicies;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -36,6 +40,12 @@ public class PublisherFacadeImpl implements PublisherFacade {
     @Inject
     private PublisherDao publisherDao;
 
+    @Inject
+    private AuthenticationFacade authenticationFacade;
+
+    @Inject
+    private ClientJsFacade clientJsFacade;
+
     public PublisherFacadeImpl() {
     }
 
@@ -43,7 +53,24 @@ public class PublisherFacadeImpl implements PublisherFacade {
     public Single<Publisher> create(Publisher publisher) {
         publisher.setStatus(PublisherStatus.ACTIVE);
 
-        return publisherDao.create(publisher);
+        return publisherDao.create(publisher) // Create the publisher
+                .flatMap((createdPublisher) ->
+
+                        Single.zip(
+                                // Create an authorization token for the newly created publisher
+                                authenticationFacade.createToken(createdPublisher).compose(single -> FacadePolicies.applySingle(single)),
+
+                                // Generate the publisher specific Javascript widget
+                                clientJsFacade.generateWidgetForPublisher(createdPublisher).compose(single -> FacadePolicies.applySingle(single)),
+
+                                // Combine the results with the previously created publisher
+                                (token, filename) -> {
+                                    createdPublisher.setToken(token);
+                                    createdPublisher.setWidgetLocation(filename);
+                                    return createdPublisher;
+                                }
+                        )
+                );
     }
 
     @Override

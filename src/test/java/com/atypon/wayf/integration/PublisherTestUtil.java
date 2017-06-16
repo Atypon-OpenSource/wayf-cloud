@@ -46,6 +46,7 @@ public class PublisherTestUtil {
                 "$.id",
                 "$.code",
                 "$.token",
+                "$.widgetLocation",
                 "$.createdDate"
         };
 
