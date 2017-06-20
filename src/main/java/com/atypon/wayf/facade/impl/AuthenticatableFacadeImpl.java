@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
 public class AuthenticatableFacadeImpl implements AuthenticationFacade {
     private static final Logger LOG = LoggerFactory.getLogger(AuthenticatableFacadeImpl.class);
 
-    private static final String TOKEN_REGEX = "(API|Bearer) (.*)";
+    private static final String TOKEN_REGEX = "(Token|Bearer) (.*)";
     private static final Pattern TOKEN_MATCHER = Pattern.compile(TOKEN_REGEX, Pattern.DOTALL);
 
     private static final Map<String, AuthorizationTokenType> TOKEN_PREFIX_TO_TYPE_MAP = new HashMap<>();

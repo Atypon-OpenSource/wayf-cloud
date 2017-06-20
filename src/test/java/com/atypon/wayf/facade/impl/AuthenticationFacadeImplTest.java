@@ -106,7 +106,7 @@ public class AuthenticationFacadeImplTest {
     @Test
     public void testParseApiToken() {
         String apiTokenValue = UUID.randomUUID().toString();
-        String apiToken = "API " + apiTokenValue;
+        String apiToken = "Token " + apiTokenValue;
 
         AuthorizationToken token = facade.parseAuthenticationValue(apiToken);
 
