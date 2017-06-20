@@ -21,6 +21,7 @@ import com.atypon.wayf.data.InflationPolicyParser;
 import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceQuery;
+import com.atypon.wayf.facade.ClientJsFacade;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.atypon.wayf.request.RequestReader;
@@ -33,6 +34,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -54,9 +56,6 @@ public class DeviceRoutingProvider implements RoutingProvider {
     private static final String FILTER_DEVICE = "/1/devices";
     private static final String ADD_DEVICE_PUBLISHER_RELATIONSHIP = "/1/device/:localId";
 
-    private static final String PUBLISHER_CODE_KEY = "publisherCode";
-    private static final String SECRET_JWT_KEY = "shh_its_a_secret";
-
     @Inject
     private ResponseWriter responseWriter;
 
@@ -68,6 +67,10 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
     @Inject
     private InflationPolicyParser<String> inflationPolicyParser;
+
+    @Inject
+    @Named("jwtSecret")
+    private String jwtSecret;
 
     public DeviceRoutingProvider() {
     }
@@ -117,10 +120,10 @@ public class DeviceRoutingProvider implements RoutingProvider {
         String publisherCode = null;
 
         try {
-            Algorithm.HMAC256(SECRET_JWT_KEY);
+            Algorithm.HMAC256(jwtSecret);
             DecodedJWT jwt = JWT.decode(token.getValue());
 
-            publisherCode = jwt.getClaim(PUBLISHER_CODE_KEY).asString();
+            publisherCode = jwt.getClaim(ClientJsFacade.PUBLISHER_CODE_KEY).asString();
         } catch (Exception e) {
             throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Invalid Authorization header", e);
         }

@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum AuthorizationTokenType {
-    API_TOKEN("API"),
+    API_TOKEN("Token"),
     JWT("Bearer");
 
     private static final Map<String, AuthorizationTokenType> PREFIX_TO_TYPE_MAP = new HashMap<>();

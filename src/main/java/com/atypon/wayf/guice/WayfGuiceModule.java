@@ -107,6 +107,8 @@ public class WayfGuiceModule extends AbstractModule {
             bind(new TypeLiteral<InflationPolicyParser<String>>(){}).to(InflationPolicyParserQueryParamImpl.class);
 
             bind(DeviceIdentityProviderBlacklistDao.class).to(DeviceIdentityProviderBlacklistDaoDbImpl.class);
+
+            bind(ClientJsFacade.class).to(ClientJsFacadeImpl.class);
         } catch (Exception e) {
             LOG.error("Error initializing Guice", e);
             throw new RuntimeException(e);
@@ -205,5 +207,11 @@ public class WayfGuiceModule extends AbstractModule {
         dataSource.setValidationQuery(validationQuery);
 
         return new NamedParameterJdbcTemplate(dataSource);
+    }
+
+    @Provides
+    @Named("jwtSecret")
+    public String getJwtSecret() {
+        return "shh_its_a_secret";
     }
 }

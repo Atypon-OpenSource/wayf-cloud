@@ -26,6 +26,7 @@ public class Publisher implements Authenticatable {
     private PublisherStatus status;
 
     private String token;
+    private String widgetLocation;
 
     private String code;
     private String name;
@@ -60,6 +61,14 @@ public class Publisher implements Authenticatable {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getWidgetLocation() {
+        return widgetLocation;
+    }
+
+    public void setWidgetLocation(String widgetLocation) {
+        this.widgetLocation = widgetLocation;
     }
 
     public String getName() {
