@@ -1,5 +1,7 @@
 {
   "entityId": "sample-saml-entity-id",
   "federationId": "sample-saml-federation-id",
-  "type" : "SAML"
+  "type" : "SAML",
+  "name" : "SAML Entity"
+
 }

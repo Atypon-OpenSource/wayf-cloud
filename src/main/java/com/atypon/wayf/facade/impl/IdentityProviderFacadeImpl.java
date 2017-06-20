@@ -65,6 +65,10 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
     @Override
     public Single<IdentityProvider> create(IdentityProvider identityProvider) {
+        if (identityProvider.getName() == null || identityProvider.getName().isEmpty()) {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "IdentityProvider.name is a required field");
+        }
+
         IdentityProviderDao dao = daosByType.get(identityProvider.getType());
 
         if (dao == null) {
