@@ -42,7 +42,7 @@ DROP TABLE IF EXISTS `identity_provider`;
 CREATE TABLE `identity_provider` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `type` varchar(25) NOT NULL,
-  `name` varchar(75) NOT NULL,
+  `name` varchar(75) NULL,
   `entity_id` varchar(50) NULL,
   `scope` varchar(50) NULL,
   `organization_id` varchar(50) NULL,
