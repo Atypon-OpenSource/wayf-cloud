@@ -1,4 +1,5 @@
 {
   "provider": "GOOGLE",
-  "type": "OAUTH"
+  "type": "OAUTH",
+  "name" : "Google"
 }

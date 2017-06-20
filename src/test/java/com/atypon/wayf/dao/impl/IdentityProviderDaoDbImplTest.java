@@ -17,6 +17,7 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.IdentityProviderDao;
+import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.identity.*;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
@@ -58,6 +59,7 @@ public class IdentityProviderDaoDbImplTest {
     @Test
     public void testOpenAthens() {
         OpenAthensEntity openAthensEntity = new OpenAthensEntity();
+        openAthensEntity.setName("Open Athens Entity");
         openAthensEntity.setEntityId("open-athens-entity");
         openAthensEntity.setOrganizationId("organization-id");
         openAthensEntity.setScope("scope");
@@ -101,6 +103,7 @@ public class IdentityProviderDaoDbImplTest {
     @Test
     public void testSamlEntity() {
         SamlEntity samlEntity = new SamlEntity();
+        samlEntity.setName("SAML Entity");
         samlEntity.setEntityId("saml-entity-id");
         samlEntity.setFederationId("saml-federation-id");
 
@@ -140,7 +143,7 @@ public class IdentityProviderDaoDbImplTest {
     public void testOauthEntity() {
         OauthEntity oauthEntity = new OauthEntity();
         oauthEntity.setProvider(OauthProvider.FACEBOOK);
-
+        oauthEntity.setName("Facebook");
         OauthEntity createdOauthEntity = (OauthEntity) oauthDao.create(oauthEntity).blockingGet();
 
         assertNotNull(createdOauthEntity.getId());

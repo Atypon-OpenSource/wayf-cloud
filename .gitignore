@@ -10,3 +10,4 @@ buildNumber.properties
 /wayf.properties
 *.iml
 .vertx
+public/widget*
