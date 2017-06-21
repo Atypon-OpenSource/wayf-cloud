@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.cache;
 
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 
-public interface RedisDao<K, V> {
+public interface Cache<K, V> {
     Maybe<V> get(K key);
-    Completable set(K key, V value);
-
-    Completable remove(K... keys);
-    Completable removeAll();
+    Completable put(K key, V value);
+    Completable invalidate(K... key);
+    Completable invalidateAll();
 }

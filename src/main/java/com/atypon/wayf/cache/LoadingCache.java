@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf;
+package com.atypon.wayf.cache;
 
-import io.reactivex.Completable;
 import io.reactivex.Maybe;
 
-public interface Cache<K, V> {
-    Maybe<V> get(K key);
-    Completable set(K key, V value);
-    Completable invalidate(K... key);
-    Completable invalidateAll();
-
+public interface LoadingCache<K, V> extends Cache<K, V> {
+    Maybe<V> load(K key);
 }
