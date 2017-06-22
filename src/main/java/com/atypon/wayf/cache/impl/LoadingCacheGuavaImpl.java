@@ -34,7 +34,7 @@ public class LoadingCacheGuavaImpl<K, V> implements com.atypon.wayf.cache.Loadin
     public LoadingCacheGuavaImpl() {
         guavaCache = CacheBuilder.newBuilder().build();
     }
-    
+
     public void setGuavaCache(Cache<K, V> guavaCache) {
         this.guavaCache = guavaCache;
     }

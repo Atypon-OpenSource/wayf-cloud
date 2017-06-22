@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.verticle;
 
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
-
-public interface RedisDao<K, V> {
-    String getPrefix();
-    int getTtlSeconds();
-
-    Maybe<V> get(K key);
-    Completable set(K key, V value);
-
-    Completable remove(K... keys);
-    Completable removeAll();
+@FunctionalInterface
+public interface Serializer<I, O> {
+    O serialize(I input);
 }
