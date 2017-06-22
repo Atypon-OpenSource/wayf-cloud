@@ -24,6 +24,7 @@ import org.junit.Test;
 import redis.clients.jedis.JedisPool;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 public class RedisDaoImplTest {
@@ -126,6 +127,18 @@ public class RedisDaoImplTest {
                 .setSerializer((inputStr) -> inputStr)
                 .setPrefix("TEST-REMOVE-ALL");
 
+        RedisDaoImpl<String, String> redisDaoUnrelated = new RedisDaoImpl<>()
+                .setTtlSeconds(15)
+                .setPool(jedisPool)
+                .setDeserializer((inputStr) -> inputStr)
+                .setSerializer((inputStr) -> inputStr)
+                .setPrefix("TEST-REMOVE-ALL-UNRELATED");
+
+        redisDaoUnrelated.set("key", "value").blockingGet();
+
+        String unrelatedValue = redisDaoUnrelated.get("key").blockingGet();
+        assertNotNull(unrelatedValue);
+
         redisDao.set("key-a", "val-a").blockingGet();
         redisDao.set("key-b", "val-b").blockingGet();
         redisDao.set("key-c", "val-c").blockingGet();
@@ -144,6 +157,9 @@ public class RedisDaoImplTest {
         String removedValueA = redisDao.get("key-a").blockingGet();
         String removedValueB = redisDao.get("key-b").blockingGet();
         String removedValueC = redisDao.get("key-c").blockingGet();
+
+        unrelatedValue = redisDaoUnrelated.get("key").blockingGet();
+        assertNotNull(unrelatedValue);
 
         assertNull(removedValueA);
         assertNull(removedValueB);

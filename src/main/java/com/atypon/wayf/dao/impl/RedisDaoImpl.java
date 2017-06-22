@@ -37,6 +37,8 @@ import java.util.Set;
 public class RedisDaoImpl<K, V> implements RedisDao<K, V> {
     private static final Logger LOG = LoggerFactory.getLogger(RedisDaoImpl.class);
 
+    private static final String KEY_DELIM = "``";
+
     private JedisPool pool;
     private String prefix;
     private Serializer<V, String> serializer;
@@ -105,7 +107,7 @@ public class RedisDaoImpl<K, V> implements RedisDao<K, V> {
         return Completable.fromAction(() -> {
             Set<String> matchingKeys = new HashSet<>();
             ScanParams params = new ScanParams();
-            params.match(prefix + "*");
+            params.match(prefix + KEY_DELIM + "*");
 
             try(Jedis jedis = pool.getResource()) {
                 String nextCursor = "0";
@@ -156,7 +158,7 @@ public class RedisDaoImpl<K, V> implements RedisDao<K, V> {
 
 
     private String buildKey(K key) {
-        return prefix + key.toString();
+        return prefix + KEY_DELIM + key.toString();
     }
 
     private String serialize(V value) {
