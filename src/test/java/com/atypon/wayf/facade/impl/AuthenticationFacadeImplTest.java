@@ -16,6 +16,8 @@
 
 package com.atypon.wayf.facade.impl;
 
+import com.atypon.wayf.cache.CacheLoader;
+import com.atypon.wayf.cache.LoadingCache;
 import com.atypon.wayf.dao.AuthenticationDao;
 import com.atypon.wayf.dao.impl.AuthenticationDaoRedisImpl;
 import com.atypon.wayf.data.Authenticatable;
@@ -29,6 +31,7 @@ import com.atypon.wayf.request.RequestContext;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
+import io.reactivex.Maybe;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -68,9 +71,9 @@ public class AuthenticationFacadeImplTest {
         assertEquals(Publisher.class, authenticated.getClass());
         assertEquals(testPublisher.getId(), authenticated.getId());
 
+        CacheLoader l1CacheLoader =  ((LoadingCache) facade.getL1Cache()).getCacheLoader();
+        ((LoadingCache) facade.getL1Cache()).setCacheLoader((key) -> Maybe.empty());
         // Remove the L2 Cache and see if we can read from L1
-        AuthenticationDao l2Dao = facade.getRedisDao();
-        facade.setRedisDao(null);
 
         Authenticatable authenticatedFromL1 = facade.authenticate(token);
         assertNotNull(authenticatedFromL1);
@@ -78,11 +81,11 @@ public class AuthenticationFacadeImplTest {
         assertEquals(testPublisher.getId(), authenticatedFromL1.getId());
 
         // Reset the L2 Cache
-        facade.setRedisDao(l2Dao);
+        ((LoadingCache) facade.getL1Cache()).setCacheLoader(l1CacheLoader);
 
         // Clear L1 and Remove L3 to verify we can read from l2
         facade.getL1Cache().invalidateAll();
-        ((AuthenticationDaoRedisImpl)facade.getRedisDao()).setDbDao(null);
+        facade.getRedisCache().setCacheLoader((key) -> Maybe.empty());
 
         Authenticatable authenticatedFromL2 = facade.authenticate(token);
         assertNotNull(authenticatedFromL2);

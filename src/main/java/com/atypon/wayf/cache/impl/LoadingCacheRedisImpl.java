@@ -42,6 +42,11 @@ public class LoadingCacheRedisImpl<K, V> implements com.atypon.wayf.cache.Loadin
     }
 
     @Override
+    public CacheLoader<K, V> getCacheLoader() {
+        return cacheLoader;
+    }
+
+    @Override
     public Maybe<V> get(K key) {
         return redisDao.get(key)
                 .switchIfEmpty(load(key));

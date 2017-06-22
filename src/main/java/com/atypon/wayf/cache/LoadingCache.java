@@ -20,5 +20,7 @@ import io.reactivex.Maybe;
 
 public interface LoadingCache<K, V> extends Cache<K, V> {
     void setCacheLoader(CacheLoader<K, V> cacheLoader);
+    CacheLoader<K, V> getCacheLoader();
+
     Maybe<V> load(K key);
 }

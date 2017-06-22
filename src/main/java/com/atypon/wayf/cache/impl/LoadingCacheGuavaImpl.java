@@ -44,6 +44,11 @@ public class LoadingCacheGuavaImpl<K, V> implements com.atypon.wayf.cache.Loadin
     }
 
     @Override
+    public CacheLoader<K, V> getCacheLoader() {
+        return cacheLoader;
+    }
+
+    @Override
     public Maybe<V> get(K key) {
         LOG.debug("Reading from cache [{}]", key);
 
