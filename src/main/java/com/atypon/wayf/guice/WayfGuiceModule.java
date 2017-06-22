@@ -16,6 +16,9 @@
 
 package com.atypon.wayf.guice;
 
+import com.atypon.wayf.cache.LoadingCache;
+import com.atypon.wayf.cache.impl.LoadingCacheGuavaImpl;
+import com.atypon.wayf.cache.impl.LoadingCacheRedisImpl;
 import com.atypon.wayf.dao.*;
 import com.atypon.wayf.dao.impl.*;
 import com.atypon.wayf.data.Authenticatable;
@@ -30,8 +33,8 @@ import com.atypon.wayf.database.BeanFactory;
 import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.facade.impl.*;
+import com.google.common.cache.CacheBuilder;
 import com.google.inject.AbstractModule;
-import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
@@ -47,6 +50,7 @@ import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 public class WayfGuiceModule extends AbstractModule {
     private static final Logger LOG = LoggerFactory.getLogger(WayfGuiceModule.class);
@@ -86,8 +90,7 @@ public class WayfGuiceModule extends AbstractModule {
             bind(DeviceIdentityProviderBlacklistFacade.class).to(DeviceIdentityProviderBlacklistFacadeImpl.class);
             bind(IdentityProviderUsageFacade.class).to(IdentityProviderUsageFacadeImpl.class);
 
-            bind(AuthenticationDao.class).annotatedWith(Names.named("authenticationDaoRedisImpl")).to(AuthenticationDaoRedisImpl.class);
-            bind(AuthenticationDao.class).annotatedWith(Names.named("authenticationDaoDbImpl")).to(AuthenticationDaoDbImpl.class);
+            bind(AuthenticationDao.class).to(AuthenticationDaoDbImpl.class);
             bind(AuthenticationFacade.class).to(AuthenticatableFacadeImpl.class);
 
             bind(DeviceAccessFacade.class).to(DeviceAccessFacadeImpl.class);
@@ -213,5 +216,41 @@ public class WayfGuiceModule extends AbstractModule {
     @Named("jwtSecret")
     public String getJwtSecret() {
         return "shh_its_a_secret";
+    }
+
+    @Provides
+    @Named("authenticatableRedisDao")
+    public RedisDao<String, Authenticatable> getAuthenticatableRedisDao(JedisPool jedisPool) {
+        return new RedisDaoImpl<String, Authenticatable>()
+                .setPrefix("AUTHENTICABLE")
+                .setPool(jedisPool)
+                .setTtlSeconds(172800)
+                .setDeserializer((json) -> AuthenticatableRedisSerializer.deserialize((String) json))
+                .setSerializer((authenticatable) -> AuthenticatableRedisSerializer.serialize((Authenticatable) authenticatable));
+    }
+
+
+    @Provides
+    @Named("authenticatableRedisCache")
+    public LoadingCache<String, Authenticatable> getLoadingCache(
+            @Named("authenticatableRedisDao") RedisDao<String, Authenticatable> authenticatableRedisDao,
+            AuthenticationDao authenticationDao) {
+        LoadingCacheRedisImpl<String, Authenticatable> l2Cache = new LoadingCacheRedisImpl<>();
+        l2Cache.setRedisDao(authenticatableRedisDao);
+        l2Cache.setCacheLoader((key) -> authenticationDao.authenticate(key));
+
+        return l2Cache;
+    }
+
+    @Provides
+    @Named("authenticatableCache")
+    public LoadingCache<String, Authenticatable> getLoadingCache(
+            @Named("authenticatableRedisCache") LoadingCache<String, Authenticatable> authenticatableRedisCache,
+            AuthenticationDao authenticationDao) {
+        LoadingCacheGuavaImpl<String, Authenticatable> l1Cache = new LoadingCacheGuavaImpl<>();
+        l1Cache.setGuavaCache(CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build());
+        l1Cache.setCacheLoader((key) -> authenticatableRedisCache.get(key));
+
+        return l1Cache;
     }
 }

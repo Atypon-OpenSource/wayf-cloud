@@ -125,7 +125,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
             publisherCode = jwt.getClaim(ClientJsFacade.PUBLISHER_CODE_KEY).asString();
         } catch (Exception e) {
-            throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Invalid Authorization header", e);
+            throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Could not authenticate token", e);
         }
 
         LOG.debug("Publisher code {}", publisherCode);

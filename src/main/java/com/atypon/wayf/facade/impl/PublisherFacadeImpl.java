@@ -32,6 +32,8 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import org.apache.http.HttpStatus;
 
+import java.security.SecureRandom;
+
 import static com.atypon.wayf.reactivex.FacadePolicies.singleOrException;
 
 @Singleton
@@ -52,6 +54,7 @@ public class PublisherFacadeImpl implements PublisherFacade {
     @Override
     public Single<Publisher> create(Publisher publisher) {
         publisher.setStatus(PublisherStatus.ACTIVE);
+        publisher.setSalt(generateSalt());
 
         return publisherDao.create(publisher) // Create the publisher
                 .flatMap((createdPublisher) ->
@@ -88,5 +91,14 @@ public class PublisherFacadeImpl implements PublisherFacade {
         PublisherQuery query = new PublisherQuery().setCodes(Lists.newArrayList(publisherCode));
 
         return singleOrException(filter(query), HttpStatus.SC_BAD_REQUEST, "Could not find publisher for code [{}]", publisherCode);
+    }
+
+    private String generateSalt() {
+        SecureRandom random = new SecureRandom();
+
+        byte bytes[] = new byte[20];
+        random.nextBytes(bytes);
+
+        return new String(bytes);
     }
 }

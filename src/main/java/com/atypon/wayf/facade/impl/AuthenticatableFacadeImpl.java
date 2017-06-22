@@ -16,15 +16,13 @@
 
 package com.atypon.wayf.facade.impl;
 
+import com.atypon.wayf.cache.LoadingCache;
 import com.atypon.wayf.dao.AuthenticationDao;
 import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.data.AuthorizationTokenType;
 import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.facade.AuthenticationFacade;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.reactivex.Single;
@@ -32,10 +30,7 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,32 +40,11 @@ public class AuthenticatableFacadeImpl implements AuthenticationFacade {
     private static final String TOKEN_REGEX = "(Token|Bearer) (.*)";
     private static final Pattern TOKEN_MATCHER = Pattern.compile(TOKEN_REGEX, Pattern.DOTALL);
 
-    private static final Map<String, AuthorizationTokenType> TOKEN_PREFIX_TO_TYPE_MAP = new HashMap<>();
-
-    static {
-
-    }
-
-    protected LoadingCache<String, Authenticatable> l1Cache = CacheBuilder.newBuilder()
-            .maximumSize(100)
-            .expireAfterWrite(2, TimeUnit.HOURS)
-            .build(
-                    new CacheLoader<String, Authenticatable>() {
-                        @Override
-                        public Authenticatable load(String token) throws Exception {
-                            LOG.debug("Reading from Redis Cache");
-
-                            return redisCache.authenticate(token).blockingGet();
-                        }
-                    }
-            );
+    @Inject
+    @Named("authenticatableCache")
+    protected LoadingCache<String, Authenticatable> cache;
 
     @Inject
-    @Named("authenticationDaoRedisImpl")
-    protected AuthenticationDao redisCache;
-
-    @Inject
-    @Named("authenticationDaoDbImpl")
     protected AuthenticationDao dbDao;
 
     @Override
@@ -89,7 +63,13 @@ public class AuthenticatableFacadeImpl implements AuthenticationFacade {
         }
 
         try {
-            return l1Cache.get(token.getValue());
+            Authenticatable authenticatable = cache.get(token.getValue()).blockingGet();
+
+            if (authenticatable == null) {
+                throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Could not authenticate token");
+            }
+
+            return authenticatable;
         } catch (Exception e) {
             throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Could not authenticate token", e);
         }
