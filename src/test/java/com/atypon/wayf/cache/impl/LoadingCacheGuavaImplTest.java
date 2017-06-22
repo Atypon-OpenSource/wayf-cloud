@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.cache;
+package com.atypon.wayf.cache.impl;
 
-import io.reactivex.Maybe;
+import com.atypon.wayf.cache.LoadingCacheTest;
+import com.atypon.wayf.dao.impl.RedisDaoImpl;
+import com.atypon.wayf.guice.WayfGuiceModule;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import org.junit.Before;
+import redis.clients.jedis.JedisPool;
 
-public interface LoadingCache<K, V> extends Cache<K, V> {
-    void setCacheLoader(CacheLoader<K, V> cacheLoader);
-    Maybe<V> load(K key);
+public class LoadingCacheGuavaImplTest extends LoadingCacheTest {
+
+    @Before
+    public void setup() {
+        super.cache = new LoadingCacheGuavaImpl<String, String>();
+    }
 }

@@ -32,8 +32,9 @@ public class LoadingCacheRedisImpl<K, V> implements com.atypon.wayf.cache.Loadin
     public LoadingCacheRedisImpl() {
     }
 
-    public void setRedisDao(RedisDao<K, V> redisDao) {
+    public LoadingCacheRedisImpl setRedisDao(RedisDao<K, V> redisDao) {
         this.redisDao = redisDao;
+        return this;
     }
 
     public void setCacheLoader(CacheLoader<K, V> cacheLoader) {
@@ -72,12 +73,10 @@ public class LoadingCacheRedisImpl<K, V> implements com.atypon.wayf.cache.Loadin
         LOG.debug("Loading value for key [{}]", key);
 
         return cacheLoader.load(key)
-                .map((loadedValue) -> {
+                .flatMap((loadedValue) -> {
                         LOG.debug("Successfully loaded value [{}] for key [{}]", loadedValue, key);
 
-                        put(key, loadedValue);
-
-                        return loadedValue;
+                        return put(key, loadedValue).andThen(Maybe.just(loadedValue));
                 });
     }
 }

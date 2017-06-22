@@ -45,6 +45,8 @@ public class RedisDaoImpl<K, V> implements RedisDao<K, V> {
     private Deserializer<String, V> deserializer;
     private int ttlSeconds;
 
+    private String prefixAndDelim;
+
     public RedisDaoImpl() {
     }
 
@@ -55,6 +57,7 @@ public class RedisDaoImpl<K, V> implements RedisDao<K, V> {
 
     public RedisDaoImpl setPrefix(String prefix) {
         this.prefix = prefix;
+        prefixAndDelim = prefix + KEY_DELIM;
         return this;
     }
 
@@ -107,7 +110,7 @@ public class RedisDaoImpl<K, V> implements RedisDao<K, V> {
         return Completable.fromAction(() -> {
             Set<String> matchingKeys = new HashSet<>();
             ScanParams params = new ScanParams();
-            params.match(prefix + KEY_DELIM + "*");
+            params.match(prefixAndDelim + "*");
 
             try(Jedis jedis = pool.getResource()) {
                 String nextCursor = "0";
@@ -152,13 +155,14 @@ public class RedisDaoImpl<K, V> implements RedisDao<K, V> {
             } catch (Exception e) {
                 throw new ServiceException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e);
             }
+
             return value;
         }).map((readValue) -> deserialize(readValue));
     }
 
 
     private String buildKey(K key) {
-        return prefix + KEY_DELIM + key.toString();
+        return prefixAndDelim + key.toString();
     }
 
     private String serialize(V value) {
