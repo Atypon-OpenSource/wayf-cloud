@@ -37,7 +37,7 @@ import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 })
 public class IdentityProvider {
     private Long id;
-
+    private String name;
     private Date createdDate;
     private Date modifiedDate;
 
@@ -50,6 +50,14 @@ public class IdentityProvider {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Date getCreatedDate() {

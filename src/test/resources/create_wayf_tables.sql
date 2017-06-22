@@ -42,6 +42,7 @@ DROP TABLE IF EXISTS `identity_provider`;
 CREATE TABLE `identity_provider` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `type` varchar(25) NOT NULL,
+  `name` varchar(75) NULL,
   `entity_id` varchar(50) NULL,
   `scope` varchar(50) NULL,
   `organization_id` varchar(50) NULL,
@@ -56,7 +57,8 @@ CREATE TABLE `identity_provider` (
 DROP VIEW IF EXISTS `saml_entity`;
 CREATE VIEW `saml_entity` AS
 SELECT `id`,
-	`type`,
+	  `type`,
+	  `name`,
     `entity_id`,
     `federation_id`,
     `created_date`,
@@ -66,7 +68,8 @@ SELECT `id`,
 DROP VIEW IF EXISTS `open_athens_entity`;
 CREATE VIEW `open_athens_entity` AS
 SELECT `id`,
-	`type`,
+	  `type`,
+	  `name`,
     `entity_id`,
     `scope`,
     `organization_id`,
@@ -77,7 +80,8 @@ SELECT `id`,
 DROP VIEW IF EXISTS `oauth_entity`;
 CREATE VIEW `oauth_entity` AS
 SELECT `id`,
-	`type`,
+	  `type`,
+		`name`,
     `provider`,
     `created_date`,
     `modified_date`

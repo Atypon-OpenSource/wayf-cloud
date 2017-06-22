@@ -4,7 +4,8 @@
     "idp":{
       "type":"OAUTH",
       "id":3,
-      "provider":"GOOGLE"
+      "provider":"GOOGLE",
+      "name" : "Google"
     }
   }
 ]
