@@ -57,6 +57,7 @@ public class PublisherDaoDbImplTest {
         contact.setId(456L);
 
         Publisher publisher = new Publisher();
+        publisher.setSalt("NaCl");
         publisher.setName("Test Publisher");
         publisher.setCode("test_publisher");
         publisher.setContact(contact);
@@ -68,6 +69,7 @@ public class PublisherDaoDbImplTest {
         assertNotNull(createdPublisher.getCreatedDate());
         
         assertEquals(PublisherStatus.ACTIVE, createdPublisher.getStatus());
+        assertEquals(publisher.getSalt(), createdPublisher.getSalt());
         assertEquals(publisher.getName(), createdPublisher.getName());
         assertEquals(publisher.getCode(), createdPublisher.getCode());
         assertEquals(publisher.getContact().getId(), createdPublisher.getContact().getId());
@@ -80,6 +82,7 @@ public class PublisherDaoDbImplTest {
 
         Publisher publisher = new Publisher();
         publisher.setName("Test Publisher");
+        publisher.setSalt("NaCl");
         publisher.setStatus(PublisherStatus.ACTIVE);
         publisher.setCode("test_publisher");
         publisher.setContact(contact);
@@ -88,6 +91,7 @@ public class PublisherDaoDbImplTest {
         Publisher readPublisher = dao.read(createdPublisher.getId()).blockingGet();
 
         assertNotNull(readPublisher.getCreatedDate());
+        assertEquals(createdPublisher.getSalt(), readPublisher.getSalt());
         assertEquals(createdPublisher.getId(), readPublisher.getId());
         assertEquals(createdPublisher.getStatus(), readPublisher.getStatus());
         assertEquals(createdPublisher.getName(), readPublisher.getName());
@@ -108,6 +112,7 @@ public class PublisherDaoDbImplTest {
             publisher.setStatus(PublisherStatus.ACTIVE);
             publisher.setCode("test_publisher-" + i);
             publisher.setContact(contact);
+            publisher.setSalt("NaCl");
 
             Publisher createdPublisher = dao.create(publisher).blockingGet();
             publishersById.put(createdPublisher.getId(), createdPublisher);
@@ -125,6 +130,7 @@ public class PublisherDaoDbImplTest {
         for (Publisher readPublisher : readPublishers) {
             Publisher expected = publishersById.get(readPublisher.getId());
             assertEquals(expected.getId(), readPublisher.getId());
+            assertEquals(expected.getSalt(), readPublisher.getSalt());
             assertEquals(expected.getName(), readPublisher.getName());
             assertEquals(expected.getCode(), readPublisher.getCode());
             assertEquals(expected.getContact().getId(), readPublisher.getContact().getId());

@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.facade.impl;
 
+import com.atypon.wayf.cache.Cache;
 import com.atypon.wayf.dao.PublisherDao;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherQuery;
@@ -23,14 +24,15 @@ import com.atypon.wayf.data.publisher.PublisherStatus;
 import com.atypon.wayf.facade.AuthenticationFacade;
 import com.atypon.wayf.facade.PublisherFacade;
 import com.atypon.wayf.facade.ClientJsFacade;
-import com.atypon.wayf.reactivex.DaoPolicies;
 import com.atypon.wayf.reactivex.FacadePolicies;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import org.apache.http.HttpStatus;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.security.SecureRandom;
 
@@ -47,6 +49,10 @@ public class PublisherFacadeImpl implements PublisherFacade {
 
     @Inject
     private ClientJsFacade clientJsFacade;
+
+    @Inject
+    @Named("publisherSaltCache")
+    private Cache<Long, String> saltCache;
 
     public PublisherFacadeImpl() {
     }
@@ -99,6 +105,11 @@ public class PublisherFacadeImpl implements PublisherFacade {
         byte bytes[] = new byte[20];
         random.nextBytes(bytes);
 
-        return new String(bytes);
+        return BCrypt.gensalt(10, random);
+    }
+
+    @Override
+    public String getPublishersSalt(Long publisherId) {
+        return singleOrException(saltCache.get(publisherId), HttpStatus.SC_INTERNAL_SERVER_ERROR, "Could not find Publisher encryption salt for id [{}]", publisherId).blockingGet();
     }
 }

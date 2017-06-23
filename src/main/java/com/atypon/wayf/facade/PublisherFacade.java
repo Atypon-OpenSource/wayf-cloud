@@ -27,4 +27,6 @@ public interface PublisherFacade {
     Observable<Publisher> filter(PublisherQuery filter);
 
     Single<Publisher> lookupCode(String publisherCode);
+
+    String getPublishersSalt(Long publisherId);
 }

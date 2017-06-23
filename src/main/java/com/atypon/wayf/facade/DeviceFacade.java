@@ -33,4 +33,6 @@ public interface DeviceFacade {
     Completable registerLocalId(String localId);
 
     Single<Device> readByLocalId(String localId);
+
+    String encryptLocalId(Long publisherId, String localId);
 }

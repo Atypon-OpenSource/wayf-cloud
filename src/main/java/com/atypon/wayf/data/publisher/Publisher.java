@@ -18,6 +18,7 @@ package com.atypon.wayf.data.publisher;
 
 import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
 
@@ -64,13 +65,13 @@ public class Publisher implements Authenticatable {
         this.token = token;
     }
 
+    @JsonIgnore
     public String getSalt() {
         return salt;
     }
 
-    public Publisher setSalt(String salt) {
+    public void setSalt(String salt) {
         this.salt = salt;
-        return this;
     }
 
     public String getWidgetLocation() {
