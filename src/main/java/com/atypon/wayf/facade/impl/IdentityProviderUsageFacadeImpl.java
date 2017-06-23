@@ -24,6 +24,7 @@ import com.atypon.wayf.data.device.access.DeviceAccessType;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
+import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.Lists;

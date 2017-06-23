@@ -16,13 +16,16 @@
 
 package com.atypon.wayf.verticle.routing;
 
+import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.data.InflationPolicyParser;
 import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceQuery;
+import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.ClientJsFacade;
 import com.atypon.wayf.facade.DeviceFacade;
+import com.atypon.wayf.facade.PublisherFacade;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.request.ResponseWriter;
@@ -69,6 +72,9 @@ public class DeviceRoutingProvider implements RoutingProvider {
     private InflationPolicyParser<String> inflationPolicyParser;
 
     @Inject
+    private PublisherFacade publisherFacade;
+
+    @Inject
     @Named("jwtSecret")
     private String jwtSecret;
 
@@ -102,7 +108,10 @@ public class DeviceRoutingProvider implements RoutingProvider {
     public Completable registerLocalId(RoutingContext routingContext) {
         String localId = RequestReader.readPathArgument(routingContext, LOCAL_ID_PARAM);
 
-        return deviceFacade.registerLocalId(localId);
+        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+        String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
+
+        return deviceFacade.registerLocalId(hashedLocalId);
     }
 
     public Single<Device> createPublisherDeviceRelationship(RoutingContext routingContext) {
@@ -130,15 +139,22 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
         LOG.debug("Publisher code {}", publisherCode);
 
-        return deviceFacade.relateLocalIdToDevice(publisherCode, localId)
-                .map((device) -> {
-                    String globalId = device.getGlobalId();
+        return publisherFacade.lookupCode(publisherCode)
+                .flatMap((publisher) -> {
 
-                    responseWriter.setDeviceIdHeader(routingContext, globalId);
+                    String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
 
-                    device.setGlobalId(null);
+                    return deviceFacade.relateLocalIdToDevice(publisher, hashedLocalId)
+                            .map((device) -> {
+                                String globalId = device.getGlobalId();
 
-                    return device;
+                                responseWriter.setDeviceIdHeader(routingContext, globalId);
+
+                                device.setGlobalId(null);
+
+                                return device;
+                            });
+
                 });
     }
 

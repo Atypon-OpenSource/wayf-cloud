@@ -16,10 +16,14 @@
 
 package com.atypon.wayf.verticle.routing;
 
+import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
+import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.atypon.wayf.facade.IdentityProviderUsageFacade;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.google.inject.Inject;
@@ -49,6 +53,8 @@ public class IdentityProviderUsageRouting implements RoutingProvider {
     @Inject
     private WayfRequestHandlerFactory handlerFactory;
 
+    @Inject
+    private DeviceFacade deviceFacade;
 
     public IdentityProviderUsageRouting() {
     }
@@ -62,6 +68,10 @@ public class IdentityProviderUsageRouting implements RoutingProvider {
 
         String localId = RequestReader.readRequiredPathParameter(routingContext, LOCAL_ID_PARAM_NAME, LOCAL_ID_ARG_DESCRIPTION);
 
-        return identityProviderUsageFacade.buildRecentHistory(localId);
+
+        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+        String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
+
+        return identityProviderUsageFacade.buildRecentHistory(hashedLocalId);
     }
 }

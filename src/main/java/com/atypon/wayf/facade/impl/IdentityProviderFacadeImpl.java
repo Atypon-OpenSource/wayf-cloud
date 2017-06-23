@@ -22,6 +22,7 @@ import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessType;
 import com.atypon.wayf.data.identity.*;
+import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.DeviceAccessFacade;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.DeviceIdentityProviderBlacklistFacade;
@@ -119,7 +120,6 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
                 // Read the device by the local ID passed in and authenticated publisher
                 deviceFacade.readByLocalId(localId),
 
-
                 // Once the device and IdentityProvider have create a DeviceAccess object to contain both items
                 (resolvedIdentityProvider, device) ->
                         new DeviceAccess.Builder()
@@ -143,7 +143,6 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
     @Override
     public Completable blockIdentityProviderForDevice(String localId, Long idpId) {
-
         return Single.zip(read(idpId),
                 deviceFacade.readByLocalId(localId),
 
@@ -153,7 +152,7 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
                             .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
                             .localId(localId)
                             .identityProvider(identityProvider)
-                            .type(DeviceAccessType.ADD_IDP)
+                            .type(DeviceAccessType.REMOVE_IDP)
                             .build()
         ).flatMapCompletable((deviceAccess) ->
                 Completable.mergeArray(

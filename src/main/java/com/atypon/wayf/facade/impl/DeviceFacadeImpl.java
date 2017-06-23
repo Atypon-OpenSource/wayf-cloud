@@ -117,38 +117,35 @@ public class DeviceFacadeImpl implements DeviceFacade {
     }
 
     @Override
-    public Single<Device> relateLocalIdToDevice(String publisherCode, String localId) {
+    public Single<Device> relateLocalIdToDevice(Publisher publisher, String localId) {
+        return resolveFromRequest(publisher, localId)
 
-        return publisherFacade.lookupCode(publisherCode) // Get the publisher associated with the code
-                .flatMap((_publisher) -> {
+                // Create a DeviceAccess object to store the resolved Device and Publisher. This may be
+                // a little clunky but the alternative would be to create a new type to wrap the two
+                .map((device) -> new DeviceAccess.Builder().device(device).publisher(publisher).localId(localId).build())
 
-                    String hashedLocalId = encryptLocalId(_publisher.getId(), localId);
-
-                    // Using the publisher and the local ID, get the device
-                    return resolveFromRequest(_publisher, hashedLocalId)
-
-                            // Create a DeviceAccess object to store the resolved Device and Publisher. This may be
-                            // a little clunky but the alternative would be to create a new type to wrap the two
-                            .map((device) -> new DeviceAccess.Builder().device(device).publisher(_publisher).localId(hashedLocalId).build());
-                })
                 .flatMap((deviceAccess) ->
-                        // Now that all the required data is available, point the local ID at the device
-                        deviceDao.updateDevicePublisherLocalIdXref(deviceAccess.getDevice().getId(), deviceAccess.getPublisher().getId(), deviceAccess.getLocalId())
-                                .map((numAffectedRows) -> {
-                                        if (numAffectedRows != 1) {
-                                            throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not find local ID");
-                                        }
+                    // Now that all the required data is available, point the local ID at the device
+                    deviceDao.updateDevicePublisherLocalIdXref(deviceAccess.getDevice().getId(), deviceAccess.getPublisher().getId(), deviceAccess.getLocalId())
+                            .map((numAffectedRows) -> {
+                                if (numAffectedRows != 1) {
+                                    throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not find local ID");
+                                }
 
-                                        return deviceAccess.getDevice();
-                                }));
+                                return deviceAccess.getDevice();
+                            })
+                );
+    }
+
+    @Override
+    public Single<Device> relateLocalIdToDevice(String publisherCode, String localId) {
+        return publisherFacade.lookupCode(publisherCode) // Get the publisher associated with the code
+                .flatMap((_publisher) -> relateLocalIdToDevice(_publisher, localId));
     }
 
     @Override
     public Completable registerLocalId(String localId) {
-        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
-        String hashedLocalId = encryptLocalId(publisher.getId(), localId);
-
-        return deviceDao.registerLocalId(publisher.getId(), hashedLocalId);
+        return deviceDao.registerLocalId(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()).getId(), localId);
     }
 
     private Single<Device> resolveFromRequest(Publisher publisher, String localId) {
@@ -170,11 +167,10 @@ public class DeviceFacadeImpl implements DeviceFacade {
         LOG.debug("Reading device with local ID [{}]", localId);
 
         Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
-        String hashedLocalId = encryptLocalId(publisher.getId(), localId);
 
-        LOG.debug("Reading device with local ID [{}] and publisher ID [{}]", hashedLocalId, publisher.getId());
+        LOG.debug("Reading device with local ID [{}] and publisher ID [{}]", localId, publisher.getId());
 
-        return singleOrException(deviceDao.readByPublisherLocalId(publisher.getId(), hashedLocalId), HttpStatus.SC_NOT_FOUND, "Invalid local ID");
+        return singleOrException(deviceDao.readByPublisherLocalId(publisher.getId(), localId), HttpStatus.SC_NOT_FOUND, "Invalid local ID");
     }
 
     private Completable populate(Device device, DeviceQuery query) {
