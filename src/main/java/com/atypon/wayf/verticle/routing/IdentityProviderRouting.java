@@ -16,8 +16,12 @@
 
 package com.atypon.wayf.verticle.routing;
 
+import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.identity.IdentityProvider;
+import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.IdentityProviderFacade;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.google.inject.Inject;
@@ -48,6 +52,9 @@ public class IdentityProviderRouting implements RoutingProvider {
 
     @Inject
     private IdentityProviderFacade identityProviderFacade;
+
+    @Inject
+    private DeviceFacade deviceFacade;
 
     @Inject
     private WayfRequestHandlerFactory handlerFactory;
@@ -86,7 +93,10 @@ public class IdentityProviderRouting implements RoutingProvider {
         String localId = RequestReader.readRequiredPathParameter(routingContext, LOCAL_ID_PARAM_NAME, LOCAL_ID_ARG_DESCRIPTION);
         IdentityProvider body = RequestReader.readRequestBody(routingContext, IdentityProvider.class).blockingGet();
 
-        return identityProviderFacade.recordIdentityProviderUse(localId, body);
+        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+        String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
+
+        return identityProviderFacade.recordIdentityProviderUse(hashedLocalId, body);
     }
 
     public Completable removeIdentityProviderFromDevice(RoutingContext routingContext) {
@@ -94,8 +104,11 @@ public class IdentityProviderRouting implements RoutingProvider {
 
         String localId = RequestReader.readRequiredPathParameter(routingContext, LOCAL_ID_PARAM_NAME, LOCAL_ID_ARG_DESCRIPTION);
 
+        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+        String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
+
         Long idpId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, IDP_ID_PARAM_NAME, IDP_ID_ARG_DESCRIPTION));
 
-        return identityProviderFacade.blockIdentityProviderForDevice(localId, idpId);
+        return identityProviderFacade.blockIdentityProviderForDevice(hashedLocalId, idpId);
     }
 }

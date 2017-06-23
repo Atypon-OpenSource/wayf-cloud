@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.guice;
 
+import com.atypon.wayf.cache.Cache;
 import com.atypon.wayf.cache.LoadingCache;
 import com.atypon.wayf.cache.impl.LoadingCacheGuavaImpl;
 import com.atypon.wayf.cache.impl.LoadingCacheRedisImpl;
@@ -245,11 +246,44 @@ public class WayfGuiceModule extends AbstractModule {
     @Provides
     @Named("authenticatableCache")
     public LoadingCache<String, Authenticatable> getLoadingCache(
-            @Named("authenticatableRedisCache") LoadingCache<String, Authenticatable> authenticatableRedisCache,
-            AuthenticationDao authenticationDao) {
+            @Named("authenticatableRedisCache") LoadingCache<String, Authenticatable> authenticatableRedisCache) {
         LoadingCacheGuavaImpl<String, Authenticatable> l1Cache = new LoadingCacheGuavaImpl<>();
         l1Cache.setGuavaCache(CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build());
         l1Cache.setCacheLoader((key) -> authenticatableRedisCache.get(key));
+
+        return l1Cache;
+    }
+
+    @Provides
+    @Named("publisherSaltRedisDao")
+    public RedisDao<Long, String> getPublisherSaltRedisDao(JedisPool jedisPool) {
+        return new RedisDaoImpl<String, Authenticatable>()
+                .setPrefix("PUBLISHER_SALT")
+                .setPool(jedisPool)
+                .setTtlSeconds(172800)
+                .setDeserializer((salt) -> salt)
+                .setSerializer((salt) -> salt);
+    }
+
+    @Provides
+    @Named("publisherSaltRedisCache")
+    public LoadingCache<Long, String> getLoadingCache(
+            @Named("publisherSaltRedisDao") RedisDao<Long, String> publisherSaltRedisDao,
+            PublisherDao publisherDao) {
+        LoadingCacheRedisImpl<Long, String> l2Cache = new LoadingCacheRedisImpl<>();
+        l2Cache.setRedisDao(publisherSaltRedisDao);
+        l2Cache.setCacheLoader((key) -> publisherDao.read(key).map((publisher) -> {LOG.debug("found publisher for l3 [{}]", publisher.getSalt());return publisher.getSalt();}));
+
+        return l2Cache;
+    }
+
+    @Provides
+    @Named("publisherSaltCache")
+    public Cache<Long, String> getPublisherSaltLoadingCache(
+            @Named("publisherSaltRedisCache") LoadingCache<Long, String> publisherSaltRedisCache) {
+        LoadingCacheGuavaImpl<Long, String> l1Cache = new LoadingCacheGuavaImpl<>();
+        l1Cache.setGuavaCache(CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build());
+        l1Cache.setCacheLoader((key) -> publisherSaltRedisCache.get(key));
 
         return l1Cache;
     }

@@ -18,6 +18,7 @@ package com.atypon.wayf.facade;
 
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceQuery;
+import com.atypon.wayf.data.publisher.Publisher;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -26,6 +27,8 @@ public interface DeviceFacade {
     Single<Device> create(Device device);
     Single<Device> read(DeviceQuery query);
 
+    Single<Device> relateLocalIdToDevice(Publisher publisher, String localId);
+
     Single<Device> relateLocalIdToDevice(String publisherCode, String localId);
 
     Observable<Device> filter(DeviceQuery query);
@@ -33,4 +36,6 @@ public interface DeviceFacade {
     Completable registerLocalId(String localId);
 
     Single<Device> readByLocalId(String localId);
+
+    String encryptLocalId(Long publisherId, String localId);
 }

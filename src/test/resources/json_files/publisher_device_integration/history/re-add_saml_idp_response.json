@@ -1,29 +1,29 @@
 [
   {
-    "frequency":61.11,
+    "frequency":58.82,
     "idp":{
       "type":"SAML",
+      "name":"SAML Entity",
       "entityId":"sample-saml-entity-id",
-      "federationId":"sample-saml-federation-id",
-      "name" : "SAML Entity"
+      "federationId":"sample-saml-federation-id"
     }
   },
   {
-    "frequency":22.22,
+    "frequency":23.53,
     "idp":{
       "type":"OPEN_ATHENS",
+      "name":"Open Athens Entity",
       "entityId":"sample-open-athens-entity-id",
       "scope":"sample-scope",
-      "organizationId":"123456",
-      "name" : "Open Athens Entity"
+      "organizationId":"123456"
     }
   },
   {
-    "frequency":16.67,
+    "frequency":17.65,
     "idp":{
       "type":"OAUTH",
-      "provider":"GOOGLE",
-      "name" : "Google"
+      "name":"Google",
+      "provider":"GOOGLE"
     }
   }
 ]
