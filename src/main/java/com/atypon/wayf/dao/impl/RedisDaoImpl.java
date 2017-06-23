@@ -18,8 +18,8 @@ package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.RedisDao;
 import com.atypon.wayf.data.ServiceException;
-import com.atypon.wayf.verticle.Deserializer;
-import com.atypon.wayf.verticle.Serializer;
+import com.atypon.wayf.cache.Deserializer;
+import com.atypon.wayf.cache.Serializer;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import org.apache.http.HttpStatus;

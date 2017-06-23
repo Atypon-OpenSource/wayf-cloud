@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.verticle;
+package com.atypon.wayf.cache;
 
 @FunctionalInterface
-public interface Serializer<I, O> {
-    O serialize(I input);
+public interface Deserializer<I, O> {
+    O deserialize(I input);
 }
