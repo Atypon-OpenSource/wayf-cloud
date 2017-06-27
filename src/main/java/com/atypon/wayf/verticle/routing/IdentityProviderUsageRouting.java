@@ -17,6 +17,8 @@
 package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.device.Device;
+import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
 import com.atypon.wayf.data.publisher.Publisher;
@@ -44,6 +46,7 @@ public class IdentityProviderUsageRouting implements RoutingProvider {
     private static final String LOCAL_ID_PARAM_NAME = "localId";
 
     private static final String READ_DEVICE_RECENT_HISTORY = "/1/device/:localId/history";
+    private static final String READ_MY_DEVICE_RECENT_HISTORY = "/1/mydevice/history";
 
     private static final String LOCAL_ID_ARG_DESCRIPTION = "Local ID";
 
@@ -61,6 +64,8 @@ public class IdentityProviderUsageRouting implements RoutingProvider {
 
     public void addRoutings(Router router) {
         router.get(READ_DEVICE_RECENT_HISTORY).handler(handlerFactory.observable((rc) -> readDeviceLocalHistory(rc)));
+        router.get(READ_MY_DEVICE_RECENT_HISTORY).handler(handlerFactory.observable((rc) -> readMyDeviceLocalHistory(rc)));
+
     }
 
     public Observable<IdentityProviderUsage> readDeviceLocalHistory(RoutingContext routingContext) {
@@ -68,10 +73,18 @@ public class IdentityProviderUsageRouting implements RoutingProvider {
 
         String localId = RequestReader.readRequiredPathParameter(routingContext, LOCAL_ID_PARAM_NAME, LOCAL_ID_ARG_DESCRIPTION);
 
-
         Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
         String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
 
         return identityProviderUsageFacade.buildRecentHistory(hashedLocalId);
+    }
+
+    public Observable<IdentityProviderUsage> readMyDeviceLocalHistory(RoutingContext routingContext) {
+        LOG.debug("Received create IdentityProvider request");
+
+        String globalId = RequestReader.getHeaderValue(routingContext, "X-Device-Id");
+        Device device = deviceFacade.read(new DeviceQuery().setGlobalId(globalId)).blockingGet();
+
+        return Observable.fromIterable(identityProviderUsageFacade.buildRecentHistory(device));
     }
 }

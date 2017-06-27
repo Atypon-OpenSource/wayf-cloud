@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.verticle;
 
+import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.ResponseWriter;
@@ -53,6 +54,9 @@ public class WayfVerticle extends AbstractVerticle {
     private PublisherRouting publisherRouting;
 
     @Inject
+    private DeviceAccessRouting deviceAccessRouting;
+
+    @Inject
     private ResponseWriter responseWriter;
 
     @Inject
@@ -72,7 +76,7 @@ public class WayfVerticle extends AbstractVerticle {
 
     private void startWebApp(Handler<AsyncResult<HttpServer>> next) {
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
-        routingProviders = Lists.newArrayList(identityProviderUsageRouting, identityProviderRouting, deviceRoutingProvider, publisherRouting);
+        routingProviders = Lists.newArrayList(identityProviderUsageRouting, identityProviderRouting, deviceRoutingProvider, publisherRouting, deviceAccessRouting);
         // Create a router object.
         Router router = Router.router(vertx);
 
