@@ -79,7 +79,7 @@ public class WayfVerticle extends AbstractVerticle {
         // Create a router object.
         Router router = Router.router(vertx);
 
-        router.route().handler(CorsHandler.create("*").allowedMethod(HttpMethod.PATCH));
+        router.route().handler(CorsHandler.create("*").allowedMethod(HttpMethod.PATCH).allowedHeader("Authorization"));
 
         LOG.debug("Adding routes");
         routingProviders.forEach((routingProvider) -> routingProvider.addRoutings(router));
