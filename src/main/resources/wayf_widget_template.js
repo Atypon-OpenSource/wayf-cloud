@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const WAYF_BASE_URL = "http://qa21:3307";
+const WAYF_BASE_URL = "https://wayf-cloud-sandbox.literatumonline.com";
 
 const AUTHORIZATION_HEADER_KEY = "Authorization";
 const AUTHORIZATION_HEADER_VALUE = "Bearer @PUBLISHER_JWT@";
