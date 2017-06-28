@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.verticle;
 
+import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.ResponseWriter;
@@ -28,9 +29,11 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +56,9 @@ public class WayfVerticle extends AbstractVerticle {
     private PublisherRouting publisherRouting;
 
     @Inject
+    private DeviceAccessRouting deviceAccessRouting;
+
+    @Inject
     private ResponseWriter responseWriter;
 
     @Inject
@@ -72,9 +78,11 @@ public class WayfVerticle extends AbstractVerticle {
 
     private void startWebApp(Handler<AsyncResult<HttpServer>> next) {
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
-        routingProviders = Lists.newArrayList(identityProviderUsageRouting, identityProviderRouting, deviceRoutingProvider, publisherRouting);
+        routingProviders = Lists.newArrayList(identityProviderUsageRouting, identityProviderRouting, deviceRoutingProvider, publisherRouting, deviceAccessRouting);
         // Create a router object.
         Router router = Router.router(vertx);
+
+        router.route().handler(CorsHandler.create("*").allowedMethod(HttpMethod.PATCH));
 
         LOG.debug("Adding routes");
         routingProviders.forEach((routingProvider) -> routingProvider.addRoutings(router));
