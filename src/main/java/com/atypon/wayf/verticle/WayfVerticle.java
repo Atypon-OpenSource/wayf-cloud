@@ -22,6 +22,7 @@ import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.routing.*;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -82,6 +83,7 @@ public class WayfVerticle extends AbstractVerticle {
         CorsHandler handler = CorsHandler.create("*")
                 .allowedMethod(io.vertx.core.http.HttpMethod.PATCH)
                 .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
+                .exposedHeaders(Sets.newHashSet("X-Device-Id"))
                 .allowedHeader("Access-Control-Request-Method")
                 .allowedHeader("Access-Control-Allow-Credentials")
                 .allowedHeader("Access-Control-Allow-Origin")
