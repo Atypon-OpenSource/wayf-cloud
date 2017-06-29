@@ -79,7 +79,18 @@ public class WayfVerticle extends AbstractVerticle {
         // Create a router object.
         Router router = Router.router(vertx);
 
-        router.route().handler(CorsHandler.create("*").allowedMethod(HttpMethod.PATCH));
+        CorsHandler handler = CorsHandler.create("*")
+                .allowedMethod(io.vertx.core.http.HttpMethod.GET)
+                .allowedMethod(io.vertx.core.http.HttpMethod.POST)
+                .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
+                .allowedHeader("Access-Control-Request-Method")
+                .allowedHeader("Access-Control-Allow-Credentials")
+                .allowedHeader("Access-Control-Allow-Origin")
+                .allowedHeader("Access-Control-Allow-Headers")
+                .allowedHeader("Content-Type")
+                .allowedHeader("Authorization");
+
+        router.route().handler(handler);
 
         LOG.debug("Adding routes");
         routingProviders.forEach((routingProvider) -> routingProvider.addRoutings(router));
