@@ -80,8 +80,7 @@ public class WayfVerticle extends AbstractVerticle {
         Router router = Router.router(vertx);
 
         CorsHandler handler = CorsHandler.create("*")
-                .allowedMethod(io.vertx.core.http.HttpMethod.GET)
-                .allowedMethod(io.vertx.core.http.HttpMethod.POST)
+                .allowedMethod(io.vertx.core.http.HttpMethod.PATCH)
                 .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
                 .allowedHeader("Access-Control-Request-Method")
                 .allowedHeader("Access-Control-Allow-Credentials")
