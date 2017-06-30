@@ -17,6 +17,7 @@
 package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import com.atypon.wayf.data.publisher.Publisher;
@@ -25,7 +26,6 @@ import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Completable;
@@ -55,6 +55,7 @@ public class IdentityProviderRouting implements RoutingProvider {
     private static final String FILTER_IDENTITY_PROVIDERS = "/1/identityProviders";
     private static final String ADD_IDP_TO_DEVICE = "/1/device/:localId/history/idp";
     private static final String REMOVE_IDP_FROM_DEVICE = "/1/device/:localId/history/idp/:idpId";
+    private static final String REMOVE_IDP_FROM_MY_DEVICE = "/1/mydevice/history/idp/:idpId";
 
     private static final String LOCAL_ID_ARG_DESCRIPTION = "Local ID";
     private static final String IDP_ID_ARG_DESCRIPTION = "Identity Provider ID";
@@ -81,6 +82,8 @@ public class IdentityProviderRouting implements RoutingProvider {
         router.get(FILTER_IDENTITY_PROVIDERS).handler(handlerFactory.observable((rc) -> filterIdentityProviders(rc)));
         router.post(ADD_IDP_TO_DEVICE).handler(handlerFactory.single((rc) -> addIdentityProviderToDevice(rc)));
         router.delete(REMOVE_IDP_FROM_DEVICE).handler(handlerFactory.completable((rc) -> removeIdentityProviderFromDevice(rc)));
+        router.delete(REMOVE_IDP_FROM_MY_DEVICE).handler(handlerFactory.completable((rc) -> removeIdentityProviderFromMyDevice(rc)));
+
     }
 
     public Single<IdentityProvider> createIdentityProvider(RoutingContext routingContext) {
@@ -140,5 +143,16 @@ public class IdentityProviderRouting implements RoutingProvider {
         Long idpId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, IDP_ID_PARAM_NAME, IDP_ID_ARG_DESCRIPTION));
 
         return identityProviderFacade.blockIdentityProviderForDevice(hashedLocalId, idpId);
+    }
+
+    public Completable removeIdentityProviderFromMyDevice(RoutingContext routingContext) {
+        LOG.debug("Received request to add IDP to device");
+
+        String globalId = RequestReader.getHeaderValue(routingContext, RequestReader.DEVICE_ID_HEADER);
+
+        Long idpId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, IDP_ID_PARAM_NAME, IDP_ID_ARG_DESCRIPTION));
+
+        return deviceFacade.read(new DeviceQuery().setGlobalId(globalId))
+                .flatMapCompletable((device) ->identityProviderFacade.blockIdentityProviderForDevice(device, idpId));
     }
 }

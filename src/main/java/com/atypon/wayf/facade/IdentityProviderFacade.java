@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.facade;
 
+import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import io.reactivex.Completable;
@@ -26,10 +27,13 @@ public interface IdentityProviderFacade {
     Single<IdentityProvider> create(IdentityProvider identityProvider);
     Single<IdentityProvider> read(Long id);
 
+    Completable blockIdentityProviderForDevice(Device device, Long idpId);
+
     Observable<IdentityProvider> filter(IdentityProviderQuery filter);
 
     Single<IdentityProvider> resolve(IdentityProvider identityProvider);
 
     Completable blockIdentityProviderForDevice(String localId, Long idpId);
+
     Single<IdentityProvider> recordIdentityProviderUse(String localId, IdentityProvider identityProvider);
 }

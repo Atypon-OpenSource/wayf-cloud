@@ -19,6 +19,7 @@ package com.atypon.wayf.facade.impl;
 import com.atypon.wayf.dao.IdentityProviderDao;
 import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.ServiceException;
+import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessType;
 import com.atypon.wayf.data.identity.*;
@@ -143,21 +144,24 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
     @Override
     public Completable blockIdentityProviderForDevice(String localId, Long idpId) {
-        return Single.zip(read(idpId),
-                deviceFacade.readByLocalId(localId),
+        return deviceFacade.readByLocalId(localId).flatMapCompletable((device) -> blockIdentityProviderForDevice(device, idpId));
+    }
 
-                (identityProvider, device) ->
-                    new DeviceAccess.Builder()
-                            .device(device)
-                            .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
-                            .localId(localId)
-                            .identityProvider(identityProvider)
-                            .type(DeviceAccessType.REMOVE_IDP)
-                            .build()
+    @Override
+    public Completable blockIdentityProviderForDevice(Device device, Long idpId) {
+        return read(idpId)
+                .map((identityProvider) ->
+                        new DeviceAccess.Builder()
+                                .device(device)
+                                .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
+                                .identityProvider(identityProvider)
+                                .type(DeviceAccessType.REMOVE_IDP)
+                                .build()
+
         ).flatMapCompletable((deviceAccess) ->
                 Completable.mergeArray(
-                    blacklistFacade.add(deviceAccess.getDevice(), deviceAccess.getIdentityProvider()).subscribeOn(Schedulers.io()),
-                    deviceAccessFacade.create(deviceAccess).toCompletable().subscribeOn(Schedulers.io())
+                        blacklistFacade.add(deviceAccess.getDevice(), deviceAccess.getIdentityProvider()).subscribeOn(Schedulers.io()),
+                        deviceAccessFacade.create(deviceAccess).toCompletable().subscribeOn(Schedulers.io())
                 )
         );
     }
