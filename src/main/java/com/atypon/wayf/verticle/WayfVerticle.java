@@ -93,13 +93,13 @@ public class WayfVerticle extends AbstractVerticle {
                 .allowedHeader("Content-Type")
                 .allowedHeader("Authorization");
 
-        router.optionsWithRegex("*").handler((routingContext) -> {
+        router.optionsWithRegex(".*").handler((routingContext) -> {
             String requestOrigin = RequestReader.getHeaderValue(routingContext, "Origin");
 
             LOG.debug("Request origin [{}]", requestOrigin);
 
             routingContext.response().putHeader("Access-Control-Allow-Origin", requestOrigin);
-            
+
         });
 
         router.route().handler(handler);
