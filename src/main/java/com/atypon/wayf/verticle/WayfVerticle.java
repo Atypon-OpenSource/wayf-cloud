@@ -76,6 +76,7 @@ public class WayfVerticle extends AbstractVerticle {
         startWebApp((http) -> completeStartup(http, fut));
     }
 
+    private CorsHandler customCorsHandler
     private void startWebApp(Handler<AsyncResult<HttpServer>> next) {
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
         routingProviders = Lists.newArrayList(identityProviderUsageRouting, identityProviderRouting, deviceRoutingProvider, publisherRouting);
@@ -83,6 +84,7 @@ public class WayfVerticle extends AbstractVerticle {
         Router router = Router.router(vertx);
 
         CorsHandler handler = CorsHandler.create("*")
+                .allowCredentials(true)
                 .allowedMethod(io.vertx.core.http.HttpMethod.PATCH)
                 .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
                 .exposedHeaders(Sets.newHashSet("X-Device-Id"))
@@ -92,14 +94,15 @@ public class WayfVerticle extends AbstractVerticle {
                 .allowedHeader("Access-Control-Allow-Headers")
                 .allowedHeader("Content-Type")
                 .allowedHeader("Authorization");
-
+/*
         router.optionsWithRegex(".*").handler((routingContext) -> {
+            handler.handle(routingContext);
             String requestOrigin = RequestReader.getHeaderValue(routingContext, "Origin");
 
             LOG.debug("Request origin [{}]", requestOrigin);
 
             routingContext.response().putHeader("Access-Control-Allow-Origin", requestOrigin).end();
-        });
+        });*/
 
         router.route().handler(handler);
         router.route().handler(CookieHandler.create());
