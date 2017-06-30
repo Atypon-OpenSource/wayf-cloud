@@ -41,9 +41,11 @@ import com.google.inject.name.Named;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.impl.CookieImpl;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,7 +151,10 @@ public class DeviceRoutingProvider implements RoutingProvider {
                                 String globalId = device.getGlobalId();
 
                                 responseWriter.setDeviceIdHeader(routingContext, globalId);
+                                Cookie cookie = new CookieImpl(RequestReader.DEVICE_ID_HEADER, globalId)
+                                        .setDomain("wayf-cloud-sandbox.literatumonline.com");
 
+                                routingContext.addCookie(cookie);
                                 device.setGlobalId(null);
 
                                 return device;
