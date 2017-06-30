@@ -19,6 +19,7 @@ package com.atypon.wayf.verticle;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
+import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.routing.*;
 import com.google.common.collect.Lists;
@@ -91,6 +92,15 @@ public class WayfVerticle extends AbstractVerticle {
                 .allowedHeader("Access-Control-Allow-Headers")
                 .allowedHeader("Content-Type")
                 .allowedHeader("Authorization");
+
+        router.optionsWithRegex("*").handler((routingContext) -> {
+            String requestOrigin = RequestReader.getHeaderValue(routingContext, "Origin");
+
+            LOG.debug("Request origin [{}]", requestOrigin);
+
+            routingContext.response().putHeader("Access-Control-Allow-Origin", requestOrigin);
+            
+        });
 
         router.route().handler(handler);
         router.route().handler(CookieHandler.create());
