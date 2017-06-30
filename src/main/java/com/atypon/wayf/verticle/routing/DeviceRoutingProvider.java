@@ -156,6 +156,12 @@ public class DeviceRoutingProvider implements RoutingProvider {
                                         .setMaxAge(158132000l)
                                         .setPath("/");
 
+                                String requestOrigin = RequestReader.getHeaderValue(routingContext, "Origin");
+
+                                LOG.debug("Request origin [{}]", requestOrigin);
+
+                                routingContext.response().putHeader("Access-Control-Allow-Origin", requestOrigin);
+
                                 routingContext.addCookie(cookie);
                                 device.setGlobalId(null);
 
