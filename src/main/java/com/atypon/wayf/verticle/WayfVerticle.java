@@ -98,8 +98,7 @@ public class WayfVerticle extends AbstractVerticle {
 
             LOG.debug("Request origin [{}]", requestOrigin);
 
-            routingContext.response().putHeader("Access-Control-Allow-Origin", requestOrigin);
-
+            routingContext.response().putHeader("Access-Control-Allow-Origin", requestOrigin).end();
         });
 
         router.route().handler(handler);
