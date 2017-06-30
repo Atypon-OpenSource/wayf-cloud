@@ -75,8 +75,7 @@ public class WayfVerticle extends AbstractVerticle {
         LOG.info("Starting wayf-cloud server");
         startWebApp((http) -> completeStartup(http, fut));
     }
-
-    private CorsHandler customCorsHandler
+    
     private void startWebApp(Handler<AsyncResult<HttpServer>> next) {
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
         routingProviders = Lists.newArrayList(identityProviderUsageRouting, identityProviderRouting, deviceRoutingProvider, publisherRouting);
