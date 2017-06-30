@@ -34,6 +34,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import org.slf4j.Logger;
@@ -92,7 +93,7 @@ public class WayfVerticle extends AbstractVerticle {
                 .allowedHeader("Authorization");
 
         router.route().handler(handler);
-
+        router.route().handler(CookieHandler.create());
         LOG.debug("Adding routes");
         routingProviders.forEach((routingProvider) -> routingProvider.addRoutings(router));
 

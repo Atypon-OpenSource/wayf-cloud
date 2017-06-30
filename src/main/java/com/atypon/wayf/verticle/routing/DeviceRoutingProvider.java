@@ -152,7 +152,9 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
                                 responseWriter.setDeviceIdHeader(routingContext, globalId);
                                 Cookie cookie = new CookieImpl(RequestReader.DEVICE_ID_HEADER, globalId)
-                                        .setDomain("wayf-cloud-sandbox.literatumonline.com");
+                                        .setDomain("wayf-cloud-sandbox.literatumonline.com")
+                                        .setMaxAge(158132000l)
+                                        .setPath("/");
 
                                 routingContext.addCookie(cookie);
                                 device.setGlobalId(null);
