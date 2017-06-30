@@ -33,6 +33,7 @@ import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.Handler;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.CookieHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,12 +65,44 @@ public class WayfRequestHandlerFactory {
         return new WayfRequestHandlerObservableImpl(requestContextFactory, delegate);
     }
 
+
+    public Handler<RoutingContext> cookieSingle(Function<RoutingContext, Single<?>> delegate) {
+        return new WayfRequestHandlerCookieSingleImpl(requestContextFactory, delegate);
+    }
+
+
     public Handler<RoutingContext> single(Function<RoutingContext, Single<?>> delegate) {
         return new WayfRequestHandlerSingleImpl(requestContextFactory, delegate);
     }
 
     public Handler<RoutingContext> completable(Function<RoutingContext, Completable> delegate) {
         return new WayfRequestHandlerCompletableImpl(requestContextFactory, delegate);
+    }
+
+    private class WayfRequestHandlerCookieSingleImpl<T> implements CookieHandler {
+        private Function<RoutingContext, Single<T>> singleDelegate;
+        private RequestContextFactory requestContextFactory;
+
+        public WayfRequestHandlerCookieSingleImpl(RequestContextFactory requestContextFactory, Function<RoutingContext, Single<T>> delegate) {
+            this.requestContextFactory = requestContextFactory;
+            this.singleDelegate = delegate;
+        }
+
+        public void handle(RoutingContext event) {
+            RequestContextAccessor.set(requestContextFactory.fromRoutingContext(event));
+            authenticate();
+
+            Single.just(event)
+                    .observeOn(Schedulers.io())
+                    .flatMap((s_event) -> singleDelegate.apply(s_event))
+                    .subscribeOn(Schedulers.io()) // Write HTTP response on IO thread
+                    .subscribe(
+                            (result) -> responseWriter.buildSuccess(event, result),
+                            (e) -> event.fail(e)
+                    );
+
+            RequestContextAccessor.remove();
+        }
     }
 
     private class WayfRequestHandlerSingleImpl<T> implements Handler<RoutingContext> {

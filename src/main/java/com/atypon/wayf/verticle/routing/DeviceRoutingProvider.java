@@ -88,7 +88,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
         router.get(READ_DEVICE).handler(handlerFactory.single((rc) -> readDevice(rc)));
         router.get(FILTER_DEVICE).handler(handlerFactory.observable((rc) -> filterDevice(rc)));
         router.post(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.completable((rc) -> registerLocalId(rc)));
-        router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.single((rc) -> createPublisherDeviceRelationship(rc)));
+        router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.cookieSingle((rc) -> createPublisherDeviceRelationship(rc)));
     }
 
     public Single<Device> readDevice(RoutingContext routingContext) {
