@@ -17,12 +17,9 @@
 const WAYF_BASE_URL = "https://wayf-cloud-sandbox.literatumonline.com";
 
 const AUTHORIZATION_HEADER_KEY = "Authorization";
-const AUTHORIZATION_HEADER_VALUE = "Bearer @PUBLISHER_JWT@";
+const AUTHORIZATION_HEADER_VALUE = "@PUBLISHER_JWT@";
 
-const GLOBAL_ID_HEADER_NAME = "X-Device-Id";
-
-const LOCAL_ID_COOKIE_NAME = "localId";
-const GLOBAL_ID_COOKIE_NAME = "deviceId";
+const LOCAL_ID_COOKIE_NAME = "wayf-local";
 
 function registerLocalId(localId) {
     var url = buildRegisterDeviceURL(localId);
@@ -30,12 +27,7 @@ function registerLocalId(localId) {
     var request = new XMLHttpRequest();
     request.open("PATCH", url, true);
     request.setRequestHeader(AUTHORIZATION_HEADER_KEY, AUTHORIZATION_HEADER_VALUE);
-
-    var globalId = readGlobalId();
-    if (globalId) {
-        request.setRequestHeader(GLOBAL_ID_HEADER_NAME, globalId);
-    }
-
+    request.withCredentials = true;
     request.onreadystatechange = function() {
         if (request.readyState === XMLHttpRequest.DONE) {
             if (request.status > 299) {
@@ -43,12 +35,8 @@ function registerLocalId(localId) {
 
                 throw "Could not register local ID with WAYF";
             }
-
-            var globalId = request.getResponseHeader(GLOBAL_ID_HEADER_NAME);
-            setGlobalId(globalId);
         }
     }
-
     request.send(null);
 }
 
@@ -60,18 +48,6 @@ function buildRegisterDeviceURL(localId) {
 
 function readLocalId() {
     return readCookieValue(LOCAL_ID_COOKIE_NAME);
-}
-
-function setLocalId(localIdValue) {
-    setCookieValue(LOCAL_ID_COOKIE_NAME + "=" + localIdValue);
-}
-
-function readGlobalId() {
-    return readCookieValue(GLOBAL_ID_COOKIE_NAME);
-}
-
-function setGlobalId(globalId) {
-    setCookieValue(GLOBAL_ID_COOKIE_NAME + "=" + globalId);
 }
 
 function readCookieValue(cookieName) {
@@ -95,14 +71,7 @@ function readCookieValue(cookieName) {
     return null;
 }
 
-function setCookieValue(value) {
-    document.cookie = value;
-}
-
 window.onload = function() {
-    // Test code, this should be done by the publisher
-    setLocalId("local-id-publisher-a-85e53ff4-8701-4d4d-8d06-011668ce5365");
-
     var localId = readLocalId();
     registerLocalId(localId);
 }
