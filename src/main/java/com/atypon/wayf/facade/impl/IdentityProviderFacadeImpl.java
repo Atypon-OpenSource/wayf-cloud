@@ -149,11 +149,14 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
     @Override
     public Completable blockIdentityProviderForDevice(Device device, Long idpId) {
+        final Publisher publisher = RequestContextAccessor.get().getAuthenticated() != null?
+                Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()) : null;
+
         return read(idpId)
                 .map((identityProvider) ->
                         new DeviceAccess.Builder()
                                 .device(device)
-                                .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
+                                .publisher(publisher)
                                 .identityProvider(identityProvider)
                                 .type(DeviceAccessType.REMOVE_IDP)
                                 .build()
