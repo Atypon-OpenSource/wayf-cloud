@@ -23,13 +23,15 @@ const LOCAL_ID_COOKIE_NAME = "wayf-local";
 
 function registerLocalId(localId) {
     var url = buildRegisterDeviceURL(localId);
-
     var request = new XMLHttpRequest();
+
     request.open("PATCH", url, true);
     request.setRequestHeader(AUTHORIZATION_HEADER_KEY, AUTHORIZATION_HEADER_VALUE);
     request.withCredentials = true;
     request.onreadystatechange = function() {
         if (request.readyState === XMLHttpRequest.DONE) {
+            let event = new Event('wayf-done');
+            document.dispatchEvent(event);
             if (request.status > 299) {
                 console.log(request.status + " " + request.responseText);
 
