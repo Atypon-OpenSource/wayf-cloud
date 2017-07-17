@@ -77,6 +77,10 @@ public class DeviceRoutingProvider implements RoutingProvider {
     private PublisherFacade publisherFacade;
 
     @Inject
+    @Named("wayf.domain")
+    private String wayfDomain;
+
+    @Inject
     @Named("jwtSecret")
     private String jwtSecret;
 
@@ -150,15 +154,18 @@ public class DeviceRoutingProvider implements RoutingProvider {
                             .map((device) -> {
                                 String globalId = device.getGlobalId();
 
-                                responseWriter.setDeviceIdHeader(routingContext, globalId);
                                 Cookie cookie = new CookieImpl(RequestReader.DEVICE_ID_HEADER, globalId)
-                                        .setDomain("wayf-cloud-sandbox.literatumonline.com")
+                                        .setDomain(wayfDomain)
                                         .setMaxAge(158132000l)
                                         .setPath("/");
 
                                 String requestOrigin = RequestReader.getHeaderValue(routingContext, "Origin");
 
                                 LOG.debug("Request origin [{}]", requestOrigin);
+
+                                if (requestOrigin == null || requestOrigin.isEmpty()) {
+                                    throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Origin header is required");
+                                }
 
                                 routingContext.response().putHeader("Access-Control-Allow-Origin", requestOrigin);
 
