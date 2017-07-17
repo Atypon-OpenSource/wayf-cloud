@@ -34,7 +34,7 @@ public class RequestReader {
     public static final String LIMIT_QUERY_PARAM = "limit";
     public static final String OFFSET_QUERY_PARAM = "offset";
 
-    public static final String DEVICE_ID_HEADER = "X-Device-Id";
+    public static final String DEVICE_ID_HEADER = "deviceId";
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String USER_AGENT_HEADER = "User-Agent";
 

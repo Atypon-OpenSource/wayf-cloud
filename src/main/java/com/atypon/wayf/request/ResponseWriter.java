@@ -59,10 +59,6 @@ public class ResponseWriter {
         Json.prettyMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
-    public void setDeviceIdHeader(RoutingContext routingContext, String globalId) {
-        routingContext.response().putHeader(RequestReader.DEVICE_ID_HEADER, globalId);
-    }
-
     public <B> void buildSuccess(RoutingContext routingContext, B body) {
         LOG.debug("Building success message");
 

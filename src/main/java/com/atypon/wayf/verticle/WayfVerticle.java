@@ -19,9 +19,11 @@ package com.atypon.wayf.verticle;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
+import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.routing.*;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -29,9 +31,12 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.CookieHandler;
+import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,13 +78,36 @@ public class WayfVerticle extends AbstractVerticle {
         LOG.info("Starting wayf-cloud server");
         startWebApp((http) -> completeStartup(http, fut));
     }
-
+    
     private void startWebApp(Handler<AsyncResult<HttpServer>> next) {
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
         routingProviders = Lists.newArrayList(identityProviderUsageRouting, identityProviderRouting, deviceRoutingProvider, publisherRouting, deviceAccessRouting);
         // Create a router object.
         Router router = Router.router(vertx);
 
+        CorsHandler handler = CorsHandler.create("*")
+                .allowCredentials(true)
+                .allowedMethod(io.vertx.core.http.HttpMethod.PATCH)
+                .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
+                .exposedHeaders(Sets.newHashSet("X-Device-Id"))
+                .allowedHeader("Access-Control-Request-Method")
+                .allowedHeader("Access-Control-Allow-Credentials")
+                .allowedHeader("Access-Control-Allow-Origin")
+                .allowedHeader("Access-Control-Allow-Headers")
+                .allowedHeader("Content-Type")
+                .allowedHeader("Authorization");
+/*
+        router.optionsWithRegex(".*").handler((routingContext) -> {
+            handler.handle(routingContext);
+            String requestOrigin = RequestReader.getHeaderValue(routingContext, "Origin");
+
+            LOG.debug("Request origin [{}]", requestOrigin);
+
+            routingContext.response().putHeader("Access-Control-Allow-Origin", requestOrigin).end();
+        });*/
+
+        router.route().handler(handler);
+        router.route().handler(CookieHandler.create());
         LOG.debug("Adding routes");
         routingProviders.forEach((routingProvider) -> routingProvider.addRoutings(router));
 

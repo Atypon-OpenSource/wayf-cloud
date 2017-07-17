@@ -19,6 +19,7 @@ package com.atypon.wayf.request;
 import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.facade.AuthenticationFacade;
 import com.google.inject.Inject;
+import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,8 +68,9 @@ public class RequestContextFactory {
             requestContext.setOffset(Integer.parseInt(offset));
         }
 
-        String deviceId = RequestReader.getHeaderValue(routingContext, RequestReader.DEVICE_ID_HEADER);
-        if (deviceId != null && !deviceId.isEmpty()) {
+        Cookie deviceIdCookie = routingContext.getCookie(RequestReader.DEVICE_ID_HEADER);
+        if (deviceIdCookie != null) {
+            String deviceId = deviceIdCookie.getValue();
             requestContext.setDeviceId(deviceId);
         }
 

@@ -41,9 +41,11 @@ import com.google.inject.name.Named;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.impl.CookieImpl;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +77,10 @@ public class DeviceRoutingProvider implements RoutingProvider {
     private PublisherFacade publisherFacade;
 
     @Inject
+    @Named("wayf.domain")
+    private String wayfDomain;
+
+    @Inject
     @Named("jwtSecret")
     private String jwtSecret;
 
@@ -86,7 +92,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
         router.get(READ_DEVICE).handler(handlerFactory.single((rc) -> readDevice(rc)));
         router.get(FILTER_DEVICE).handler(handlerFactory.observable((rc) -> filterDevice(rc)));
         router.post(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.completable((rc) -> registerLocalId(rc)));
-        router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.single((rc) -> createPublisherDeviceRelationship(rc)));
+        router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.cookieSingle((rc) -> createPublisherDeviceRelationship(rc)));
     }
 
     public Single<Device> readDevice(RoutingContext routingContext) {
@@ -148,8 +154,22 @@ public class DeviceRoutingProvider implements RoutingProvider {
                             .map((device) -> {
                                 String globalId = device.getGlobalId();
 
-                                responseWriter.setDeviceIdHeader(routingContext, globalId);
+                                Cookie cookie = new CookieImpl(RequestReader.DEVICE_ID_HEADER, globalId)
+                                        .setDomain(wayfDomain)
+                                        .setMaxAge(158132000l)
+                                        .setPath("/");
 
+                                String requestOrigin = RequestReader.getHeaderValue(routingContext, "Origin");
+
+                                LOG.debug("Request origin [{}]", requestOrigin);
+
+                                if (requestOrigin == null || requestOrigin.isEmpty()) {
+                                    throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Origin header is required");
+                                }
+
+                                routingContext.response().putHeader("Access-Control-Allow-Origin", requestOrigin);
+
+                                routingContext.addCookie(cookie);
                                 device.setGlobalId(null);
 
                                 return device;
