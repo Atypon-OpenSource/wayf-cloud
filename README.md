@@ -35,6 +35,7 @@ redis.host=localhost
 redis.port=6379
 
 wayf.port=8080
+wayf.domain=wayf-cloud-sandbox.literatumonline.com
 ```
 The values may be overriden but all of the keys are required. Create this file in an easily accessible location.
 
