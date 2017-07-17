@@ -17,6 +17,7 @@
 package com.atypon.wayf.integration;
 
 import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
+import io.restassured.http.Cookie;
 import io.restassured.http.Method;
 import io.restassured.response.ExtractableResponse;
 
@@ -37,19 +38,23 @@ public class DeviceTestUtil {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateJwtTokenHeaderValue(publisherCode));
         headers.put("User-Agent", "Test-Agent");
+        headers.put("Origin", "test-origin.com");
+
+        Cookie cookie = null;
         if (globalId != null) {
-            headers.put("X-Device-Id", globalId);
+            cookie = new Cookie.Builder("deviceId", globalId).setDomain("test-origin.com").build();
         }
 
         ExtractableResponse relateResponse = request
                 .headers(headers)
                 .url("/1/device/" + localId)
                 .method(Method.PATCH)
+                .cookie(cookie)
                 .execute()
                 .statusCode(statusCode)
                 .extract();
 
-        String deviceIdHeader = relateResponse.header("X-Device-Id");
+        String deviceIdHeader = relateResponse.cookie("deviceId");
 
         String deviceBody = relateResponse.response().body().asString();
 
@@ -80,19 +85,23 @@ public class DeviceTestUtil {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateJwtTokenHeaderValue(publisherCode));
         headers.put("User-Agent", "Test-Agent");
+        headers.put("Origin", "test-origin.com");
+
+        Cookie cookie = null;
         if (globalId != null) {
-            headers.put("X-Device-Id", globalId);
+            cookie = new Cookie.Builder("deviceId", globalId).setDomain("test-origin.com").build();
         }
 
         ExtractableResponse relateResponse = request
                 .headers(headers)
                 .url("/1/device/" + localId)
                 .method(Method.PATCH)
+                .cookie(cookie)
                 .execute()
                 .statusCode(200)
                 .extract();
 
-        String deviceIdHeader = relateResponse.header("X-Device-Id");
+        String deviceIdHeader = relateResponse.cookie("deviceId");
         assertNotNull(deviceIdHeader);
 
         String deviceBody = relateResponse.response().body().asString();

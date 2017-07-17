@@ -17,6 +17,7 @@
 package com.atypon.wayf.verticle.routing;
 
 import io.restassured.http.ContentType;
+import io.restassured.http.Cookie;
 import io.restassured.http.Headers;
 import io.restassured.http.Method;
 import io.restassured.response.ExtractableResponse;
@@ -38,6 +39,7 @@ public class LoggingHttpRequest {
     private Method method;
     private String url;
     private Map<String, String> headers;
+    private Cookie cookie;
     private String body;
     private ContentType contentType;
     private String fileName;
@@ -67,6 +69,11 @@ public class LoggingHttpRequest {
         return this;
     }
 
+    public LoggingHttpRequest cookie(Cookie cookie) {
+        this.cookie = cookie;
+        return this;
+    }
+
     public LoggingHttpRequest body(String body) {
         this.body = body;
         return this;
@@ -80,6 +87,10 @@ public class LoggingHttpRequest {
 
         if (headers != null) {
             request.headers(headers);
+        }
+
+        if (cookie != null) {
+            request.cookie(cookie);
         }
 
         if (body != null) {
