@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.facade.impl;
 
+import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import com.atypon.wayf.facade.IdentityProviderFacade;
@@ -56,7 +57,12 @@ public class IdentityProviderFacadeMockImpl implements IdentityProviderFacade {
     }
 
     @Override
-    public Completable blockIdentityProviderForDevice(String localId, Long idpId) {
+    public Completable blockIdentityProviderForLocalId(String localId, Long idpId) {
+        return null;
+    }
+
+    @Override
+    public Completable blockIdentityProviderForGlobalId(String globalId, Long idpId) {
         return null;
     }
 
@@ -64,4 +70,82 @@ public class IdentityProviderFacadeMockImpl implements IdentityProviderFacade {
     public Single<IdentityProvider> recordIdentityProviderUse(String localId, IdentityProvider identityProvider) {
         return null;
     }
+
+    @Override
+    public Completable blockIdentityProviderForDevice(Device device, Long idpId) {
+        return null;
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

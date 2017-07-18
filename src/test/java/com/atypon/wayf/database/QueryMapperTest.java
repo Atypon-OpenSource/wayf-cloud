@@ -34,7 +34,6 @@ public class QueryMapperTest {
     public void testQueryMapper() throws Exception {
         DeviceAccess deviceAccess = new DeviceAccess();
         deviceAccess.setId(456L);
-        deviceAccess.setLocalId("123abc456");
         deviceAccess.setCreatedDate(new Date());
         deviceAccess.setModifiedDate(new Date());
 
@@ -47,7 +46,6 @@ public class QueryMapperTest {
         deviceAccess.setPublisher(publisher);
 
         Map<String, Object> arguments = QueryMapper.buildQueryArguments("SELECT id AS 'id', " +
-                "        local_id AS 'localId', " +
                 "        device_id AS 'device.globalId', " +
                 "        publisher_id AS 'publisher.id' " +
                 "        authenticated_by_id AS 'authenticatedBy.id', " +

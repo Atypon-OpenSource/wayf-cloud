@@ -19,6 +19,8 @@ package com.atypon.wayf.facade.impl;
 import com.atypon.wayf.dao.IdentityProviderDao;
 import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.ServiceException;
+import com.atypon.wayf.data.device.Device;
+import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessType;
 import com.atypon.wayf.data.identity.*;
@@ -125,7 +127,6 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
                         new DeviceAccess.Builder()
                                 .device(device)
                                 .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
-                                .localId(localId)
                                 .identityProvider(resolvedIdentityProvider)
                                 .type(DeviceAccessType.ADD_IDP)
                                 .build()
@@ -142,22 +143,33 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     }
 
     @Override
-    public Completable blockIdentityProviderForDevice(String localId, Long idpId) {
-        return Single.zip(read(idpId),
-                deviceFacade.readByLocalId(localId),
+    public Completable blockIdentityProviderForLocalId(String localId, Long idpId) {
+        return deviceFacade.readByLocalId(localId).flatMapCompletable((device) -> blockIdentityProviderForDevice(device, idpId));
+    }
 
-                (identityProvider, device) ->
-                    new DeviceAccess.Builder()
-                            .device(device)
-                            .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
-                            .localId(localId)
-                            .identityProvider(identityProvider)
-                            .type(DeviceAccessType.REMOVE_IDP)
-                            .build()
+    @Override
+    public Completable blockIdentityProviderForGlobalId(String globalId, Long idpId) {
+        return deviceFacade.read(new DeviceQuery().setGlobalId(globalId)).flatMapCompletable((device) -> blockIdentityProviderForDevice(device, idpId));
+    }
+
+    @Override
+    public Completable blockIdentityProviderForDevice(Device device, Long idpId) {
+        final Publisher publisher = RequestContextAccessor.get().getAuthenticated() != null?
+                Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()) : null;
+
+        return read(idpId)
+                .map((identityProvider) ->
+                        new DeviceAccess.Builder()
+                                .device(device)
+                                .publisher(publisher)
+                                .identityProvider(identityProvider)
+                                .type(DeviceAccessType.REMOVE_IDP)
+                                .build()
+
         ).flatMapCompletable((deviceAccess) ->
                 Completable.mergeArray(
-                    blacklistFacade.add(deviceAccess.getDevice(), deviceAccess.getIdentityProvider()).subscribeOn(Schedulers.io()),
-                    deviceAccessFacade.create(deviceAccess).toCompletable().subscribeOn(Schedulers.io())
+                        blacklistFacade.add(deviceAccess.getDevice(), deviceAccess.getIdentityProvider()).subscribeOn(Schedulers.io()),
+                        deviceAccessFacade.create(deviceAccess).toCompletable().subscribeOn(Schedulers.io())
                 )
         );
     }

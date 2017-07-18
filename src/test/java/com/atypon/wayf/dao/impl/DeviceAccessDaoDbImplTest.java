@@ -54,7 +54,6 @@ public class DeviceAccessDaoDbImplTest {
     @Test
     public void testCreate() {
         DeviceAccess deviceAccess = new DeviceAccess();
-        deviceAccess.setLocalId("test-local-id");
         deviceAccess.setType(DeviceAccessType.READ_IDP_HISTORY);
 
 
@@ -75,7 +74,6 @@ public class DeviceAccessDaoDbImplTest {
         assertNotNull(createdDeviceAccess.getId());
         assertNotNull(createdDeviceAccess.getCreatedDate());
 
-        assertEquals(deviceAccess.getLocalId(), createdDeviceAccess.getLocalId());
         assertEquals(deviceAccess.getDevice().getId(), createdDeviceAccess.getDevice().getId());
         assertEquals(deviceAccess.getIdentityProvider().getId(), createdDeviceAccess.getIdentityProvider().getId());
         assertEquals(deviceAccess.getPublisher().getId(), createdDeviceAccess.getPublisher().getId());
@@ -85,7 +83,6 @@ public class DeviceAccessDaoDbImplTest {
     @Test
     public void testFilterByDevice() {
         DeviceAccess deviceAccess = new DeviceAccess();
-        deviceAccess.setLocalId("test-local-id");
         deviceAccess.setType(DeviceAccessType.READ_IDP_HISTORY);
 
 
@@ -112,7 +109,6 @@ public class DeviceAccessDaoDbImplTest {
         assertEquals(createdDeviceAccess.getId(), filteredDeviceAccess.getId());
         assertEquals(createdDeviceAccess.getCreatedDate(), filteredDeviceAccess.getCreatedDate());
         assertEquals(createdDeviceAccess.getModifiedDate(), filteredDeviceAccess.getModifiedDate());
-        assertEquals(createdDeviceAccess.getLocalId(), filteredDeviceAccess.getLocalId());
         assertEquals(createdDeviceAccess.getDevice().getId(), filteredDeviceAccess.getDevice().getId());
         assertEquals(createdDeviceAccess.getIdentityProvider().getId(), filteredDeviceAccess.getIdentityProvider().getId());
         assertEquals(createdDeviceAccess.getPublisher().getId(), filteredDeviceAccess.getPublisher().getId());
@@ -122,7 +118,6 @@ public class DeviceAccessDaoDbImplTest {
     @Test
     public void testFilterExcludeIdp() {
         DeviceAccess deviceAccess = new DeviceAccess();
-        deviceAccess.setLocalId("test-local-id");
         deviceAccess.setType(DeviceAccessType.READ_IDP_HISTORY);
 
 
@@ -151,7 +146,6 @@ public class DeviceAccessDaoDbImplTest {
     @Test
     public void testFilterType() {
         DeviceAccess deviceAccess = new DeviceAccess();
-        deviceAccess.setLocalId("test-local-id");
         deviceAccess.setType(DeviceAccessType.READ_IDP_HISTORY);
 
 
@@ -186,7 +180,6 @@ public class DeviceAccessDaoDbImplTest {
         assertEquals(createdDeviceAccess.getId(), filteredDeviceAccess.getId());
         assertEquals(createdDeviceAccess.getCreatedDate(), filteredDeviceAccess.getCreatedDate());
         assertEquals(createdDeviceAccess.getModifiedDate(), filteredDeviceAccess.getModifiedDate());
-        assertEquals(createdDeviceAccess.getLocalId(), filteredDeviceAccess.getLocalId());
         assertEquals(createdDeviceAccess.getDevice().getId(), filteredDeviceAccess.getDevice().getId());
         assertEquals(createdDeviceAccess.getIdentityProvider().getId(), filteredDeviceAccess.getIdentityProvider().getId());
         assertEquals(createdDeviceAccess.getPublisher().getId(), filteredDeviceAccess.getPublisher().getId());

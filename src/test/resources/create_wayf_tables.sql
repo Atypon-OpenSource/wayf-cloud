@@ -160,7 +160,6 @@ DROP TABLE IF EXISTS `device_access`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `device_access` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `local_id` varchar(100) NOT NULL,
   `type` varchar(30) NOT NULL,
   `device_id` int(11) NOT NULL,
   `identity_provider_id` varchar(36) DEFAULT NULL,
