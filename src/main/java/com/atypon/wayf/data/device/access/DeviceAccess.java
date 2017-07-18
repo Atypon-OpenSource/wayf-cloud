@@ -51,14 +51,6 @@ public class DeviceAccess {
         this.id = id;
     }
 
-    public String getLocalId() {
-        return localId;
-    }
-
-    public void setLocalId(String localId) {
-        this.localId = localId;
-    }
-
     public Device getDevice() {
         return device;
     }
@@ -108,8 +100,6 @@ public class DeviceAccess {
     }
 
     public static class Builder {
-        private String localId;
-
         private Device device;
 
         private IdentityProvider identityProvider;
@@ -117,11 +107,6 @@ public class DeviceAccess {
         private Publisher publisher;
 
         private DeviceAccessType type;
-
-        public Builder localId(String localId) {
-            this.localId = localId;
-            return this;
-        }
 
         public Builder device(Device device) {
             this.device = device;
@@ -145,7 +130,6 @@ public class DeviceAccess {
 
         public DeviceAccess build() {
             DeviceAccess deviceAccess = new DeviceAccess();
-            deviceAccess.setLocalId(localId);
             deviceAccess.setDevice(device);
             deviceAccess.setIdentityProvider(identityProvider);
             deviceAccess.setPublisher(publisher);

@@ -46,12 +46,10 @@ public class BeanMapperTest {
     @Test
     public void testMapNested() throws Exception {
         Map<String, Object> row = new HashMap<>();
-        row.put("localId", "testId");
         row.put("device.globalId", "testDeviceId");
 
         DeviceAccess deviceAccess = beanMapper.map(row, DeviceAccess.class);
 
-        assertEquals("testId", deviceAccess.getLocalId());
         assertEquals("testDeviceId", deviceAccess.getDevice().getGlobalId());
     }
 

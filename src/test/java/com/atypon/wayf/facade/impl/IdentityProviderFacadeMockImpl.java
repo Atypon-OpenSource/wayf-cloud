@@ -57,7 +57,12 @@ public class IdentityProviderFacadeMockImpl implements IdentityProviderFacade {
     }
 
     @Override
-    public Completable blockIdentityProviderForDevice(String localId, Long idpId) {
+    public Completable blockIdentityProviderForLocalId(String localId, Long idpId) {
+        return null;
+    }
+
+    @Override
+    public Completable blockIdentityProviderForGlobalId(String globalId, Long idpId) {
         return null;
     }
 
@@ -71,3 +76,76 @@ public class IdentityProviderFacadeMockImpl implements IdentityProviderFacade {
         return null;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

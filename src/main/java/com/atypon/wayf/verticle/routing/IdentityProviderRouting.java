@@ -142,7 +142,7 @@ public class IdentityProviderRouting implements RoutingProvider {
 
         Long idpId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, IDP_ID_PARAM_NAME, IDP_ID_ARG_DESCRIPTION));
 
-        return identityProviderFacade.blockIdentityProviderForDevice(hashedLocalId, idpId);
+        return identityProviderFacade.blockIdentityProviderForLocalId(hashedLocalId, idpId);
     }
 
     public Completable removeIdentityProviderFromMyDevice(RoutingContext routingContext) {
@@ -152,7 +152,6 @@ public class IdentityProviderRouting implements RoutingProvider {
 
         Long idpId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, IDP_ID_PARAM_NAME, IDP_ID_ARG_DESCRIPTION));
 
-        return deviceFacade.read(new DeviceQuery().setGlobalId(globalId))
-                .flatMapCompletable((device) ->identityProviderFacade.blockIdentityProviderForDevice(device, idpId));
+        return identityProviderFacade.blockIdentityProviderForGlobalId(globalId, idpId);
     }
 }

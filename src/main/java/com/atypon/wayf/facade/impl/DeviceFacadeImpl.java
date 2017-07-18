@@ -122,11 +122,11 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
                 // Create a DeviceAccess object to store the resolved Device and Publisher. This may be
                 // a little clunky but the alternative would be to create a new type to wrap the two
-                .map((device) -> new DeviceAccess.Builder().device(device).publisher(publisher).localId(localId).build())
+                .map((device) -> new DeviceAccess.Builder().device(device).publisher(publisher).build())
 
                 .flatMap((deviceAccess) ->
                     // Now that all the required data is available, point the local ID at the device
-                    deviceDao.updateDevicePublisherLocalIdXref(deviceAccess.getDevice().getId(), deviceAccess.getPublisher().getId(), deviceAccess.getLocalId())
+                    deviceDao.updateDevicePublisherLocalIdXref(deviceAccess.getDevice().getId(), deviceAccess.getPublisher().getId(), localId)
                             .map((numAffectedRows) -> {
                                 if (numAffectedRows != 1) {
                                     throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not find local ID");

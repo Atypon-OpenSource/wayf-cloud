@@ -62,7 +62,6 @@ public class PublisherRouting implements RoutingProvider {
         router.post(CREATE_PUBLISHER).handler(handlerFactory.single((rc) -> createPublisher(rc)));
         router.get(READ_PUBLISHER).handler(handlerFactory.single((rc) -> readPublisher(rc)));
         router.get(FILTER_PUBLISHERS).handler(handlerFactory.observable((rc) -> filterPublishers(rc)));
-
     }
 
     public Single<Publisher> createPublisher(RoutingContext routingContext) {

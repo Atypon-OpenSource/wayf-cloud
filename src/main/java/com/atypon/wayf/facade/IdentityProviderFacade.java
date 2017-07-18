@@ -27,13 +27,15 @@ public interface IdentityProviderFacade {
     Single<IdentityProvider> create(IdentityProvider identityProvider);
     Single<IdentityProvider> read(Long id);
 
+    Completable blockIdentityProviderForLocalId(String localId, Long idpId);
+
+    Completable blockIdentityProviderForGlobalId(String globalId, Long idpId);
+
     Completable blockIdentityProviderForDevice(Device device, Long idpId);
 
     Observable<IdentityProvider> filter(IdentityProviderQuery filter);
 
     Single<IdentityProvider> resolve(IdentityProvider identityProvider);
-
-    Completable blockIdentityProviderForDevice(String localId, Long idpId);
 
     Single<IdentityProvider> recordIdentityProviderUse(String localId, IdentityProvider identityProvider);
 }
