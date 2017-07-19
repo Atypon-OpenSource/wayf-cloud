@@ -188,7 +188,7 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
                     .flatMap((dao) -> dao.filter(query))
                     .collectInto(new LinkedList<IdentityProvider>(), (idpList, idp) -> idpList.add(idp))
                     .flatMapObservable(idpList -> {
-                        Collections.sort(idpList, (a, b) -> a.getId().compareTo(b.getId()));
+                        Collections.sort(idpList, (a, b) -> a.getCreatedDate().compareTo(b.getCreatedDate()));
                         return Observable.fromIterable(idpList);
                     });
         }
