@@ -51,7 +51,6 @@ public class DeviceAdminIntegrationTest extends BaseHttpTest {
 
     private static final String RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON = getFileAsString(BASE_PUBLISHER_FILE_PATH + "/device/relate_new_device_publisher_a_response.json");
 
-    private static final String INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_PUBLISHER_FILE_PATH + "/history/initial_add_idp_response.json");
 
     private static final String SAML_IDP_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/identity_provider/saml_response.json");
     private static final String IDPS_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/identity_provider/idps_response.json");
@@ -64,6 +63,8 @@ public class DeviceAdminIntegrationTest extends BaseHttpTest {
 
     private static final String DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/history/device_history_response.json");
     private static final String HISTORY_AFTER_DELETE_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/history/history_after_delete_response.json");
+
+    private static final String MYDEVICE_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/device/mydevice_response.json");
 
 
     private Publisher publisherA;
@@ -115,6 +116,11 @@ public class DeviceAdminIntegrationTest extends BaseHttpTest {
 
         // Add back the SAML identity to the device
         identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(5, publisherBLocalId, publisherB.getToken(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
+    }
+
+    @Test
+    public void readMyDevice() {
+        deviceTestUtil.readMyDevice(globalId, MYDEVICE_RESPONSE_JSON);
     }
 
     @Test

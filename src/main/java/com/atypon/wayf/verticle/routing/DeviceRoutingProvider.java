@@ -90,7 +90,6 @@ public class DeviceRoutingProvider implements RoutingProvider {
     public void addRoutings(Router router) {
         router.route("/1/device*").handler(BodyHandler.create());
         router.get(READ_MY_DEVICE).handler(handlerFactory.single((rc) -> readMyDevice(rc)));
-        router.get(READ_DEVICE).handler(handlerFactory.single((rc) -> readDevice(rc)));
         router.get(FILTER_DEVICE).handler(handlerFactory.observable((rc) -> filterDevice(rc)));
         router.post(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.completable((rc) -> registerLocalId(rc)));
         router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.cookieSingle((rc) -> createPublisherDeviceRelationship(rc)));
@@ -103,14 +102,6 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
         String deviceId = RequestReader.getCookieValue(routingContext, RequestReader.DEVICE_ID);
         query.setGlobalId(deviceId);
-
-        return deviceFacade.read(query);
-    }
-
-    public Single<Device> readDevice(RoutingContext routingContext) {
-        LOG.debug("Received read Device request");
-
-        DeviceQuery query = buildQuery(routingContext);
 
         return deviceFacade.read(query);
     }

@@ -59,7 +59,6 @@ public class DeviceAccessRouting implements RoutingProvider {
 
     public void addRoutings(Router router) {
         router.get(MY_DEVICE_ACTIVITY).handler(handlerFactory.observable((rc) -> readMyDeviceLocalHistory(rc)));
-        router.get(READ_DEVICE_ACTIVITY).handler(handlerFactory.observable((rc) -> readDeviceLocalHistory(rc)));
     }
 
 
@@ -81,20 +80,4 @@ public class DeviceAccessRouting implements RoutingProvider {
         return deviceAccessFacade.filter(deviceAccessQuery);
     }
 
-    public Observable<DeviceAccess> readDeviceLocalHistory(RoutingContext routingContext) {
-        LOG.debug("Received create IdentityProvider request");
-
-        String globalId = RequestReader.readRequiredPathParameter(routingContext, GLOBAL_ID_PARAM_NAME, GLOBAL_ID_ARG_DESCRIPTION);
-        Device device = deviceFacade.read(new DeviceQuery().setGlobalId(globalId)).blockingGet();
-
-        DeviceAccessQuery deviceAccessQuery = new DeviceAccessQuery().setDeviceIds(Lists.newArrayList(device.getId()));
-
-        String type = RequestReader.getQueryValue(routingContext, "type");
-
-        if (type != null) {
-            deviceAccessQuery.setType(DeviceAccessType.valueOf(type));
-        }
-
-        return deviceAccessFacade.filter(deviceAccessQuery);
-    }
 }
