@@ -40,21 +40,21 @@ public class DeviceAdminIntegrationTest extends BaseHttpTest {
     private static final String CREATE_PUBLISHER_B_REQUEST_JSON = getFileAsString(BASE_PUBLISHER_FILE_PATH + "publisher/create_publisher_b_request.json");
     private static final String CREATE_PUBLISHER_B_RESPONSE_JSON = getFileAsString(BASE_PUBLISHER_FILE_PATH + "publisher/create_publisher_b_response.json");
 
-    private static final String CREATE_SAML_IDP_REQUEST_JSON = getFileAsString(BASE_PUBLISHER_FILE_PATH + "identity_provider/create_saml_entity_request.json");
-    private static final String CREATE_SAML_IDP_RESPONSE_JSON = getFileAsString(BASE_PUBLISHER_FILE_PATH + "identity_provider/create_saml_entity_response.json");
+    private static final String CREATE_SAML_IDP_REQUEST_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "identity_provider/create_saml_entity_request.json");
+    private static final String CREATE_SAML_IDP_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "identity_provider/create_saml_entity_response.json");
 
-    private static final String CREATE_OPEN_ATHENS_IDP_REQUEST_JSON = getFileAsString(BASE_PUBLISHER_FILE_PATH + "identity_provider/create_open_athens_entity_request.json");
-    private static final String CREATE_OPEN_ATHENS_IDP_RESPONSE_JSON = getFileAsString(BASE_PUBLISHER_FILE_PATH + "identity_provider/create_open_athens_entity_response.json");
+    private static final String CREATE_OPEN_ATHENS_IDP_REQUEST_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "identity_provider/create_open_athens_entity_request.json");
+    private static final String CREATE_OPEN_ATHENS_IDP_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "identity_provider/create_open_athens_entity_response.json");
 
-    private static final String CREATE_OAUTH_IDP_REQUEST_JSON = getFileAsString(BASE_PUBLISHER_FILE_PATH + "identity_provider/create_oauth_entity_request.json");
-    private static final String CREATE_OAUTH_IDP_RESPONSE_JSON = getFileAsString(BASE_PUBLISHER_FILE_PATH + "identity_provider/create_oauth_entity_response.json");
+    private static final String CREATE_OAUTH_IDP_REQUEST_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "identity_provider/create_oauth_entity_request.json");
+    private static final String CREATE_OAUTH_IDP_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "identity_provider/create_oauth_entity_response.json");
 
     private static final String RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON = getFileAsString(BASE_PUBLISHER_FILE_PATH + "/device/relate_new_device_publisher_a_response.json");
 
     private static final String INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON = getFileAsString(BASE_PUBLISHER_FILE_PATH + "/history/initial_add_idp_response.json");
 
-    private static final String SAML_IDP_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/idp/saml_response.json");
-    private static final String IDPS_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/idp/idps_response.json");
+    private static final String SAML_IDP_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/identity_provider/saml_response.json");
+    private static final String IDPS_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/identity_provider/idps_response.json");
 
     private static final String PUBLISHER_A_READ_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/publisher/publisher_a_response.json");
     private static final String PUBLISHERS_READ_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/publisher/publishers_response.json");
@@ -104,20 +104,11 @@ public class DeviceAdminIntegrationTest extends BaseHttpTest {
         samlIdpId = samlId;
         idpIds = Lists.newArrayList(samlId, openAthensId, oauthId);
 
-        // Test the device history after adding the IDPs
-        String deviceHistoryFromPublisherA = deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getToken(), INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON);
-
         // Relate the device to publisher B
         String publisherBLocalId = "local-id-publisher-b-" + UUID.randomUUID().toString();
 
         deviceTestUtil.registerLocalId(publisherBLocalId, publisherB.getToken());
         deviceTestUtil.relateDeviceToPublisher(publisherBLocalId, publisherB.getCode(), globalId, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
-
-        // Get the usage history for publisher B
-        String deviceHistoryFromPublisherB = deviceAccessTestUtil.testDeviceHistory(publisherBLocalId, publisherB.getToken(), INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON);
-
-        // Compare the usage history from publisher A to that of publisher B
-        deviceAccessTestUtil.compareDeviceHistory(deviceHistoryFromPublisherA, deviceHistoryFromPublisherB);
 
         // Remove the SAML entity from the device from publisher A
         identityProviderTestUtil.removeIdpForDevice(publisherALocalId, publisherA.getToken(), samlId);

@@ -75,24 +75,6 @@
     "device":{
 
     },
-    "publisher":{
-
-    },
-    "type":"READ_IDP_HISTORY"
-  },
-  {
-    "device":{
-
-    },
-    "publisher":{
-
-    },
-    "type":"READ_IDP_HISTORY"
-  },
-  {
-    "device":{
-
-    },
     "identityProvider":{
 
     },

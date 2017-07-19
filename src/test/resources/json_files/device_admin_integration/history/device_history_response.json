@@ -1,26 +1,29 @@
-[ {
-  "frequency" : 58.82,
-  "idp" : {
-    "type" : "SAML",
-    "name" : "SAML Entity",
-    "entityId" : "sample-saml-entity-id",
-    "federationId" : "sample-saml-federation-id"
+[
+  {
+    "frequency":58.82,
+    "idp":{
+      "type":"SAML",
+      "name":"SAML Entity 2",
+      "entityId":"sample-saml-entity-id-2",
+      "federationId":"sample-saml-federation-id-2"
+    }
+  },
+  {
+    "frequency":23.53,
+    "idp":{
+      "type":"OPEN_ATHENS",
+      "name":"Open Athens Entity 2",
+      "entityId":"sample-open-athens-2-entity-id",
+      "scope":"sample-scope-2",
+      "organizationId":"1234567"
+    }
+  },
+  {
+    "frequency":17.65,
+    "idp":{
+      "type":"OAUTH",
+      "name":"TWITTER",
+      "provider":"TWITTER"
+    }
   }
-}, {
-  "frequency" : 23.53,
-  "idp" : {
-    "type" : "OPEN_ATHENS",
-    "name" : "Open Athens Entity",
-    "entityId" : "sample-open-athens-entity-id",
-    "scope" : "sample-scope",
-    "organizationId" : "123456"
-  }
-}, {
-  "frequency" : 17.65,
-  "idp" : {
-    "type" : "OAUTH",
-    "name" : "Google",
-    "provider" : "GOOGLE",
-    "type" : "OAUTH"
-  }
-} ]
+]

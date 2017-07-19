@@ -3,18 +3,18 @@
     "frequency":57.14,
     "idp":{
       "type":"OPEN_ATHENS",
-      "name":"Open Athens Entity",
-      "entityId":"sample-open-athens-entity-id",
-      "scope":"sample-scope",
-      "organizationId":"123456"
+      "name":"Open Athens Entity 2",
+      "entityId":"sample-open-athens-2-entity-id",
+      "scope":"sample-scope-2",
+      "organizationId":"1234567"
     }
   },
   {
     "frequency":42.86,
     "idp":{
       "type":"OAUTH",
-      "name":"Google",
-      "provider":"GOOGLE"
+      "name":"TWITTER",
+      "provider":"TWITTER"
     }
   }
 ]
