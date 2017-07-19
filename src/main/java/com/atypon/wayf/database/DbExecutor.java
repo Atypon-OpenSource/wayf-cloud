@@ -30,6 +30,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 
+import java.util.List;
 import java.util.Map;
 
 @Singleton
@@ -76,7 +77,18 @@ public class DbExecutor {
 
         LOG.debug("Running query [{}] with values [{}]", query, arguments);
 
-        return Observable.fromIterable(namedParameterJdbcTemplate.query(query, arguments, new NestedFieldRowMapper(returnType, beanMapper)));
+        List<T> results = namedParameterJdbcTemplate.query(query, arguments, new NestedFieldRowMapper(returnType, beanMapper));
+
+        // If the results filled the limit + 1, there are more results to paginate through.
+        if (results.size() == RequestContextAccessor.get().getLimit() + 1) {
+            results.remove(results.size() - 1);
+
+            if (RequestContextAccessor.get() != null) {
+                RequestContextAccessor.get().setHasAnotherDbPage(Boolean.TRUE);
+            }
+        }
+
+        return Observable.fromIterable(results);
     }
 
     public Single<Long> executeUpdate(String query, Object arguments) {

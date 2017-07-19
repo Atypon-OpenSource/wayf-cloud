@@ -48,7 +48,7 @@ CREATE TABLE `identity_provider` (
   `organization_id` varchar(50) NULL,
   `federation_id` varchar(50) NULL,
   `provider` varchar(25) NULL,
-  `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_date` timestamp(4) NOT NULL DEFAULT CURRENT_TIMESTAMP(4),
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
@@ -164,7 +164,7 @@ CREATE TABLE `device_access` (
   `device_id` int(11) NOT NULL,
   `identity_provider_id` varchar(36) DEFAULT NULL,
   `publisher_id` varchar(36) DEFAULT NULL,
-  `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_date` timestamp(4) NOT NULL DEFAULT CURRENT_TIMESTAMP(4),
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;

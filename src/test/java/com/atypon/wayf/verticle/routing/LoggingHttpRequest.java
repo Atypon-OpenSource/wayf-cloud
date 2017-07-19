@@ -100,6 +100,7 @@ public class LoggingHttpRequest {
         String requestStr = createRequestLog();
 
         ValidatableResponse response = request
+                .urlEncodingEnabled(false)
                 .request(method, url)
                 .then();
 

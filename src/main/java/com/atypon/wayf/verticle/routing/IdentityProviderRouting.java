@@ -17,7 +17,6 @@
 package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import com.atypon.wayf.data.publisher.Publisher;
@@ -77,21 +76,12 @@ public class IdentityProviderRouting implements RoutingProvider {
     public void addRoutings(Router router) {
         router.route("/1/identityProvider*").handler(BodyHandler.create());
         router.route("/1/device*").handler(BodyHandler.create());
-        router.post(CREATE_IDENTITY_PROVIDER).handler(handlerFactory.single((rc) -> createIdentityProvider(rc)));
         router.get(READ_IDENTITY_PROVIDER).handler(handlerFactory.single((rc) -> readIdentityProvider(rc)));
         router.get(FILTER_IDENTITY_PROVIDERS).handler(handlerFactory.observable((rc) -> filterIdentityProviders(rc)));
         router.post(ADD_IDP_TO_DEVICE).handler(handlerFactory.single((rc) -> addIdentityProviderToDevice(rc)));
         router.delete(REMOVE_IDP_FROM_DEVICE).handler(handlerFactory.completable((rc) -> removeIdentityProviderFromDevice(rc)));
         router.delete(REMOVE_IDP_FROM_MY_DEVICE).handler(handlerFactory.completable((rc) -> removeIdentityProviderFromMyDevice(rc)));
 
-    }
-
-    public Single<IdentityProvider> createIdentityProvider(RoutingContext routingContext) {
-        LOG.debug("Received create IdentityProvider request");
-
-        IdentityProvider requestBody = RequestReader.readRequestBody(routingContext, IdentityProvider.class).blockingGet();
-
-        return identityProviderFacade.create(requestBody);
     }
 
     public Single<IdentityProvider> readIdentityProvider(RoutingContext routingContext) {
@@ -148,7 +138,7 @@ public class IdentityProviderRouting implements RoutingProvider {
     public Completable removeIdentityProviderFromMyDevice(RoutingContext routingContext) {
         LOG.debug("Received request to add IDP to device");
 
-        String globalId = RequestReader.getHeaderValue(routingContext, RequestReader.DEVICE_ID_HEADER);
+        String globalId = RequestReader.getCookieValue(routingContext, RequestReader.DEVICE_ID);
 
         Long idpId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, IDP_ID_PARAM_NAME, IDP_ID_ARG_DESCRIPTION));
 

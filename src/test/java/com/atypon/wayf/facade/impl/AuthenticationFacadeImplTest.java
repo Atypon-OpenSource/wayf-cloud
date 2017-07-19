@@ -18,8 +18,6 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.CacheLoader;
 import com.atypon.wayf.cache.LoadingCache;
-import com.atypon.wayf.dao.AuthenticationDao;
-import com.atypon.wayf.dao.impl.AuthenticationDaoRedisImpl;
 import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.data.AuthorizationTokenType;

@@ -16,18 +16,13 @@
 
 package com.atypon.wayf.verticle.routing;
 
-import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessQuery;
 import com.atypon.wayf.data.device.access.DeviceAccessType;
-import com.atypon.wayf.data.identity.IdentityProviderUsage;
-import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.DeviceAccessFacade;
 import com.atypon.wayf.facade.DeviceFacade;
-import com.atypon.wayf.facade.IdentityProviderUsageFacade;
-import com.atypon.wayf.request.RequestContextAccessor;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.google.common.collect.Lists;
@@ -45,6 +40,7 @@ public class DeviceAccessRouting implements RoutingProvider {
 
     private static final String GLOBAL_ID_PARAM_NAME = "globalId";
 
+    private static final String MY_DEVICE_ACTIVITY = "/1/mydevice/activity";
     private static final String READ_DEVICE_ACTIVITY = "/1/device/:globalId/activity";
 
     private static final String GLOBAL_ID_ARG_DESCRIPTION = "Global ID";
@@ -62,13 +58,15 @@ public class DeviceAccessRouting implements RoutingProvider {
     }
 
     public void addRoutings(Router router) {
-        router.get(READ_DEVICE_ACTIVITY).handler(handlerFactory.observable((rc) -> readDeviceLocalHistory(rc)));
+        router.get(MY_DEVICE_ACTIVITY).handler(handlerFactory.observable((rc) -> readMyDeviceLocalHistory(rc)));
     }
 
-    public Observable<DeviceAccess> readDeviceLocalHistory(RoutingContext routingContext) {
+
+    public Observable<DeviceAccess> readMyDeviceLocalHistory(RoutingContext routingContext) {
         LOG.debug("Received create IdentityProvider request");
 
-        String globalId = RequestReader.readRequiredPathParameter(routingContext, GLOBAL_ID_PARAM_NAME, GLOBAL_ID_ARG_DESCRIPTION);
+        String globalId = RequestReader.getCookieValue(routingContext, RequestReader.DEVICE_ID);
+
         Device device = deviceFacade.read(new DeviceQuery().setGlobalId(globalId)).blockingGet();
 
         DeviceAccessQuery deviceAccessQuery = new DeviceAccessQuery().setDeviceIds(Lists.newArrayList(device.getId()));
@@ -81,4 +79,5 @@ public class DeviceAccessRouting implements RoutingProvider {
 
         return deviceAccessFacade.filter(deviceAccessQuery);
     }
+
 }

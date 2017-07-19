@@ -1,0 +1,7 @@
+{
+  "entityId": "sample-open-athens-2-entity-id",
+  "organizationId": "1234567",
+  "scope": "sample-scope-2",
+  "type": "OPEN_ATHENS",
+  "name" : "Open Athens Entity 2"
+}

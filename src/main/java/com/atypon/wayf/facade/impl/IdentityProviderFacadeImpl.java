@@ -42,6 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.Map;
 
 import static com.atypon.wayf.reactivex.FacadePolicies.singleOrException;
@@ -183,7 +185,12 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
             Collection<IdentityProviderDao> daos = daosByType.values();
 
             return Observable.fromIterable(daos)
-                    .flatMap((dao) -> dao.filter(query));
+                    .flatMap((dao) -> dao.filter(query))
+                    .collectInto(new LinkedList<IdentityProvider>(), (idpList, idp) -> idpList.add(idp))
+                    .flatMapObservable(idpList -> {
+                        Collections.sort(idpList, (a, b) -> a.getCreatedDate().compareTo(b.getCreatedDate()));
+                        return Observable.fromIterable(idpList);
+                    });
         }
     }
 

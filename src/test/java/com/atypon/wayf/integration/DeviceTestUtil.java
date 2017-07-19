@@ -135,4 +135,28 @@ public class DeviceTestUtil {
 
         assertJsonEquals(expectedResponseJson, relateBadTokenResponse.body().asString(), relateResponseGeneratedFields);
     }
+
+    public void readMyDevice(String globalId, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Cookie", "deviceId=" + globalId);
+
+        ExtractableResponse relateResponse = request
+                .headers(headers)
+                .url("/1/mydevice/")
+                .method(Method.GET)
+                .execute()
+                .statusCode(200)
+                .extract();
+
+
+        String deviceBody = relateResponse.response().body().asString();
+
+        String[] relateResponseGeneratedFields = {
+                "$.id",
+                "$.globalId",
+                "$.createdDate"
+        };
+
+        assertJsonEquals(expectedResponseJson, deviceBody, relateResponseGeneratedFields);
+    }
 }

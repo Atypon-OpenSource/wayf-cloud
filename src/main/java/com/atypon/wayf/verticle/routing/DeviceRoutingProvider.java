@@ -31,7 +31,6 @@ import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.collect.Lists;
@@ -58,6 +57,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
     private static final String LOCAL_ID_PARAM = "localId";
 
     private static final String READ_DEVICE = "/1/device/:id";
+    private static final String READ_MY_DEVICE = "/1/mydevice";
     private static final String FILTER_DEVICE = "/1/devices";
     private static final String ADD_DEVICE_PUBLISHER_RELATIONSHIP = "/1/device/:localId";
 
@@ -89,16 +89,19 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
     public void addRoutings(Router router) {
         router.route("/1/device*").handler(BodyHandler.create());
-        router.get(READ_DEVICE).handler(handlerFactory.single((rc) -> readDevice(rc)));
+        router.get(READ_MY_DEVICE).handler(handlerFactory.single((rc) -> readMyDevice(rc)));
         router.get(FILTER_DEVICE).handler(handlerFactory.observable((rc) -> filterDevice(rc)));
         router.post(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.completable((rc) -> registerLocalId(rc)));
         router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.cookieSingle((rc) -> createPublisherDeviceRelationship(rc)));
     }
 
-    public Single<Device> readDevice(RoutingContext routingContext) {
+    public Single<Device> readMyDevice(RoutingContext routingContext) {
         LOG.debug("Received read Device request");
 
         DeviceQuery query = buildQuery(routingContext);
+
+        String deviceId = RequestReader.getCookieValue(routingContext, RequestReader.DEVICE_ID);
+        query.setGlobalId(deviceId);
 
         return deviceFacade.read(query);
     }
@@ -154,7 +157,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
                             .map((device) -> {
                                 String globalId = device.getGlobalId();
 
-                                Cookie cookie = new CookieImpl(RequestReader.DEVICE_ID_HEADER, globalId)
+                                Cookie cookie = new CookieImpl(RequestReader.DEVICE_ID, globalId)
                                         .setDomain(wayfDomain)
                                         .setMaxAge(158132000l)
                                         .setPath("/");

@@ -21,6 +21,7 @@ import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.atypon.wayf.integration.HttpTestUtil.assertJsonEquals;
@@ -34,6 +35,51 @@ public class IdentityProviderTestUtil {
 
     public IdentityProviderTestUtil(LoggingHttpRequest request) {
         this.request = request;
+    }
+
+    public void readIdpById(Long idpId, String expectedResponseJson) {
+        String readIdpResponse =
+                request
+                        .contentType(ContentType.JSON)
+                        .method(Method.GET)
+                        .url("/1/identityProvider/" + idpId)
+                        .execute()
+                        .statusCode(200)
+                        .extract().response().asString();
+
+        String[] readIdpGeneratedFields = {
+                "$.id",
+                "$.createdDate"
+        };
+
+        assertJsonEquals(expectedResponseJson, readIdpResponse, readIdpGeneratedFields);
+    }
+
+    public void readIdpsByIds(List<Long> idpIds, String expectedResponseJson) {
+        StringBuilder idsBuilder = new StringBuilder();
+
+        for (Long idpId : idpIds) {
+            idsBuilder.append(idpId);
+            idsBuilder.append(",");
+        }
+
+        idsBuilder.setLength(idsBuilder.length() - 1);
+
+        String readIdpsResponse =
+                request
+                        .contentType(ContentType.JSON)
+                        .method(Method.GET)
+                        .url("/1/identityProviders?ids=" + idsBuilder.toString())
+                        .execute()
+                        .statusCode(200)
+                        .extract().response().asString();
+
+        String[] readIdpsGeneratedFields = {
+                "$[*].id",
+                "$[*].createdDate"
+        };
+
+        assertJsonEquals(expectedResponseJson, readIdpsResponse, readIdpsGeneratedFields);
     }
 
     public void addIdpToDeviceError(int statusCode, String localId, String publisherToken, String idpBodyJson, String expectedResponseJson) {
@@ -130,6 +176,23 @@ public class IdentityProviderTestUtil {
                         .headers(headers)
                         .method(Method.DELETE)
                         .url("/1/device/" + localId + "/history/idp/" + idpId)
+                        .execute()
+                        .statusCode(200)
+                        .extract().response().asString();
+
+        assertTrue(removeIdpResponse.isEmpty());
+    }
+
+    public void removeIdpForDevice(String globalId, Long idpId) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Cookie", "deviceId=" + globalId);
+
+        String removeIdpResponse =
+                request
+                        .contentType(ContentType.JSON)
+                        .headers(headers)
+                        .method(Method.DELETE)
+                        .url("/1/mydevice/history/idp/" + idpId)
                         .execute()
                         .statusCode(200)
                         .extract().response().asString();
