@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.atypon.wayf.integration.HttpTestUtil.assertJsonEquals;
+import static com.atypon.wayf.integration.HttpTestUtil.assertNotNullPaths;
 import static com.atypon.wayf.integration.HttpTestUtil.readField;
 import static com.atypon.wayf.request.ResponseWriter.DATE_FORMAT;
 import static org.junit.Assert.assertTrue;
@@ -99,5 +100,80 @@ public class DeviceAccessTestUtil {
                 throw new RuntimeException("Could not parse date in " + deviceHistory, e);
             }
         }
+    }
+
+    public void testLatestActivity(String globalId, String expectedResponse) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Cookie", "deviceId=" + globalId);
+
+        String latestActivityResponse =
+                request
+                        .contentType(ContentType.JSON)
+                        .headers(headers)
+                        .url("/1/mydevice/activity?limit=1&type=ADD_IDP")
+                        .method(Method.GET)
+                        .execute()
+                        .statusCode(200)
+                        .extract().response().asString();
+
+        String[] latestActivityGeneratedFields = {
+                "$[*].id",
+                "$[*].device.id",
+                "$[*].identityProvider.id",
+                "$[*].identityProvider.type",
+                "$[*].publisher.id",
+                "$[*].createdDate"
+        };
+
+        assertNotNullPaths(latestActivityResponse, latestActivityGeneratedFields);
+
+        assertJsonEquals(expectedResponse, latestActivityResponse, latestActivityGeneratedFields);
+    }
+
+    public void testActivity(String globalId, String expectedResponse) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Cookie", "deviceId=" + globalId);
+
+        String activityResponse =
+                request
+                        .contentType(ContentType.JSON)
+                        .headers(headers)
+                        .url("/1/mydevice/activity?limit=30")
+                        .method(Method.GET)
+                        .execute()
+                        .statusCode(200)
+                        .extract().response().asString();
+
+        String[] activityGeneratedFields = {
+                "$[*].id",
+                "$[*].device.id",
+                "$[*].identityProvider.id",
+                "$[*].identityProvider.type",
+                "$[*].publisher.id",
+                "$[*].createdDate"
+        };
+
+        assertNotNullPaths(activityResponse, activityGeneratedFields);
+
+        assertJsonEquals(expectedResponse, activityResponse, activityGeneratedFields);
+    }
+
+    public String testDeviceHistory(String globalId, String expectedHistoryJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Cookie", "deviceId=" + globalId);
+
+        String historyResponse =
+                request
+                        .contentType(ContentType.JSON)
+                        .headers(headers)
+                        .url("/1/mydevice/history")
+                        .method(Method.GET)
+                        .execute()
+                        .statusCode(200)
+                        .extract().response().asString();
+
+        compareDeviceHistory(expectedHistoryJson, historyResponse);
+
+        return historyResponse;
     }
 }

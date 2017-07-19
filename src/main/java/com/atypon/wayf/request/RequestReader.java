@@ -20,6 +20,7 @@ import com.atypon.wayf.data.ServiceException;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.json.Json;
+import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ public class RequestReader {
     public static final String LIMIT_QUERY_PARAM = "limit";
     public static final String OFFSET_QUERY_PARAM = "offset";
 
-    public static final String DEVICE_ID_HEADER = "deviceId";
+    public static final String DEVICE_ID = "deviceId";
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String USER_AGENT_HEADER = "User-Agent";
 
@@ -63,6 +64,15 @@ public class RequestReader {
         LOG.debug("Reading header value [{}] from request", headerName);
         return routingContext.request().getHeader(headerName);
     }
+
+    public static String getCookieValue(RoutingContext routingContext, String cookieName) {
+        LOG.debug("Reading cookie value [{}] from request", cookieName);
+
+        Cookie cookie = routingContext.getCookie(cookieName);
+
+        return cookie == null? null : cookie.getValue();
+    }
+
 
     public static String readRequiredPathParameter(RoutingContext routingContext, String argumentName, String argDescription) {
         String parameter = readPathArgument(routingContext, argumentName);

@@ -1,0 +1,26 @@
+[ {
+  "frequency" : 58.82,
+  "idp" : {
+    "type" : "SAML",
+    "name" : "SAML Entity",
+    "entityId" : "sample-saml-entity-id",
+    "federationId" : "sample-saml-federation-id"
+  }
+}, {
+  "frequency" : 23.53,
+  "idp" : {
+    "type" : "OPEN_ATHENS",
+    "name" : "Open Athens Entity",
+    "entityId" : "sample-open-athens-entity-id",
+    "scope" : "sample-scope",
+    "organizationId" : "123456"
+  }
+}, {
+  "frequency" : 17.65,
+  "idp" : {
+    "type" : "OAUTH",
+    "name" : "Google",
+    "provider" : "GOOGLE",
+    "type" : "OAUTH"
+  }
+} ]

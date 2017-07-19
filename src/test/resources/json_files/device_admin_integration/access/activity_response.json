@@ -1,0 +1,236 @@
+[
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"REMOVE_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"READ_IDP_HISTORY"
+  },
+  {
+    "device":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"READ_IDP_HISTORY"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  },
+  {
+    "device":{
+
+    },
+    "identityProvider":{
+
+    },
+    "publisher":{
+
+    },
+    "type":"ADD_IDP"
+  }
+]

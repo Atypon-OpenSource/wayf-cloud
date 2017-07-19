@@ -17,7 +17,6 @@
 package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import com.atypon.wayf.data.publisher.Publisher;
@@ -148,7 +147,7 @@ public class IdentityProviderRouting implements RoutingProvider {
     public Completable removeIdentityProviderFromMyDevice(RoutingContext routingContext) {
         LOG.debug("Received request to add IDP to device");
 
-        String globalId = RequestReader.getHeaderValue(routingContext, RequestReader.DEVICE_ID_HEADER);
+        String globalId = RequestReader.getCookieValue(routingContext, RequestReader.DEVICE_ID);
 
         Long idpId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, IDP_ID_PARAM_NAME, IDP_ID_ARG_DESCRIPTION));
 

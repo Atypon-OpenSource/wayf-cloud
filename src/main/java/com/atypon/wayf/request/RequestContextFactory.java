@@ -68,7 +68,7 @@ public class RequestContextFactory {
             requestContext.setOffset(Integer.parseInt(offset));
         }
 
-        Cookie deviceIdCookie = routingContext.getCookie(RequestReader.DEVICE_ID_HEADER);
+        Cookie deviceIdCookie = routingContext.getCookie(RequestReader.DEVICE_ID);
         if (deviceIdCookie != null) {
             String deviceId = deviceIdCookie.getValue();
             requestContext.setDeviceId(deviceId);

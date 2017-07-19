@@ -21,6 +21,8 @@ import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 
+import java.util.List;
+
 import static com.atypon.wayf.integration.HttpTestUtil.*;
 
 public class PublisherTestUtil {
@@ -29,6 +31,55 @@ public class PublisherTestUtil {
 
     public PublisherTestUtil(LoggingHttpRequest request) {
         this.request = request;
+    }
+
+    public void testReadPublisher(Long publisherId, String expectedResponseJson) {
+        String readResponse =
+                request
+                        .contentType(ContentType.JSON)
+                        .method(Method.GET)
+                        .url("/1/publisher/" + publisherId)
+                        .execute()
+                        .statusCode(200)
+                        .extract().response().asString();
+
+        String[] readResponseGeneratedFields = {
+                "$.id",
+                "$.code",
+                "$.createdDate"
+        };
+
+        assertNotNullPaths(readResponse, readResponseGeneratedFields);
+        assertJsonEquals(expectedResponseJson, readResponse, readResponseGeneratedFields);
+    }
+
+    public void testReadPublishers(List<Long> publisherIds, String expectedResponseJson) {
+        StringBuilder idsBuilder = new StringBuilder();
+
+        for (Long publisherId : publisherIds) {
+            idsBuilder.append(publisherId);
+            idsBuilder.append(",");
+        }
+
+        idsBuilder.setLength(idsBuilder.length() - 1);
+
+        String readResponse =
+                request
+                        .contentType(ContentType.JSON)
+                        .method(Method.GET)
+                        .url("/1/publishers?ids=" + idsBuilder.toString())
+                        .execute()
+                        .statusCode(200)
+                        .extract().response().asString();
+
+        String[] readResponseGeneratedFields = {
+                "$[*].id",
+                "$[*].code",
+                "$[*].createdDate"
+        };
+
+        assertNotNullPaths(readResponse, readResponseGeneratedFields);
+        assertJsonEquals(expectedResponseJson, readResponse, readResponseGeneratedFields);
     }
 
     public Publisher testCreatePublisher(String requestBody, String response) {
@@ -52,12 +103,14 @@ public class PublisherTestUtil {
 
         assertNotNullPaths(createResponse, createResponseGeneratedFields);
 
+        Long id = Long.valueOf(readField(createResponse, "$.id"));
         String token = readField(createResponse, "$.token");
         String code = readField(createResponse, "$.code");
 
         assertJsonEquals(response, createResponse, createResponseGeneratedFields);
 
         Publisher publisher = new Publisher();
+        publisher.setId(id);
         publisher.setCode(code);
         publisher.setToken(token);
 
