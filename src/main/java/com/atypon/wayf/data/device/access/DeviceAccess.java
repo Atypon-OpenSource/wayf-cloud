@@ -16,18 +16,15 @@
 
 package com.atypon.wayf.data.device.access;
 
-import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.request.RequestContextAccessor;
 
 import java.util.Date;
 
 public class DeviceAccess {
     private Long id;
 
-    private String localId;
 
     private Device device;
 

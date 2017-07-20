@@ -159,4 +159,82 @@ public class DeviceTestUtil {
 
         assertJsonEquals(expectedResponseJson, deviceBody, relateResponseGeneratedFields);
     }
+    public void readDevices(String[] globalIds, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+
+        StringBuilder builder = new StringBuilder();
+        for (String globalId : globalIds) {
+            builder.append(globalId);
+            builder.append(",");
+        }
+
+        builder.setLength(builder.length() - 1);
+
+
+        ExtractableResponse relateResponse = request
+                .headers(headers)
+                .url("/1/devices?globalIds=" + builder.toString())
+                .method(Method.GET)
+                .execute()
+                .statusCode(200)
+                .extract();
+
+        String devicesBody = relateResponse.response().body().asString();
+
+        String[] relateResponseGeneratedFields = {
+                "$[*].id",
+                "$[*].globalId",
+                "$[*].createdDate"
+        };
+
+        assertJsonEquals(expectedResponseJson, devicesBody, relateResponseGeneratedFields);
+    }
+    public void readDevice(String globalId, String[] fields, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+
+        String fieldsParam = "";
+        if(fields != null && fields.length > 0) {
+            StringBuilder builder = new StringBuilder();
+            for (String field : fields) {
+                builder.append(field);
+                builder.append(",");
+            }
+
+            builder.setLength(builder.length() - 1);
+
+            fieldsParam = "?fields=" + builder.toString();
+        }
+
+        ExtractableResponse relateResponse = request
+                .headers(headers)
+                .url("/1/device/" + globalId + fieldsParam)
+                .method(Method.GET)
+                .execute()
+                .statusCode(200)
+                .extract();
+
+
+        String deviceBody = relateResponse.response().body().asString();
+
+        String[] relateResponseGeneratedFields = {
+                "$.id",
+                "$.globalId",
+                "$.history[*].lastActiveDate",
+                "$.history[*].idp.id",
+                "$.history[*].idp.createdDate",
+                "$.activity[*].id",
+                "$.activity[*].device.id",
+                "$.activity[*].device.globalId",
+                "$.activity[*].device.createdDate",
+                "$.activity[*].publisher.id",
+                "$.activity[*].publisher.code",
+                "$.activity[*].publisher.createdDate",
+                "$.activity[*].identityProvider.id",
+                "$.activity[*].identityProvider.createdDate",
+                "$.activity[*].createdDate",
+                "$.createdDate"
+        };
+
+        assertJsonEquals(expectedResponseJson, deviceBody, relateResponseGeneratedFields);
+    }
 }

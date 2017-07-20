@@ -53,10 +53,6 @@ public class PublisherDaoDbImpl implements PublisherDao {
     private String updateSql;
 
     @Inject
-    @Named("publisher.dao.db.delete")
-    private String deleteSql;
-
-    @Inject
     @Named("publisher.dao.db.filter")
     private String filterSql;
 
@@ -92,15 +88,6 @@ public class PublisherDaoDbImpl implements PublisherDao {
     @Override
     public Single<Publisher> update(Publisher publisher) {
         return null;
-    }
-
-    @Override
-    public Completable delete(Long id) {
-        Map<String, Object> args = new HashMap<>();
-        args.put("id", id);
-
-        return Completable.fromSingle(dbExecutor.executeUpdate(deleteSql, args))
-                .compose((completable) -> DaoPolicies.applyCompletable(completable));
     }
 
     @Override

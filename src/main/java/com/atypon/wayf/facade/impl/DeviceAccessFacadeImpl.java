@@ -111,7 +111,7 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
         // Run the inflations in parallel
         return Completable.mergeArray(
                 inflatePublishers(Lists.newArrayList(deviceAccess), query),
-                inflateAuthenticatedBys(deviceAccess, query),
+                inflateIdentityProviders(deviceAccess, query),
                 inflateDevices(deviceAccess, query)
         ).compose((completable) -> FacadePolicies.applyCompletable(completable));
     }
@@ -143,9 +143,9 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
                 );
     }
 
-    private Completable inflateAuthenticatedBys(Iterable<DeviceAccess> deviceAccesss, DeviceAccessQuery query) {
+    private Completable inflateIdentityProviders(Iterable<DeviceAccess> deviceAccesss, DeviceAccessQuery query) {
         // Return as complete if authenticatedBy is not a requested field
-        if (query.getInflationPolicy() == null || !query.getInflationPolicy().hasChildField(DeviceAccessQuery.AUTHENTICATED_BY)) {
+        if (query.getInflationPolicy() == null || !query.getInflationPolicy().hasChildField(DeviceAccessQuery.IDENTITY_PROVIDER)) {
             return Completable.complete();
         }
 
@@ -176,21 +176,21 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
             return Completable.complete();
         }
 
-        Multimap<String, DeviceAccess> deviceAccesssByDeviceId = HashMultimap.create();
+        Multimap<Long, DeviceAccess> deviceAccesssByDeviceId = HashMultimap.create();
 
         return Observable.fromIterable(deviceAccesss)
                 // Filter out publisher sessions with no publisher
-                .filter((deviceAccess) -> deviceAccess.getDevice() != null && deviceAccess.getDevice().getGlobalId() != null)
+                .filter((deviceAccess) -> deviceAccess.getDevice() != null && deviceAccess.getDevice().getId() != null)
 
                 // Collect all of the publisher sessions and their device IDs into a map
-                .collectInto(deviceAccesssByDeviceId, (map, deviceAccess) -> map.put(deviceAccess.getDevice().getGlobalId(), deviceAccess))
+                .collectInto(deviceAccesssByDeviceId, (map, deviceAccess) -> map.put(deviceAccess.getDevice().getId(), deviceAccess))
 
                 // Fetch all of the publishers for those publisher IDs
-                .flatMapObservable((map) -> map.keySet().isEmpty()? Observable.empty() : deviceFacade.filter(new DeviceQuery().setGlobalIds(map.keySet())))
+                .flatMapObservable((map) -> map.keySet().isEmpty()? Observable.empty() : deviceFacade.filter(new DeviceQuery().setIds(map.keySet())))
 
                 // For each identity provider returned, map it to each publisher session that had its ID
                 .flatMapCompletable((device) ->
-                        Observable.fromIterable(deviceAccesssByDeviceId.get(device.getGlobalId()))
+                        Observable.fromIterable(deviceAccesssByDeviceId.get(device.getId()))
                                 .flatMapCompletable((deviceAccess) ->
                                         Completable.fromAction(() -> deviceAccess.setDevice(device))
                                 )

@@ -21,13 +21,32 @@ import com.atypon.wayf.data.InflationPolicy;
 import java.util.Collection;
 
 public class DeviceQuery {
-    public static final String SESSIONS = "sessions";
+    public static final String ACTIVITY = "activity";
+    public static final String HISTORY = "history";
 
+    private Collection<Long> ids;
     private String globalId;
     private Collection<String> globalIds;
     private InflationPolicy inflationPolicy;
 
     public DeviceQuery() {
+    }
+
+    public Collection<Long> getIds() {
+        return ids;
+    }
+
+    public DeviceQuery setIds(Collection<Long> ids) {
+        this.ids = ids;
+        return this;
+    }
+
+    /**
+     * Database use only
+     * @return
+     */
+    public boolean isNullIds() {
+        return ids == null;
     }
 
     public String getGlobalId() {

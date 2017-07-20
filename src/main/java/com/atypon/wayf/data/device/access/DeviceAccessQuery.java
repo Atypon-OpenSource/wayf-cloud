@@ -24,7 +24,7 @@ import java.util.List;
 public class DeviceAccessQuery {
     public static final String DEVICE = "device";
     public static final String PUBLISHER_FIELD = "publisher";
-    public static final String AUTHENTICATED_BY = "authenticatedBy";
+    public static final String IDENTITY_PROVIDER = "identityProvider";
 
     private Long id;
 
