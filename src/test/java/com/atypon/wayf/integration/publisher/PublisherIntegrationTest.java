@@ -67,6 +67,8 @@ public class PublisherIntegrationTest extends BaseHttpTest {
     private Publisher publisherA;
     private Publisher publisherB;
 
+    public String globalId;
+
     public PublisherIntegrationTest() {
         super(HTTP_LOGGING_FILE);
     }
@@ -94,6 +96,8 @@ public class PublisherIntegrationTest extends BaseHttpTest {
 
         // Create device
         String globalIdPublisherA = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+
+        globalId = globalIdPublisherA;
 
         // Assert an empty history
         deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);

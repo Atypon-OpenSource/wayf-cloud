@@ -49,6 +49,9 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Singleton
 public class DeviceRoutingProvider implements RoutingProvider {
     private static final Logger LOG = LoggerFactory.getLogger(DeviceRoutingProvider.class);
@@ -89,10 +92,22 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
     public void addRoutings(Router router) {
         router.route("/1/device*").handler(BodyHandler.create());
+        router.get(READ_DEVICE).handler(handlerFactory.single((rc) -> readDevice(rc)));
         router.get(READ_MY_DEVICE).handler(handlerFactory.single((rc) -> readMyDevice(rc)));
         router.get(FILTER_DEVICE).handler(handlerFactory.observable((rc) -> filterDevice(rc)));
         router.post(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.completable((rc) -> registerLocalId(rc)));
         router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.cookieSingle((rc) -> createPublisherDeviceRelationship(rc)));
+    }
+
+    public Single<Device> readDevice(RoutingContext routingContext) {
+        LOG.debug("Received read Device request");
+
+        DeviceQuery query = buildQuery(routingContext);
+
+        String globalIdParam = RequestReader.readRequiredPathParameter(routingContext, DEVICE_ID_PARAM_NAME, "Global ID");
+        query.setGlobalId(globalIdParam);
+
+        return deviceFacade.read(query);
     }
 
     public Single<Device> readMyDevice(RoutingContext routingContext) {
@@ -189,12 +204,9 @@ public class DeviceRoutingProvider implements RoutingProvider {
             query.setInflationPolicy(inflationPolicyParser.parse(fields));
         }
 
-        String id = RequestReader.readPathArgument(routingContext, DEVICE_ID_PARAM_NAME);
-        query.setGlobalId(id);
-
-        String ids = RequestReader.getQueryValue(routingContext, "ids");
-        if (ids != null) {
-            String[] idArray = ids.split(",");
+        String globalIds = RequestReader.getQueryValue(routingContext, "globalIds");
+        if (globalIds != null) {
+            String[] idArray = globalIds.split(",");
             query.setGlobalIds(Lists.newArrayList(idArray));
         }
 

@@ -25,9 +25,11 @@ import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.device.DeviceStatus;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessQuery;
+import com.atypon.wayf.data.identity.IdentityProviderUsage;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.DeviceAccessFacade;
 import com.atypon.wayf.facade.DeviceFacade;
+import com.atypon.wayf.facade.IdentityProviderUsageFacade;
 import com.atypon.wayf.facade.PublisherFacade;
 import com.atypon.wayf.reactivex.FacadePolicies;
 import com.atypon.wayf.request.RequestContextAccessor;
@@ -62,6 +64,9 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
     @Inject
     private PublisherFacade publisherFacade;
+
+    @Inject
+    private IdentityProviderUsageFacade identityProviderUsageFacade;
 
     public DeviceFacadeImpl() {
     }
@@ -100,20 +105,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
     public Observable<Device> filter(DeviceQuery query) {
         LOG.debug("Filtering for devices that match query [{}]", query);
 
-        return deviceDao.filter(query) // Filter for devices that match the query
-
-                // Collect the elements into a list so that the call to populate is batched
-                .toList()
-
-                .flatMapObservable((devices) ->
-
-                        // Populate the required fields on devices
-                        populate(devices, query)
-
-                                // Convert the completable result to an Observable and fill it with the devices so they can be returned
-                                .toObservable()
-                                .cast(Device.class)
-                                .concatWith(Observable.fromIterable(devices)));
+        return deviceDao.filter(query);
     }
 
     @Override
@@ -135,12 +127,6 @@ public class DeviceFacadeImpl implements DeviceFacade {
                                 return deviceAccess.getDevice();
                             })
                 );
-    }
-
-    @Override
-    public Single<Device> relateLocalIdToDevice(String publisherCode, String localId) {
-        return publisherFacade.lookupCode(publisherCode) // Get the publisher associated with the code
-                .flatMap((_publisher) -> relateLocalIdToDevice(_publisher, localId));
     }
 
     @Override
@@ -174,46 +160,34 @@ public class DeviceFacadeImpl implements DeviceFacade {
     }
 
     private Completable populate(Device device, DeviceQuery query) {
-        return populate(Lists.newArrayList(device), query);
+        return Completable.mergeArray(
+                inflateActivity(device, query),
+                inflateHistory(device, query)
+        );
     }
 
-    private Completable populate(Iterable<Device> devices, DeviceQuery query) {
-        // Run the inflations in parallel
-        return inflateSessions(Lists.newArrayList(devices), query)
-                .compose((completable) -> FacadePolicies.applyCompletable(completable));
-    }
 
-    private Completable inflateSessions(Iterable<Device> devices, DeviceQuery query) {
+    private Completable inflateActivity(Device device, DeviceQuery query) {
         // Return as complete if authenticatedBy is not a requested field
-        if (query.getInflationPolicy() == null || !query.getInflationPolicy().hasChildField(DeviceQuery.SESSIONS)) {
+        if (query.getInflationPolicy() == null || !query.getInflationPolicy().hasChildField(DeviceQuery.ACTIVITY)) {
             return Completable.complete();
         }
 
-        Multimap<Long, Device> devicesById = HashMultimap.create();
+        return deviceAccessFacade.filter(new DeviceAccessQuery().setDeviceIds(Lists.newArrayList(device.getId())).setInflationPolicy(query.getInflationPolicy().getChildPolicy(DeviceQuery.ACTIVITY)))
+                .toList()
+                .flatMapCompletable((activity) -> Completable.fromAction(() -> device.setActivity(activity)));
+    }
 
-        return Observable.fromIterable(devices)
-                 // Collect all of the publisher sessions and their identity provider IDs into a map
-                .collectInto(devicesById, (map, device) -> map.put(device.getId(), device))
+    private Completable inflateHistory(Device device, DeviceQuery query) {
+        // Return as complete if authenticatedBy is not a requested field
+        if (query.getInflationPolicy() == null || !query.getInflationPolicy().hasChildField(DeviceQuery.HISTORY)) {
+            return Completable.complete();
+        }
 
-                // Fetch all of the publishers for those publisher IDs
-                .flatMapObservable((map) -> map.keySet().isEmpty()? Observable.empty() : deviceAccessFacade.filter(new DeviceAccessQuery().setDeviceIds(map.keySet())))
-
-                // For each identity provider returned, map it to each publisher session that had its ID
-                .flatMapCompletable((deviceAccess) ->
-                        Observable.fromIterable(devicesById.get(deviceAccess.getDevice().getId()))
-                                .flatMapCompletable((device) ->
-                                        Completable.fromAction(() -> {
-                                            List<DeviceAccess> activity = device.getActivity();
-
-                                            if (activity == null) {
-                                                activity = new LinkedList<>();
-                                                device.setActivity(activity);
-                                            }
-
-                                            activity.add(deviceAccess);
-                                        })
-                                )
-                );
+        return Completable.fromAction(() -> {
+            List<IdentityProviderUsage> history = identityProviderUsageFacade.buildRecentHistory(device);
+            device.setHistory(history);
+        });
     }
 
     @Override

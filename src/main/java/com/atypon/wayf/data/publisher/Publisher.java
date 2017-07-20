@@ -17,7 +17,6 @@
 package com.atypon.wayf.data.publisher;
 
 import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
@@ -32,8 +31,6 @@ public class Publisher implements Authenticatable {
 
     private String code;
     private String name;
-
-    private User contact;
 
     private Date createdDate;
     private Date modifiedDate;
@@ -96,14 +93,6 @@ public class Publisher implements Authenticatable {
 
     public void setCode(String code) {
         this.code = code;
-    }
-
-    public User getContact() {
-        return contact;
-    }
-
-    public void setContact(User contact) {
-        this.contact = contact;
     }
 
     public Date getCreatedDate() {

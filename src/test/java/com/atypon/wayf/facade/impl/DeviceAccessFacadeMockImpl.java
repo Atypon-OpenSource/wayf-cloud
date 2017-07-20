@@ -41,11 +41,6 @@ public class DeviceAccessFacadeMockImpl implements DeviceAccessFacade {
     }
 
     @Override
-    public Single<DeviceAccess> read(DeviceAccessQuery query) {
-        return null;
-    }
-
-    @Override
     public Observable<DeviceAccess> filter(DeviceAccessQuery query) {
         return Observable.fromIterable(deviceAccessList);
     }

@@ -24,7 +24,6 @@ import io.reactivex.Single;
 
 public interface DeviceAccessFacade {
     Single<DeviceAccess> create(DeviceAccess publisherSession);
-    Single<DeviceAccess> read(DeviceAccessQuery query);
 
     Observable<DeviceAccess> filter(DeviceAccessQuery query);
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.integration.publisher;
+package com.atypon.wayf.integration.admin;
 
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.integration.HttpTestUtil;

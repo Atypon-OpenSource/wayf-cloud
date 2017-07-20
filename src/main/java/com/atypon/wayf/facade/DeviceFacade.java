@@ -29,8 +29,6 @@ public interface DeviceFacade {
 
     Single<Device> relateLocalIdToDevice(Publisher publisher, String localId);
 
-    Single<Device> relateLocalIdToDevice(String publisherCode, String localId);
-
     Observable<Device> filter(DeviceQuery query);
 
     Completable registerLocalId(String localId);
