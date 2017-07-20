@@ -71,17 +71,6 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
     }
 
     @Override
-    public Single<DeviceAccess> read(DeviceAccessQuery query) {
-        Maybe<DeviceAccess> deviceAccessMaybe =
-                deviceAccessDao.read(query.getId()).compose((maybe) -> FacadePolicies.applyMaybe(maybe));
-
-        return singleOrException(deviceAccessMaybe, HttpStatus.SC_NOT_FOUND, "Could not read device for query [{}]", query)
-
-                // Inflate the publisher session and emit it
-                .flatMap((deviceAccess) -> populate(deviceAccess, query).toSingle(() -> deviceAccess));
-    }
-
-    @Override
     public Observable<DeviceAccess> filter(DeviceAccessQuery query) {
         LOG.debug("Filtering for publisher sessions with criteria [{}]", query);
 
