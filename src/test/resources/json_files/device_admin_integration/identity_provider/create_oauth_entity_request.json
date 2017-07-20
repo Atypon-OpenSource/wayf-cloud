@@ -1,0 +1,5 @@
+{
+  "provider": "TWITTER",
+  "type": "OAUTH",
+  "name" : "TWITTER"
+}

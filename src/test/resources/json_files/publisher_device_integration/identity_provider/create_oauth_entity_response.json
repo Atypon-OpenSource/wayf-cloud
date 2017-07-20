@@ -1,0 +1,5 @@
+{
+  "provider": "GOOGLE",
+  "type": "OAUTH",
+  "name" : "Google"
+}

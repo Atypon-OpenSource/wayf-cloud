@@ -1,0 +1,33 @@
+[
+  {
+    "frequency":41.67,
+    "idp":{
+      "type":"SAML",
+      "id":1,
+      "name" : "SAML Entity",
+      "entityId":"sample-saml-entity-id",
+      "federationId":"sample-saml-federation-id"
+    }
+  },
+  {
+    "frequency":33.33,
+    "idp":{
+      "type":"OPEN_ATHENS",
+      "name" : "Open Athens Entity",
+      "id":2,
+      "createdDate":"2017-05-24 19:55:46.0",
+      "entityId":"sample-open-athens-entity-id",
+      "scope":"sample-scope",
+      "organizationId":"123456"
+    }
+  },
+  {
+    "frequency":25.0,
+    "idp":{
+      "type":"OAUTH",
+      "name" : "Google",
+      "id":3,
+      "provider":"GOOGLE"
+    }
+  }
+]

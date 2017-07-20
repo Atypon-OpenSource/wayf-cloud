@@ -1,0 +1,12 @@
+[
+  {
+    "code" : "PUBLISHER_A",
+    "name" : "Publisher A",
+    "status" : "ACTIVE"
+  },
+  {
+    "code" : "PUBLISHER_B",
+    "name" : "Publisher B",
+    "status" : "ACTIVE"
+  }
+]

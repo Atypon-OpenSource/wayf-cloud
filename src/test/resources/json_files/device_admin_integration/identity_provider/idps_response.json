@@ -1,0 +1,18 @@
+[
+  {
+    "name":"SAML Entity 2",
+    "entityId":"sample-saml-entity-id-2",
+    "federationId":"sample-saml-federation-id-2"
+  },
+  {
+    "name":"Open Athens Entity 2",
+    "entityId":"sample-open-athens-2-entity-id",
+    "scope":"sample-scope-2",
+    "organizationId":"1234567"
+  },
+  {
+    "name":"TWITTER",
+    "provider":"TWITTER",
+    "type":"OAUTH"
+  }
+]

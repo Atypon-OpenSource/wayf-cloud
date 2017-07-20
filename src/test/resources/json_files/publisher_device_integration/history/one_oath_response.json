@@ -1,0 +1,11 @@
+[
+  {
+    "frequency":100.0,
+    "idp":{
+      "type":"OAUTH",
+      "id":3,
+      "provider":"GOOGLE",
+      "name" : "Google"
+    }
+  }
+]
