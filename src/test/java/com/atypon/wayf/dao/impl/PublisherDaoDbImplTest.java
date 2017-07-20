@@ -19,7 +19,6 @@ package com.atypon.wayf.dao.impl;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.data.publisher.PublisherStatus;
-import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.RequestContext;
@@ -28,7 +27,6 @@ import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import io.reactivex.Observable;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,14 +51,10 @@ public class PublisherDaoDbImplTest {
 
     @Test
     public void testCreate() {
-        User contact = new User();
-        contact.setId(456L);
-
         Publisher publisher = new Publisher();
         publisher.setSalt("NaCl");
         publisher.setName("Test Publisher");
         publisher.setCode("test_publisher");
-        publisher.setContact(contact);
         publisher.setStatus(PublisherStatus.ACTIVE);
 
         Publisher createdPublisher = dao.create(publisher).blockingGet();
@@ -72,20 +66,15 @@ public class PublisherDaoDbImplTest {
         assertEquals(publisher.getSalt(), createdPublisher.getSalt());
         assertEquals(publisher.getName(), createdPublisher.getName());
         assertEquals(publisher.getCode(), createdPublisher.getCode());
-        assertEquals(publisher.getContact().getId(), createdPublisher.getContact().getId());
     }
 
     @Test
     public void testRead() {
-        User contact = new User();
-        contact.setId(456L);
-
         Publisher publisher = new Publisher();
         publisher.setName("Test Publisher");
         publisher.setSalt("NaCl");
         publisher.setStatus(PublisherStatus.ACTIVE);
         publisher.setCode("test_publisher");
-        publisher.setContact(contact);
 
         Publisher createdPublisher = dao.create(publisher).blockingGet();
         Publisher readPublisher = dao.read(createdPublisher.getId()).blockingGet();
@@ -96,14 +85,10 @@ public class PublisherDaoDbImplTest {
         assertEquals(createdPublisher.getStatus(), readPublisher.getStatus());
         assertEquals(createdPublisher.getName(), readPublisher.getName());
         assertEquals(createdPublisher.getCode(), readPublisher.getCode());
-        assertEquals(createdPublisher.getContact().getId(), readPublisher.getContact().getId());
     }
 
     @Test
     public void testFilter() {
-        User contact = new User();
-        contact.setId(456L);
-
         Map<Long, Publisher> publishersById = new HashMap<>();
 
         for (int i = 0; i < 5; i++) {
@@ -111,7 +96,6 @@ public class PublisherDaoDbImplTest {
             publisher.setName("Test Publisher " + i);
             publisher.setStatus(PublisherStatus.ACTIVE);
             publisher.setCode("test_publisher-" + i);
-            publisher.setContact(contact);
             publisher.setSalt("NaCl");
 
             Publisher createdPublisher = dao.create(publisher).blockingGet();
@@ -133,7 +117,6 @@ public class PublisherDaoDbImplTest {
             assertEquals(expected.getSalt(), readPublisher.getSalt());
             assertEquals(expected.getName(), readPublisher.getName());
             assertEquals(expected.getCode(), readPublisher.getCode());
-            assertEquals(expected.getContact().getId(), readPublisher.getContact().getId());
             assertEquals(expected.getStatus(), readPublisher.getStatus());
             assertNotNull(readPublisher.getCreatedDate());
         }
