@@ -204,18 +204,6 @@ public class DeviceRoutingProvider implements RoutingProvider {
             query.setInflationPolicy(inflationPolicyParser.parse(fields));
         }
 
-        String ids = RequestReader.getQueryValue(routingContext, "ids");
-        if (ids != null) {
-            String[] idArray = ids.split(",");
-
-            List<Long> idList = new ArrayList<>(idArray.length);
-
-            for (String id : idArray) {
-                idList.add(Long.valueOf(id));
-            }
-            query.setIds(idList);
-        }
-
         String globalIds = RequestReader.getQueryValue(routingContext, "globalIds");
         if (globalIds != null) {
             String[] idArray = globalIds.split(",");

@@ -36,36 +36,24 @@ public class FacadePolicies {
     private static final long TIMEOUT = 10l;
     private static final TimeUnit TIMEOUT_UNIT = TimeUnit.SECONDS;
 
-    private static Consumer<? super Throwable> doOnError = (e) -> {
-        if (ServiceException.class.isAssignableFrom(e.getClass())) {
-            throw (ServiceException) e;
-        }
-
-        throw new ServiceException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Error processing request in facade", e);
-    };
-
 
     public static <T> Single<T> applySingle(Single<T> single) {
         return single.subscribeOn(subscribeOnScheduler)
-                .doOnError(doOnError)
                 .timeout(TIMEOUT, TIMEOUT_UNIT);
     }
 
     public static <T> Maybe<T> applyMaybe(Maybe<T> maybe) {
         return maybe.subscribeOn(subscribeOnScheduler)
-                .doOnError(doOnError)
                 .timeout(TIMEOUT, TIMEOUT_UNIT);
     }
 
     public static <T> Observable<T> applyObservable(Observable<T> observable) {
         return observable.subscribeOn(subscribeOnScheduler)
-                .doOnError(doOnError)
                 .timeout(TIMEOUT, TIMEOUT_UNIT);
     }
 
     public static Completable applyCompletable(Completable completable) {
         return completable.subscribeOn(subscribeOnScheduler)
-                .doOnError(doOnError)
                 .timeout(TIMEOUT,TIMEOUT_UNIT);
     }
 
