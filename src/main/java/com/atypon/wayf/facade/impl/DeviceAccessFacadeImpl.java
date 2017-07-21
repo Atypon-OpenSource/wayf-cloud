@@ -33,15 +33,11 @@ import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Completable;
-import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.atypon.wayf.reactivex.FacadePolicies.singleOrException;
 
 @Singleton
 public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
@@ -90,10 +86,6 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
                                 .cast(DeviceAccess.class)
                                 .concatWith(Observable.fromIterable(deviceAccesss)));
 
-    }
-
-    private Completable populate(DeviceAccess deviceAccess, DeviceAccessQuery query) {
-        return populate(Lists.newArrayList(deviceAccess), query);
     }
 
     private Completable populate(Iterable<DeviceAccess> deviceAccess, DeviceAccessQuery query) {
