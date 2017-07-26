@@ -16,15 +16,13 @@
 
 package com.atypon.wayf.facade;
 
-import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
-import com.atypon.wayf.data.publisher.registration.PublisherRegistrationQuery;
+import com.atypon.wayf.data.user.User;
+import com.atypon.wayf.data.user.UserQuery;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
-public interface PublisherRegistrationFacade {
-    Single<PublisherRegistration> create(PublisherRegistration publisherRegistration);
-    Single<PublisherRegistration> read(PublisherRegistrationQuery query);
-    Single<PublisherRegistration> updateStatus(PublisherRegistration publisherRegistration);
-
-    Observable<PublisherRegistration> filter(PublisherRegistrationQuery query);
+public interface UserFacade {
+    Single<User> create(User user);
+    Single<User> read(Long id);
+    Observable<User> filter(UserQuery query);
 }

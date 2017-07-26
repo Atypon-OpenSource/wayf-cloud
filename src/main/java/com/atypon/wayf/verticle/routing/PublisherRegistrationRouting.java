@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.verticle.routing;
 
+import com.atypon.wayf.data.InflationPolicyParser;
 import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistrationQuery;
@@ -53,6 +54,9 @@ public class PublisherRegistrationRouting implements RoutingProvider {
     private PublisherRegistrationFacade publisherRegistrationFacade;
 
     @Inject
+    private InflationPolicyParser<String> inflationPolicyParser;
+
+    @Inject
     private WayfRequestHandlerFactory handlerFactory;
 
     public PublisherRegistrationRouting() {
@@ -80,7 +84,10 @@ public class PublisherRegistrationRouting implements RoutingProvider {
         Long publisherRegistrationId = Long.valueOf(
                 RequestReader.readRequiredPathParameter(routingContext, PUBLISHER_REGISTRATION_ID_PARAM_NAME, PUBLISHER_REGISTRATION_ID_ARG_DESCRIPTION));
 
-        return publisherRegistrationFacade.read(publisherRegistrationId);
+        PublisherRegistrationQuery query = buildQuery(routingContext);
+        query.setId(publisherRegistrationId);
+
+        return publisherRegistrationFacade.read(query);
     }
 
     public Single<PublisherRegistration> updatePublisherRegistrationStatus(RoutingContext routingContext) {
@@ -100,10 +107,20 @@ public class PublisherRegistrationRouting implements RoutingProvider {
     public Observable<PublisherRegistration> filterPublisherRegistrations(RoutingContext routingContext) {
         LOG.debug("Received filter PublisherRegistration request");
 
-        PublisherRegistrationQuery query = new PublisherRegistrationQuery();
-
-        RequestParamMapper.mapParams(routingContext, query);
+        PublisherRegistrationQuery query = buildQuery(routingContext);
 
         return publisherRegistrationFacade.filter(query);
+    }
+
+    private PublisherRegistrationQuery buildQuery(RoutingContext routingContext) {
+        PublisherRegistrationQuery query = new PublisherRegistrationQuery();
+        RequestParamMapper.mapParams(routingContext, query);
+
+        String fields = RequestReader.getQueryValue(routingContext, "fields");
+        if (fields != null) {
+            query.setInflationPolicy(inflationPolicyParser.parse(fields));
+        }
+
+        return query;
     }
 }

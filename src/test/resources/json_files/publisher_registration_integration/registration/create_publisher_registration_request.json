@@ -1,6 +1,9 @@
 {
   "publisherName" : "A Test Publisher",
   "contact" : {
-    "id": 1
+    "firstName" : "Test",
+    "lastName" : "Admin",
+    "email" : "test@atypon.com",
+    "phoneNumber" : "1 555 555 5555"
   }
 }

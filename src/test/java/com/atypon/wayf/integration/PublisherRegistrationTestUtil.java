@@ -44,6 +44,8 @@ public class PublisherRegistrationTestUtil {
 
         String[] createResponseGeneratedFields = {
                 "$.id",
+                "$.contact.id",
+                "$.contact.createdDate",
                 "$.applicationDate",
                 "$.createdDate"
         };
@@ -61,13 +63,15 @@ public class PublisherRegistrationTestUtil {
                 request
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
-                        .url("/1/publisherRegistration/" + id)
+                        .url("/1/publisherRegistration/" + id + "?fields=CONTACT")
                         .execute()
                         .statusCode(200)
                         .extract().response().asString();
 
         String[] readResponseGeneratedFields = {
                 "$.id",
+                "$.contact.id",
+                "$.contact.createdDate",
                 "$.applicationDate",
                 "$.createdDate"
         };
@@ -92,6 +96,7 @@ public class PublisherRegistrationTestUtil {
 
         String[] approvalResponseGeneratedFields = {
                 "$.id",
+                "$.contact.id",
                 "$.applicationDate",
                 "$.approvalDate",
                 "$.modifiedDate",
@@ -100,6 +105,7 @@ public class PublisherRegistrationTestUtil {
 
         String[] rejectedResponseGeneratedFields = {
                 "$.id",
+                "$.contact.id",
                 "$.applicationDate",
                 "$.modifiedDate",
                 "$.createdDate"
@@ -114,13 +120,15 @@ public class PublisherRegistrationTestUtil {
                 request
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
-                        .url("/1/publisherRegistrations?statuses=PENDING&limit=1")
+                        .url("/1/publisherRegistrations?statuses=PENDING&fields=CONTACT&limit=1")
                         .execute()
                         .statusCode(200)
                         .extract().response().asString();
 
         String[] findResponseGeneratedFields = {
                 "$[*].id",
+                "$[*].contact.id",
+                "$[*].contact.createdDate",
                 "$[*].applicationDate",
                 "$[*].createdDate"
         };

@@ -1,1 +1,5 @@
-{"status":"APPROVED","publisherName":"A Test Publisher","contact":{"id":1}}
+{
+  "publisherName" : "A Test Publisher",
+  "status":"APPROVED",
+  "contact" : {}
+}

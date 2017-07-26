@@ -16,8 +16,22 @@
 
 package com.atypon.wayf.data.publisher.registration;
 
+import com.atypon.wayf.data.InflationPolicy;
+
 public class PublisherRegistrationQuery {
+    public static final String CONTACT_FIELD = "CONTACT";
+
+    private Long id;
     private PublisherRegistrationStatus[] statuses;
+    private InflationPolicy inflationPolicy;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public PublisherRegistrationStatus[] getStatuses() {
         return statuses;
@@ -29,5 +43,14 @@ public class PublisherRegistrationQuery {
 
     public boolean isNullStatuses() {
         return statuses == null;
+    }
+
+    public InflationPolicy getInflationPolicy() {
+        return inflationPolicy;
+    }
+
+    public PublisherRegistrationQuery setInflationPolicy(InflationPolicy inflationPolicy) {
+        this.inflationPolicy = inflationPolicy;
+        return this;
     }
 }

@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.facade;
+package com.atypon.wayf.dao;
 
-import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
-import com.atypon.wayf.data.publisher.registration.PublisherRegistrationQuery;
+import com.atypon.wayf.data.user.User;
+import com.atypon.wayf.data.user.UserQuery;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
-public interface PublisherRegistrationFacade {
-    Single<PublisherRegistration> create(PublisherRegistration publisherRegistration);
-    Single<PublisherRegistration> read(PublisherRegistrationQuery query);
-    Single<PublisherRegistration> updateStatus(PublisherRegistration publisherRegistration);
-
-    Observable<PublisherRegistration> filter(PublisherRegistrationQuery query);
+public interface UserDao {
+    Single<User> create(User user);
+    Maybe<User> read(Long id);
+    Observable<User> filter(UserQuery query);
 }
