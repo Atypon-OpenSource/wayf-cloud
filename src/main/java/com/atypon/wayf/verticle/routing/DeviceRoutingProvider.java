@@ -27,6 +27,7 @@ import com.atypon.wayf.facade.ClientJsFacade;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.PublisherFacade;
 import com.atypon.wayf.request.RequestContextAccessor;
+import com.atypon.wayf.request.RequestParamMapper;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
@@ -204,23 +205,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
             query.setInflationPolicy(inflationPolicyParser.parse(fields));
         }
 
-        String ids = RequestReader.getQueryValue(routingContext, "ids");
-        if (ids != null) {
-            String[] idArray = ids.split(",");
-
-            List<Long> idList = new ArrayList<>(idArray.length);
-
-            for (String id : idArray) {
-                idList.add(Long.valueOf(id));
-            }
-            query.setIds(idList);
-        }
-
-        String globalIds = RequestReader.getQueryValue(routingContext, "globalIds");
-        if (globalIds != null) {
-            String[] idArray = globalIds.split(",");
-            query.setGlobalIds(Lists.newArrayList(idArray));
-        }
+        RequestParamMapper.mapParams(routingContext, query);
 
         return query;
 

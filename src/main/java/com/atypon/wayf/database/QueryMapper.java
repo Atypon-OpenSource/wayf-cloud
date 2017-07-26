@@ -17,6 +17,7 @@
 package com.atypon.wayf.database;
 
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.slf4j.Logger;
@@ -120,6 +121,16 @@ class QueryMapper {
     private static Object getDbValue(Object value) {
         if (value == null) {
             return null;
+        }
+
+        if (value.getClass().isArray()) {
+            List<Object> values = new LinkedList<>();
+
+            for (Object arrayElem : ((Object[]) value)) {
+                values.add(getDbValue(arrayElem));
+            }
+
+            return values;
         }
 
         if (value.getClass().isEnum()) {

@@ -25,6 +25,7 @@ import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.RequestContext;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import io.reactivex.Observable;
@@ -121,7 +122,7 @@ public class PublisherDaoDbImplTest {
         assertEquals(5, publishersById.keySet().size());
 
         PublisherQuery filter = new PublisherQuery();
-        filter.setIds(Lists.newArrayList(publishersById.keySet()));
+        filter.ids(Sets.newHashSet(publishersById.keySet()));
 
         Observable<Publisher> publishers = dao.filter(filter);
 

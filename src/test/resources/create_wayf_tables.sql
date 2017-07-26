@@ -151,6 +151,23 @@ CREATE TABLE `publisher` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
+DROP TABLE IF EXISTS `publisher_registration`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `publisher_registration` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `publisher_name` varchar(45) NOT NULL,
+  `status` varchar(15) NOT NULL,
+  `contact_id` int(11) NULL,
+  `application_date` timestamp NOT NULL,
+  `approval_date` timestamp NULL,
+  `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
 --
 -- Table structure for table `publisher_session`
 --

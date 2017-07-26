@@ -26,6 +26,8 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 /**
  * A utility class to read information from VertX requests
  */
@@ -42,7 +44,11 @@ public class RequestReader {
     private static <B> B _readRequestBody(RoutingContext routingContext, Class<B> bodyClass) {
         LOG.debug("Reading request body of type [{}] from request", bodyClass);
 
-        return Json.decodeValue(routingContext.getBodyAsString(), bodyClass);
+        try {
+            return Json.prettyMapper.readValue(routingContext.getBodyAsString(), bodyClass);
+        } catch (IOException e) {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Could not read request body", e);
+        }
     }
 
     public static <B> Single<B> readRequestBody(RoutingContext routingContext, Class<B> bodyClass) {

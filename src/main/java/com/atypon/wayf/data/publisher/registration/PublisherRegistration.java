@@ -16,5 +16,88 @@
 
 package com.atypon.wayf.data.publisher.registration;
 
+import com.atypon.wayf.data.user.User;
+
+import java.util.Date;
+
 public class PublisherRegistration {
+    private Long id;
+
+    private PublisherRegistrationStatus status;
+
+    private String publisherName;
+    private User contact;
+
+    private Date applicationDate;
+    private Date approvalDate;
+
+    private Date createdDate;
+    private Date modifiedDate;
+
+    public PublisherRegistration() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public PublisherRegistrationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PublisherRegistrationStatus status) {
+        this.status = status;
+    }
+
+    public String getPublisherName() {
+        return publisherName;
+    }
+
+    public void setPublisherName(String publisherName) {
+        this.publisherName = publisherName;
+    }
+
+    public User getContact() {
+        return contact;
+    }
+
+    public void setContact(User contact) {
+        this.contact = contact;
+    }
+
+    public Date getApplicationDate() {
+        return applicationDate;
+    }
+
+    public void setApplicationDate(Date applicationDate) {
+        this.applicationDate = applicationDate;
+    }
+
+    public Date getApprovalDate() {
+        return approvalDate;
+    }
+
+    public void setApprovalDate(Date approvalDate) {
+        this.approvalDate = approvalDate;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public Date getModifiedDate() {
+        return modifiedDate;
+    }
+
+    public void setModifiedDate(Date modifiedDate) {
+        this.modifiedDate = modifiedDate;
+    }
 }

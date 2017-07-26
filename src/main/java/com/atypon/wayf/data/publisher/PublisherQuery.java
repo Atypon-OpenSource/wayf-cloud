@@ -17,21 +17,27 @@
 package com.atypon.wayf.data.publisher;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public class PublisherQuery {
-    private Collection<Long> ids;
-    private Collection<String> codes;
+    private Long[] ids;
+    private String[] codes;
 
     public PublisherQuery() {
     }
 
-    public Collection<Long> getIds() {
+    public Long[] getIds() {
         return ids;
     }
 
-    public PublisherQuery setIds(Collection<Long> ids) {
-        this.ids = ids;
+    public PublisherQuery ids(Set<Long> ids) {
+        this.ids = ids.toArray(new Long[0]);
         return this;
+    }
+
+    public void setIds(Long... ids) {
+        this.ids = ids;
     }
 
     /**
@@ -42,12 +48,16 @@ public class PublisherQuery {
         return ids == null;
     }
 
-    public Collection<String> getCodes() {
+    public void setCodes(String... codes) {
+        this.codes = codes;
+    }
+
+    public String[] getCodes() {
         return codes;
     }
 
-    public PublisherQuery setCodes(Collection<String> codes) {
-        this.codes = codes;
+    public PublisherQuery codes(Collection<String> codes) {
+        this.codes = codes.toArray(new String[0]);
         return this;
     }
 

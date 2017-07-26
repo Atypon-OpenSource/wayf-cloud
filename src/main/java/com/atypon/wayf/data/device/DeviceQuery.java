@@ -26,7 +26,7 @@ public class DeviceQuery {
 
     private Collection<Long> ids;
     private String globalId;
-    private Collection<String> globalIds;
+    private String[] globalIds;
     private InflationPolicy inflationPolicy;
 
     public DeviceQuery() {
@@ -58,12 +58,16 @@ public class DeviceQuery {
         return this;
     }
 
-    public Collection<String> getGlobalIds() {
+    public String[] getGlobalIds() {
         return globalIds;
     }
 
-    public DeviceQuery setGlobalIds(Collection<String> globalIds) {
+    public void setGlobalIds(String... globalIds) {
         this.globalIds = globalIds;
+    }
+
+    public DeviceQuery globalIds(Collection<String> globalIds) {
+        this.globalIds = globalIds.toArray(new String[0]);
         return this;
     }
 

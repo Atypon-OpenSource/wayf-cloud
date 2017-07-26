@@ -84,7 +84,7 @@ public class IdentityProviderDaoDbImplTest {
 
         List<IdentityProvider> openAthens = openAthensDao.filter(
                 new IdentityProviderQuery()
-                        .setIds(Lists.newArrayList(createdOpenAthensEntity.getId()))
+                        .ids(Lists.newArrayList(createdOpenAthensEntity.getId()))
                         .setType(IdentityProviderType.OPEN_ATHENS)
                         .setOrganizationId(createdOpenAthensEntity.getOrganizationId())
         ).toList().blockingGet();
@@ -127,7 +127,7 @@ public class IdentityProviderDaoDbImplTest {
                 new IdentityProviderQuery()
                         .setType(IdentityProviderType.SAML)
                         .setEntityId(createdSamlEntity.getEntityId())
-                        .setIds(Lists.newArrayList(createdSamlEntity.getId()))
+                        .ids(Lists.newArrayList(createdSamlEntity.getId()))
         ).toList().blockingGet();
 
         assertEquals(1, samls.size());
@@ -161,7 +161,7 @@ public class IdentityProviderDaoDbImplTest {
                 new IdentityProviderQuery()
                         .setType(IdentityProviderType.OAUTH)
                         .setProvider(OauthProvider.FACEBOOK)
-                        .setIds(Lists.newArrayList(createdOauthEntity.getId()))
+                        .ids(Lists.newArrayList(createdOauthEntity.getId()))
         ).toList().blockingGet();
 
         assertEquals(1, oauths.size());
