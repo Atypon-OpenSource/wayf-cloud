@@ -180,7 +180,7 @@ CREATE TABLE `user` (
   `first_name` varchar(50) NOT NULL,
   `last_name` varchar(50) NOT NULL,
   `email` varchar(75) NOT NULL,
-  `phone_number` varchar(15) NOT NULL,
+  `phone_number` varchar(25) NOT NULL,
   `created_date` timestamp(4) NOT NULL DEFAULT CURRENT_TIMESTAMP(4),
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)

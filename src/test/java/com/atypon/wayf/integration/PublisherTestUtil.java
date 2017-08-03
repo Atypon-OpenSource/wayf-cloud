@@ -46,6 +46,7 @@ public class PublisherTestUtil {
         String[] readResponseGeneratedFields = {
                 "$.id",
                 "$.code",
+                "$.contact.id",
                 "$.createdDate"
         };
 
@@ -75,6 +76,7 @@ public class PublisherTestUtil {
         String[] readResponseGeneratedFields = {
                 "$[*].id",
                 "$[*].code",
+                "$[*].contact.id",
                 "$[*].createdDate"
         };
 
@@ -97,6 +99,8 @@ public class PublisherTestUtil {
                 "$.id",
                 "$.code",
                 "$.token",
+                "$.contact.id",
+                "$.contact.createdDate",
                 "$.widgetLocation",
                 "$.createdDate"
         };

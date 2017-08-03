@@ -21,9 +21,9 @@ import com.atypon.wayf.dao.PublisherDao;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.data.publisher.PublisherStatus;
-import com.atypon.wayf.facade.AuthenticationFacade;
-import com.atypon.wayf.facade.PublisherFacade;
-import com.atypon.wayf.facade.ClientJsFacade;
+import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
+import com.atypon.wayf.data.publisher.registration.PublisherRegistrationStatus;
+import com.atypon.wayf.facade.*;
 import com.atypon.wayf.reactivex.FacadePolicies;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -52,6 +52,12 @@ public class PublisherFacadeImpl implements PublisherFacade {
     private ClientJsFacade clientJsFacade;
 
     @Inject
+    private PublisherRegistrationFacade registrationFacade;
+
+    @Inject
+    private UserFacade userFacade;
+
+    @Inject
     @Named("publisherSaltCache")
     private Cache<Long, String> saltCache;
 
@@ -63,7 +69,14 @@ public class PublisherFacadeImpl implements PublisherFacade {
         publisher.setStatus(PublisherStatus.ACTIVE);
         publisher.setSalt(generateSalt());
 
-        return publisherDao.create(publisher) // Create the publisher
+        return userFacade.create(publisher.getContact()) // Create the contact user
+                .flatMap((contact) -> {
+                    // Set the newly created contact on the publisher
+                    publisher.setContact(contact);
+
+                    // Create the publisher
+                    return publisherDao.create(publisher);
+                })
                 .flatMap((createdPublisher) ->
 
                         Single.zip(
@@ -73,10 +86,14 @@ public class PublisherFacadeImpl implements PublisherFacade {
                                 // Generate the publisher specific Javascript widget
                                 clientJsFacade.generateWidgetForPublisher(createdPublisher).compose(single -> FacadePolicies.applySingle(single)),
 
+                                // Approve the publisher registration if one existed
+                                handleRegistrationApproval(publisher).compose(single -> FacadePolicies.applySingle(single)),
+
                                 // Combine the results with the previously created publisher
-                                (token, filename) -> {
+                                (token, filename, approvedRegistration) -> {
                                     createdPublisher.setToken(token);
                                     createdPublisher.setWidgetLocation(filename);
+                                    createdPublisher.setContact(publisher.getContact());
                                     return createdPublisher;
                                 }
                         )
@@ -108,6 +125,16 @@ public class PublisherFacadeImpl implements PublisherFacade {
         random.nextBytes(bytes);
 
         return BCrypt.gensalt(10, random);
+    }
+
+    private Single<PublisherRegistration> handleRegistrationApproval(Publisher publisher) {
+        if (publisher.getRegistration() != null && publisher.getRegistration().getId() != null) {
+            publisher.getRegistration().setStatus(PublisherRegistrationStatus.APPROVED);
+
+            return registrationFacade.updateStatus(publisher.getRegistration());
+        } else {
+            return Single.just(new PublisherRegistration());
+        }
     }
 
     @Override
