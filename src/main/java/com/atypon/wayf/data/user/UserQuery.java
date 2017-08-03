@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.facade.impl;
+package com.atypon.wayf.data.user;
 
-import com.atypon.wayf.data.publisher.Publisher;
-import org.junit.Test;
+import java.util.Collection;
 
-import static org.junit.Assert.assertEquals;
+public class UserQuery {
+    Long[] ids;
 
-public class AuthenticatableRedisSerializerTest {
+    public Long[] getIds() {
+        return ids;
+    }
 
-    @Test
-    public void testPublisher() {
-        Publisher publisher = new Publisher();
-        publisher.setId(123L);
+    public void setIds(Long[] ids) {
+        this.ids = ids;
+    }
 
-        String serializedPublisher = AuthenticatableRedisSerializer.serialize(publisher);
-        Publisher deserializedPublisher = (Publisher) AuthenticatableRedisSerializer.deserialize(serializedPublisher);
-
-        assertEquals(publisher.getId(), deserializedPublisher.getId());
-
+    public UserQuery ids(Collection<Long> ids) {
+        this.ids = ids.toArray(new Long[0]);
+        return this;
     }
 }

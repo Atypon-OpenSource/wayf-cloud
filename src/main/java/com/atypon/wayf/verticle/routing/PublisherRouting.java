@@ -20,9 +20,11 @@ import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.facade.AuthenticationFacade;
 import com.atypon.wayf.facade.PublisherFacade;
+import com.atypon.wayf.request.RequestParamMapper;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Observable;
@@ -83,20 +85,9 @@ public class PublisherRouting implements RoutingProvider {
     public Observable<Publisher> filterPublishers(RoutingContext routingContext) {
         LOG.debug("Received filter PublisherSession request");
 
-        return Single.just(routingContext)
-                .map((rc) -> RequestReader.getQueryValue(rc, PUBLISHER_IDS_PARAM_NAME))
-                .flatMapObservable((idsArg) -> {
-                        LOG.debug(idsArg);
-                        String[] idsStr = idsArg.split(",");
+        PublisherQuery publisherQuery = new PublisherQuery();
+        RequestParamMapper.mapParams(routingContext, publisherQuery);
 
-                        Long[] ids = new Long[idsStr.length];
-                        for (int i = 0; i < idsStr.length; i++) {
-                            ids[i] = Long.valueOf(idsStr[i]);
-                        }
-                        PublisherQuery filter = new PublisherQuery();
-                        filter.setIds(Lists.newArrayList(ids));
-                        return  publisherFacade.filter(filter);
-                    }
-                );
+        return publisherFacade.filter(publisherQuery);
     }
 }

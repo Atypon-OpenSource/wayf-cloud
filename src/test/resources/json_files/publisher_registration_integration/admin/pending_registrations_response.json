@@ -1,0 +1,10 @@
+[{
+  "publisherName" : "A Test Publisher",
+  "status":"PENDING",
+  "contact" : {
+    "firstName" : "Test",
+    "lastName" : "Admin",
+    "email" : "test@atypon.com",
+    "phoneNumber" : "1 555 555 5555"
+  }
+}]

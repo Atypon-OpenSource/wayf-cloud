@@ -20,7 +20,7 @@ import java.util.Collection;
 
 public class IdentityProviderQuery {
     private Long id;
-    private Collection<Long> ids;
+    private Long[] ids;
     private String entityId;
     private IdentityProviderType type;
     private String organizationId;
@@ -38,13 +38,17 @@ public class IdentityProviderQuery {
         return this;
     }
 
-    public Collection<Long> getIds() {
+    public Long[] getIds() {
         return ids;
     }
 
-    public IdentityProviderQuery setIds(Collection<Long> ids) {
-        this.ids = ids;
+    public IdentityProviderQuery ids(Collection<Long> ids) {
+        this.ids = ids.toArray(new Long[0]);
         return this;
+    }
+
+    public void setIds(Long... ids) {
+        this.ids = ids;
     }
 
     public String getEntityId() {

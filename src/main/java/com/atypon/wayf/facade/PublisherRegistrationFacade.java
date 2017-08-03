@@ -14,24 +14,17 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.facade;
 
-import com.atypon.wayf.data.device.Device;
-import com.atypon.wayf.data.device.DeviceQuery;
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
+import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
+import com.atypon.wayf.data.publisher.registration.PublisherRegistrationQuery;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
-public interface DeviceDao {
-    Single<Device> create(Device device);
-    Maybe<Device> read(DeviceQuery query);
-    Completable delete(String id);
-    Observable<Device> filter(DeviceQuery query);
+public interface PublisherRegistrationFacade {
+    Single<PublisherRegistration> create(PublisherRegistration publisherRegistration);
+    Single<PublisherRegistration> read(PublisherRegistrationQuery query);
+    Single<PublisherRegistration> updateStatus(PublisherRegistration publisherRegistration);
 
-    Single<Integer> updateDevicePublisherLocalIdXref(Long deviceId, Long publisherId, String localId);
-
-    Completable registerLocalId(Long publisherId, String localId);
-
-    Maybe<Device> readByPublisherLocalId(Long publisherId, String localId);
+    Observable<PublisherRegistration> filter(PublisherRegistrationQuery query);
 }

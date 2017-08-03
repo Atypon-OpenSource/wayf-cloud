@@ -16,84 +16,73 @@
 
 package com.atypon.wayf.dao.impl;
 
-import com.atypon.wayf.dao.PublisherDao;
+import com.atypon.wayf.dao.UserDao;
+import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
+import com.atypon.wayf.data.publisher.registration.PublisherRegistrationQuery;
+import com.atypon.wayf.data.user.User;
+import com.atypon.wayf.data.user.UserQuery;
 import com.atypon.wayf.database.DbExecutor;
-import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.reactivex.DaoPolicies;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 @Singleton
-public class PublisherDaoDbImpl implements PublisherDao {
-    private static final Logger LOG = LoggerFactory.getLogger(PublisherDaoDbImpl.class);
+public class UserDaoDbImpl implements UserDao {
+    private static final Logger LOG = LoggerFactory.getLogger(UserDaoDbImpl.class);
 
     @Inject
-    @Named("publisher.dao.db.create")
+    @Named("user.dao.db.create")
     private String createSql;
 
     @Inject
-    @Named("publisher.dao.db.read")
+    @Named("user.dao.db.read")
     private String readSql;
 
     @Inject
-    @Named("publisher.dao.db.update")
-    private String updateSql;
-
-    @Inject
-    @Named("publisher.dao.db.filter")
+    @Named("user.dao.db.filter")
     private String filterSql;
 
     @Inject
     private DbExecutor dbExecutor;
 
-    public PublisherDaoDbImpl() {
+    public UserDaoDbImpl() {
     }
 
     @Override
-    public Single<Publisher> create(Publisher publisher) {
-        LOG.debug("Creating publisher [{}] in the DB", publisher);
+    public Single<User> create(User user) {
+        LOG.debug("Creating user [{}] in the DB", user);
 
-        return Single.just(publisher)
+        return Single.just(user)
                 .compose((single) -> DaoPolicies.applySingle(single))
-                .flatMap((_publisher) -> dbExecutor.executeUpdate(createSql, _publisher))
+                .flatMap((_user) -> dbExecutor.executeUpdate(createSql, _user))
                 .flatMapMaybe((genId) -> read(genId))
                 .toSingle();
     }
 
     @Override
-    public Maybe<Publisher> read(Long id) {
-        LOG.debug("Reading publisher with id [{}] in DB", id);
+    public Maybe<User> read(Long id) {
+        LOG.debug("Reading user with id [{}] in db", id);
 
-        Publisher publisher = new Publisher();
-        publisher.setId(id);
+        PublisherRegistration publisherRegistration = new PublisherRegistration();
+        publisherRegistration.setId(id);
 
-        return Single.just(publisher)
+        return Single.just(publisherRegistration)
                 .compose((single) -> DaoPolicies.applySingle(single))
-                .flatMapMaybe((_publisher) -> dbExecutor.executeSelectFirst(readSql, _publisher, Publisher.class));
+                .flatMapMaybe((_user) -> dbExecutor.executeSelectFirst(readSql, _user, User.class));
     }
 
     @Override
-    public Single<Publisher> update(Publisher publisher) {
-        return null;
-    }
+    public Observable<User> filter(UserQuery filter) {
+        LOG.debug("Filtering users against [{}]", filter);
 
-    @Override
-    public Observable<Publisher> filter(PublisherQuery filter) {
         return Observable.just(filter)
                 .compose((observable) -> DaoPolicies.applyObservable(observable))
-                .flatMap((_filter) -> dbExecutor.executeSelect(filterSql, _filter, Publisher.class));
+                .flatMap((_filter) -> dbExecutor.executeSelect(filterSql, _filter, User.class));
     }
 }

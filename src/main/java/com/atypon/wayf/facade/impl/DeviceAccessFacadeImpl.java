@@ -113,7 +113,7 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
                 .collectInto(deviceAccesssByPublisherId, (map, deviceAccess) -> map.put(deviceAccess.getPublisher().getId(), deviceAccess))
 
                 // Fetch all of the publishers for those publisher IDs
-                .flatMapObservable((map) -> map.keySet().isEmpty()? Observable.empty() : publisherFacade.filter(new PublisherQuery().setIds(map.keySet())))
+                .flatMapObservable((map) -> map.keySet().isEmpty()? Observable.empty() : publisherFacade.filter(new PublisherQuery().ids(map.keySet())))
 
                 // For each publisher returned, map it to each publisher session that had its ID
                 .flatMapCompletable((publisher) ->
@@ -140,7 +140,7 @@ public class DeviceAccessFacadeImpl implements DeviceAccessFacade {
                 .collectInto(deviceAccesssByIdpId, (map, deviceAccess) -> map.put(deviceAccess.getIdentityProvider().getId(), deviceAccess))
 
                 // Fetch all of the publishers for those publisher IDs
-                .flatMapObservable((map) -> map.keySet().isEmpty()? Observable.empty() : identityProviderFacade.filter(new IdentityProviderQuery().setIds(map.keySet())))
+                .flatMapObservable((map) -> map.keySet().isEmpty()? Observable.empty() : identityProviderFacade.filter(new IdentityProviderQuery().ids(map.keySet())))
 
                 // For each identity provider returned, map it to each publisher session that had its ID
                 .flatMapCompletable((identityProvider) ->

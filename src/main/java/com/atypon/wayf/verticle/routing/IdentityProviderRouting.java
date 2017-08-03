@@ -23,6 +23,7 @@ import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.DeviceFacade;
 import com.atypon.wayf.facade.IdentityProviderFacade;
 import com.atypon.wayf.request.RequestContextAccessor;
+import com.atypon.wayf.request.RequestParamMapper;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.google.inject.Inject;
@@ -97,16 +98,8 @@ public class IdentityProviderRouting implements RoutingProvider {
 
         IdentityProviderQuery query = new IdentityProviderQuery();
 
-        String identityProviderIds = RequestReader.readRequiredPathParameter(routingContext, IDENTITY_PROVIDER_IDS_PARAM_NAME, IDP_IDS_ARG_DESCRIPTION);
-        if (identityProviderIds != null) {
-            String[] idArray = identityProviderIds.split(",");
-            List<Long> ids = new ArrayList<>(idArray.length);
+        RequestParamMapper.mapParams(routingContext, query);
 
-            for (String id : idArray) {
-                ids.add(Long.valueOf(id));
-            }
-            query.setIds(ids);
-        }
         return identityProviderFacade.filter(query);
     }
 

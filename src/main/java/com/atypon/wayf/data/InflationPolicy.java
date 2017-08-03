@@ -35,8 +35,9 @@ public class InflationPolicy {
         return fields.get(child);
     }
 
-    public void addChildPolicy(String field, InflationPolicy policy) {
+    public InflationPolicy addChildPolicy(String field, InflationPolicy policy) {
         fields.put(field, policy);
+        return this;
     }
 
     public boolean hasChildField(String childField) {

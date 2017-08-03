@@ -41,7 +41,7 @@ public class IdentityProviderFacadeMockImpl implements IdentityProviderFacade {
 
     @Override
     public Observable<IdentityProvider> filter(IdentityProviderQuery filter) {
-        Collection<Long> idpIds = filter.getIds();
+        Long[] idpIds = filter.getIds();
         List<IdentityProvider> idps = new LinkedList<>();
         for (Long idpId : idpIds) {
             IdentityProvider idp = new IdentityProvider();

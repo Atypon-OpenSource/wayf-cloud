@@ -26,6 +26,7 @@ import com.atypon.wayf.facade.PublisherFacade;
 import com.atypon.wayf.facade.ClientJsFacade;
 import com.atypon.wayf.reactivex.FacadePolicies;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -94,7 +95,8 @@ public class PublisherFacadeImpl implements PublisherFacade {
 
     @Override
     public Single<Publisher> lookupCode(String publisherCode) {
-        PublisherQuery query = new PublisherQuery().setCodes(Lists.newArrayList(publisherCode));
+        PublisherQuery query = new PublisherQuery();
+        query.setCodes(publisherCode);
 
         return singleOrException(filter(query), HttpStatus.SC_BAD_REQUEST, "Could not find publisher for code [{}]", publisherCode);
     }
