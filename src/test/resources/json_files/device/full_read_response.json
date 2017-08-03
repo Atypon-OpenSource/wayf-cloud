@@ -42,7 +42,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher B"
+        "name":"Publisher B",
+        "contact":{
+          "id":147
+        }
       },
       "type":"READ_IDP_HISTORY"
     },
@@ -55,128 +58,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
-      },
-      "type":"READ_IDP_HISTORY"
-    },
-    {
-      "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
+        "name":"Publisher A",
+        "contact":{
+
         }
-      },
-      "identityProvider":{
-        "type":"SAML",
-        "name":"SAML Entity",
-        "entityId":"sample-saml-entity-id",
-        "federationId":"sample-saml-federation-id"
-      },
-      "publisher":{
-        "status":"ACTIVE",
-        "name":"Publisher A"
-      },
-      "type":"ADD_IDP"
-    },
-    {
-      "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
-      },
-      "identityProvider":{
-        "type":"SAML",
-        "name":"SAML Entity",
-        "entityId":"sample-saml-entity-id",
-        "federationId":"sample-saml-federation-id"
-      },
-      "publisher":{
-        "status":"ACTIVE",
-        "name":"Publisher A"
-      },
-      "type":"ADD_IDP"
-    },
-    {
-      "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
-      },
-      "identityProvider":{
-        "type":"SAML",
-        "name":"SAML Entity",
-        "entityId":"sample-saml-entity-id",
-        "federationId":"sample-saml-federation-id"
-      },
-      "publisher":{
-        "status":"ACTIVE",
-        "name":"Publisher A"
-      },
-      "type":"ADD_IDP"
-    },
-    {
-      "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
-      },
-      "identityProvider":{
-        "type":"SAML",
-        "name":"SAML Entity",
-        "entityId":"sample-saml-entity-id",
-        "federationId":"sample-saml-federation-id"
-      },
-      "publisher":{
-        "status":"ACTIVE",
-        "name":"Publisher A"
-      },
-      "type":"ADD_IDP"
-    },
-    {
-      "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
-      },
-      "identityProvider":{
-        "type":"SAML",
-        "name":"SAML Entity",
-        "entityId":"sample-saml-entity-id",
-        "federationId":"sample-saml-federation-id"
-      },
-      "publisher":{
-        "status":"ACTIVE",
-        "name":"Publisher A"
-      },
-      "type":"ADD_IDP"
-    },
-    {
-      "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
-      },
-      "publisher":{
-        "status":"ACTIVE",
-        "name":"Publisher B"
-      },
-      "type":"READ_IDP_HISTORY"
-    },
-    {
-      "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
-      },
-      "publisher":{
-        "status":"ACTIVE",
-        "name":"Publisher A"
       },
       "type":"READ_IDP_HISTORY"
     },
@@ -195,7 +80,152 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
+      },
+      "type":"ADD_IDP"
+    },
+    {
+      "device":{
+        "status":"ACTIVE",
+        "info":{
+          "userAgent":"Test-Agent"
+        }
+      },
+      "identityProvider":{
+        "type":"SAML",
+        "name":"SAML Entity",
+        "entityId":"sample-saml-entity-id",
+        "federationId":"sample-saml-federation-id"
+      },
+      "publisher":{
+        "status":"ACTIVE",
+        "name":"Publisher A",
+        "contact":{
+
+        }
+      },
+      "type":"ADD_IDP"
+    },
+    {
+      "device":{
+        "status":"ACTIVE",
+        "info":{
+          "userAgent":"Test-Agent"
+        }
+      },
+      "identityProvider":{
+        "type":"SAML",
+        "name":"SAML Entity",
+        "entityId":"sample-saml-entity-id",
+        "federationId":"sample-saml-federation-id"
+      },
+      "publisher":{
+        "status":"ACTIVE",
+        "name":"Publisher A",
+        "contact":{
+
+        }
+      },
+      "type":"ADD_IDP"
+    },
+    {
+      "device":{
+        "status":"ACTIVE",
+        "info":{
+          "userAgent":"Test-Agent"
+        }
+      },
+      "identityProvider":{
+        "type":"SAML",
+        "name":"SAML Entity",
+        "entityId":"sample-saml-entity-id",
+        "federationId":"sample-saml-federation-id"
+      },
+      "publisher":{
+        "status":"ACTIVE",
+        "name":"Publisher A",
+        "contact":{
+
+        }
+      },
+      "type":"ADD_IDP"
+    },
+    {
+      "device":{
+        "status":"ACTIVE",
+        "info":{
+          "userAgent":"Test-Agent"
+        }
+      },
+      "identityProvider":{
+        "type":"SAML",
+        "name":"SAML Entity",
+        "entityId":"sample-saml-entity-id",
+        "federationId":"sample-saml-federation-id"
+      },
+      "publisher":{
+        "status":"ACTIVE",
+        "name":"Publisher A",
+        "contact":{
+
+        }
+      },
+      "type":"ADD_IDP"
+    },
+    {
+      "device":{
+        "status":"ACTIVE",
+        "info":{
+          "userAgent":"Test-Agent"
+        }
+      },
+      "publisher":{
+        "status":"ACTIVE",
+        "name":"Publisher B",
+        "contact":{
+          "id":147
+        }
+      },
+      "type":"READ_IDP_HISTORY"
+    },
+    {
+      "device":{
+        "status":"ACTIVE",
+        "info":{
+          "userAgent":"Test-Agent"
+        }
+      },
+      "publisher":{
+        "status":"ACTIVE",
+        "name":"Publisher A",
+        "contact":{
+
+        }
+      },
+      "type":"READ_IDP_HISTORY"
+    },
+    {
+      "device":{
+        "status":"ACTIVE",
+        "info":{
+          "userAgent":"Test-Agent"
+        }
+      },
+      "identityProvider":{
+        "type":"SAML",
+        "name":"SAML Entity",
+        "entityId":"sample-saml-entity-id",
+        "federationId":"sample-saml-federation-id"
+      },
+      "publisher":{
+        "status":"ACTIVE",
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"REMOVE_IDP"
     },
@@ -208,7 +238,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher B"
+        "name":"Publisher B",
+        "contact":{
+          "id":147
+        }
       },
       "type":"READ_IDP_HISTORY"
     },
@@ -221,7 +254,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"READ_IDP_HISTORY"
     },
@@ -239,7 +275,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"ADD_IDP"
     },
@@ -257,7 +296,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"ADD_IDP"
     },
@@ -275,7 +317,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"ADD_IDP"
     },
@@ -295,7 +340,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"ADD_IDP"
     },
@@ -315,7 +363,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"ADD_IDP"
     },
@@ -335,7 +386,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"ADD_IDP"
     },
@@ -355,7 +409,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"ADD_IDP"
     },
@@ -374,7 +431,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"ADD_IDP"
     },
@@ -393,7 +453,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"ADD_IDP"
     },
@@ -412,7 +475,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"ADD_IDP"
     },
@@ -431,7 +497,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"ADD_IDP"
     },
@@ -450,7 +519,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"ADD_IDP"
     },
@@ -463,7 +535,10 @@
       },
       "publisher":{
         "status":"ACTIVE",
-        "name":"Publisher A"
+        "name":"Publisher A",
+        "contact":{
+
+        }
       },
       "type":"READ_IDP_HISTORY"
     }

@@ -17,6 +17,8 @@
 package com.atypon.wayf.data.publisher;
 
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
+import com.atypon.wayf.data.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
@@ -25,12 +27,16 @@ public class Publisher implements Authenticatable {
     private Long id;
     private PublisherStatus status;
 
+    private PublisherRegistration registration;
+
     private String token;
     private String salt;
     private String widgetLocation;
 
     private String code;
     private String name;
+
+    private User contact;
 
     private Date createdDate;
     private Date modifiedDate;
@@ -52,6 +58,14 @@ public class Publisher implements Authenticatable {
 
     public void setStatus(PublisherStatus status) {
         this.status = status;
+    }
+
+    public PublisherRegistration getRegistration() {
+        return registration;
+    }
+
+    public void setRegistration(PublisherRegistration registration) {
+        this.registration = registration;
     }
 
     public String getToken() {
@@ -93,6 +107,14 @@ public class Publisher implements Authenticatable {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public User getContact() {
+        return contact;
+    }
+
+    public void setContact(User contact) {
+        this.contact = contact;
     }
 
     public Date getCreatedDate() {
