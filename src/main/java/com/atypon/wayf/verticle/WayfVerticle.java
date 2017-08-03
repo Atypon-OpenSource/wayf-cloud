@@ -65,6 +65,9 @@ public class WayfVerticle extends AbstractVerticle {
     private PublisherRegistrationRouting publisherRegistrationRouting;
 
     @Inject
+    private UserRouting userRouting;
+
+    @Inject
     private ResponseWriter responseWriter;
 
     @Inject
@@ -84,7 +87,7 @@ public class WayfVerticle extends AbstractVerticle {
     
     private void startWebApp(Handler<AsyncResult<HttpServer>> next) {
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
-        routingProviders = Lists.newArrayList(identityProviderUsageRouting, identityProviderRouting, deviceRoutingProvider, publisherRouting, deviceAccessRouting, publisherRegistrationRouting);
+        routingProviders = Lists.newArrayList(identityProviderUsageRouting, identityProviderRouting, deviceRoutingProvider, publisherRouting, deviceAccessRouting, publisherRegistrationRouting, userRouting);
         // Create a router object.
         Router router = Router.router(vertx);
 
