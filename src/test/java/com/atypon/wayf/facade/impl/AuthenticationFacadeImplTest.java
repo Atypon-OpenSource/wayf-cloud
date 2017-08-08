@@ -58,10 +58,9 @@ public class AuthenticationFacadeImplTest {
         testPublisher.setId(1122L);
 
         // Test Create
-        String tokenValue = facade.createToken(testPublisher).blockingGet();
-        assertNotNull(tokenValue);
+        AuthorizationToken token = facade.createToken(testPublisher).blockingGet();
+        assertNotNull(token);
 
-        AuthorizationToken token = new AuthorizationToken().setType(AuthorizationTokenType.API_TOKEN).setValue(tokenValue);
 
         // Test Read
         Authenticatable authenticated = facade.authenticate(token);

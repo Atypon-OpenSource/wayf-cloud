@@ -16,6 +16,8 @@
 
 package com.atypon.wayf.integration.publisher;
 
+import com.atypon.wayf.data.AuthorizationToken;
+import com.atypon.wayf.data.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.integration.HttpTestUtil;
 import com.atypon.wayf.request.ResponseWriter;
@@ -92,7 +94,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
     public void multiplePublisherFullFlow() throws Exception {
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
-        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());
+        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getAuthorizationToken());
 
         // Create device
         String globalIdPublisherA = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
@@ -100,53 +102,53 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         globalId = globalIdPublisherA;
 
         // Assert an empty history
-        deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
+        deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getAuthorizationToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
 
         // Get the minimum last active date
         Date earliestLastActiveDate = DATE_FORMAT.parse(DATE_FORMAT.format(new Date()));
 
         // Add the IDPs to the device multiple times and validate the IDP's ID is the same each time
-        Long samlId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(5, publisherALocalId, publisherA.getToken(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
-        identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(4, publisherALocalId, publisherA.getToken(), CREATE_OPEN_ATHENS_IDP_REQUEST_JSON, CREATE_OPEN_ATHENS_IDP_RESPONSE_JSON);
-        identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(3, publisherALocalId, publisherA.getToken(), CREATE_OAUTH_IDP_REQUEST_JSON, CREATE_OAUTH_IDP_RESPONSE_JSON);
+        Long samlId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(5, publisherALocalId, publisherA.getAuthorizationToken(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
+        identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(4, publisherALocalId, publisherA.getAuthorizationToken(), CREATE_OPEN_ATHENS_IDP_REQUEST_JSON, CREATE_OPEN_ATHENS_IDP_RESPONSE_JSON);
+        identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(3, publisherALocalId, publisherA.getAuthorizationToken(), CREATE_OAUTH_IDP_REQUEST_JSON, CREATE_OAUTH_IDP_RESPONSE_JSON);
 
         // Get the maximum last active active date
         Date latestLastActiveDate = ResponseWriter.DATE_FORMAT.parse(DATE_FORMAT.format(new Date()));
 
         // Test the device history after adding the IDPs
-        String deviceHistoryFromPublisherA = deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getToken(), INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON);
+        String deviceHistoryFromPublisherA = deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getAuthorizationToken(), INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON);
         deviceAccessTestUtil.testLastActiveDateBetween(earliestLastActiveDate, latestLastActiveDate, 3, deviceHistoryFromPublisherA);
 
         // Relate the device to publisher B
         String publisherBLocalId = "local-id-publisher-b-" + UUID.randomUUID().toString();
 
-        deviceTestUtil.registerLocalId(publisherBLocalId, publisherB.getToken());
+        deviceTestUtil.registerLocalId(publisherBLocalId, publisherB.getAuthorizationToken());
         String globalIdPublisherB = deviceTestUtil.relateDeviceToPublisher(publisherBLocalId, publisherB.getCode(), globalIdPublisherA, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         assertEquals(globalIdPublisherA, globalIdPublisherB);
 
         // Get the usage history for publisher B
-        String deviceHistoryFromPublisherB = deviceAccessTestUtil.testDeviceHistory(publisherBLocalId, publisherB.getToken(), INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON);
+        String deviceHistoryFromPublisherB = deviceAccessTestUtil.testDeviceHistory(publisherBLocalId, publisherB.getAuthorizationToken(), INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON);
 
         // Compare the usage history from publisher A to that of publisher B
         deviceAccessTestUtil.compareDeviceHistory(deviceHistoryFromPublisherA, deviceHistoryFromPublisherB);
 
         // Remove the SAML entity from the device from publisher A
-        identityProviderTestUtil.removeIdpForDevice(publisherALocalId, publisherA.getToken(), samlId);
+        identityProviderTestUtil.removeIdpForDevice(publisherALocalId, publisherA.getAuthorizationToken(), samlId);
 
         // Get the usage history as publisher A and then publisher B
-        deviceHistoryFromPublisherA = deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getToken(), AFTER_DELETE_IDP_DEVICE_HISTORY_RESPONSE_JSON);
-        deviceHistoryFromPublisherB = deviceAccessTestUtil.testDeviceHistory(publisherBLocalId, publisherB.getToken(), AFTER_DELETE_IDP_DEVICE_HISTORY_RESPONSE_JSON);
+        deviceHistoryFromPublisherA = deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getAuthorizationToken(), AFTER_DELETE_IDP_DEVICE_HISTORY_RESPONSE_JSON);
+        deviceHistoryFromPublisherB = deviceAccessTestUtil.testDeviceHistory(publisherBLocalId, publisherB.getAuthorizationToken(), AFTER_DELETE_IDP_DEVICE_HISTORY_RESPONSE_JSON);
 
         // Ensure the usage history is the same for both publishers
         deviceAccessTestUtil.compareDeviceHistory(deviceHistoryFromPublisherA, deviceHistoryFromPublisherB);
 
         // Add back the SAML identity to the device
-        identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(5, publisherALocalId, publisherA.getToken(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
+        identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(5, publisherALocalId, publisherA.getAuthorizationToken(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
 
         // Get the usage history as publisher A and then publisher B
-        deviceHistoryFromPublisherA = deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getToken(), RE_ADD_SAML_IDP_HISTORY_RESPONSE_JSON);
-        deviceHistoryFromPublisherB = deviceAccessTestUtil.testDeviceHistory(publisherBLocalId, publisherB.getToken(), RE_ADD_SAML_IDP_HISTORY_RESPONSE_JSON);
+        deviceHistoryFromPublisherA = deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getAuthorizationToken(), RE_ADD_SAML_IDP_HISTORY_RESPONSE_JSON);
+        deviceHistoryFromPublisherB = deviceAccessTestUtil.testDeviceHistory(publisherBLocalId, publisherB.getAuthorizationToken(), RE_ADD_SAML_IDP_HISTORY_RESPONSE_JSON);
 
         // Ensure the usage history is the same for both publishers
         deviceAccessTestUtil.compareDeviceHistory(deviceHistoryFromPublisherA, deviceHistoryFromPublisherB);
@@ -163,19 +165,19 @@ public class PublisherIntegrationTest extends BaseHttpTest {
     public void testDuplicateRegisterPreservesExistingMapping() {
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
-        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());
+        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getAuthorizationToken());
 
         // Create device
         String globalIdPublisherA = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Assert an empty history
-        deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
+        deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getAuthorizationToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
 
         // Register local ID again
-        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());
+        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getAuthorizationToken());
 
         // Ensure that we can still resolve the device
-        deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
+        deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getAuthorizationToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
     }
 
     @Test
@@ -183,27 +185,27 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         String publisherALocalId1 = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
         // Register the local ID and create a device for it
-        deviceTestUtil.registerLocalId(publisherALocalId1, publisherA.getToken());
+        deviceTestUtil.registerLocalId(publisherALocalId1, publisherA.getAuthorizationToken());
         String globalIdPublisherAFirstCall = deviceTestUtil.relateDeviceToPublisher(publisherALocalId1, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         String publisherALocalId2 = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
         // Relate the exisitng device against a new local ID
-        deviceTestUtil.registerLocalId(publisherALocalId2, publisherA.getToken());
+        deviceTestUtil.registerLocalId(publisherALocalId2, publisherA.getAuthorizationToken());
         String globalIdPublisherASecondCall = deviceTestUtil.relateDeviceToPublisher(publisherALocalId2, publisherA.getCode(), globalIdPublisherAFirstCall, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Ensure the same device is stored against both local IDs
         assertEquals(globalIdPublisherAFirstCall, globalIdPublisherASecondCall);
 
         // Ensure that we can still resolve the device
-        deviceAccessTestUtil.testDeviceHistory(publisherALocalId1, publisherA.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
-        deviceAccessTestUtil.testDeviceHistory(publisherALocalId2, publisherA.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
+        deviceAccessTestUtil.testDeviceHistory(publisherALocalId1, publisherA.getAuthorizationToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
+        deviceAccessTestUtil.testDeviceHistory(publisherALocalId2, publisherA.getAuthorizationToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
     }
 
     @Test
     public void existingDeviceUserDeletesPublisherLocalId() {
         String publisherAFirstLocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
-        deviceTestUtil.registerLocalId(publisherAFirstLocalId, publisherA.getToken());
+        deviceTestUtil.registerLocalId(publisherAFirstLocalId, publisherA.getAuthorizationToken());
 
         // Create device
         String firstGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherAFirstLocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
@@ -212,7 +214,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
 
         assertFalse(publisherAFirstLocalId.equals(publisherASecondLocalId));
 
-        deviceTestUtil.registerLocalId(publisherASecondLocalId, publisherA.getToken());
+        deviceTestUtil.registerLocalId(publisherASecondLocalId, publisherA.getAuthorizationToken());
         String secondGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherASecondLocalId, publisherA.getCode(), firstGlobalId, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         assertEquals(firstGlobalId, secondGlobalId);
@@ -221,7 +223,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
     @Test
     public void existingDeviceUserDeletesGlobalId() {
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
-        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());
+        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getAuthorizationToken());
 
         // Create device for local ID
         String firstGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
@@ -235,7 +237,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         // Try passing in the same local ID but this time with a different publisher without registering it
         deviceTestUtil.relateDeviceToPublisherError(HttpStatus.SC_NOT_FOUND, publisherALocalId, publisherB.getCode(), null, ERROR_404_LOCAL_ID_NOT_FOUND_RESPONSE_JSON);
 
-        deviceTestUtil.registerLocalId(publisherALocalId, publisherB.getToken());
+        deviceTestUtil.registerLocalId(publisherALocalId, publisherB.getAuthorizationToken());
 
         String thirdGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherB.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
@@ -247,41 +249,41 @@ public class PublisherIntegrationTest extends BaseHttpTest {
     public void nonUniqueLocalId() {
         // Generate Device X for Publisher A
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
-        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());
+        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getAuthorizationToken());
         String deviceXGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Link Device X to Publisher B
         String publisherBDeviceXLocalId = "local-id-publisher-b-" + UUID.randomUUID().toString();
-        deviceTestUtil.registerLocalId(publisherBDeviceXLocalId, publisherB.getToken());
+        deviceTestUtil.registerLocalId(publisherBDeviceXLocalId, publisherB.getAuthorizationToken());
         String deviceXGlobalIdPublisherB = deviceTestUtil.relateDeviceToPublisher(publisherBDeviceXLocalId, publisherB.getCode(), deviceXGlobalId, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Ensure same global ID
         assertEquals(deviceXGlobalId, deviceXGlobalIdPublisherB);
 
         // Assert an empty history
-        deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
+        deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getAuthorizationToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
 
         // Add activity to Device X
-        identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(1, publisherALocalId, publisherA.getToken(), CREATE_OAUTH_IDP_REQUEST_JSON, CREATE_OAUTH_IDP_RESPONSE_JSON);
+        identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(1, publisherALocalId, publisherA.getAuthorizationToken(), CREATE_OAUTH_IDP_REQUEST_JSON, CREATE_OAUTH_IDP_RESPONSE_JSON);
 
-        deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getToken(), ONE_OATH_HISTORY_RESPONSE_JSON);
+        deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getAuthorizationToken(), ONE_OATH_HISTORY_RESPONSE_JSON);
 
         // Generate Device Y under same local ID as Device X
         String publisherBSecondLocalId = "local-id-publisher-b-" + UUID.randomUUID().toString();
-        deviceTestUtil.registerLocalId(publisherBSecondLocalId, publisherB.getToken());
+        deviceTestUtil.registerLocalId(publisherBSecondLocalId, publisherB.getAuthorizationToken());
         String deviceYGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherBSecondLocalId, publisherB.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Assert an empty history
-        deviceAccessTestUtil.testDeviceHistory(publisherBSecondLocalId, publisherB.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
+        deviceAccessTestUtil.testDeviceHistory(publisherBSecondLocalId, publisherB.getAuthorizationToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
 
         // Overwrite Device X with Device Y for publisher A's localId
         String deviceYGlobalIdSecond = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), deviceYGlobalId, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Test to ensure the localId now resolves to Device Y
-        deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
+        deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getAuthorizationToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
 
         // Test to make sure Device X still has data for publisher B
-        deviceAccessTestUtil.testDeviceHistory(publisherBDeviceXLocalId, publisherB.getToken(), ONE_OATH_HISTORY_RESPONSE_JSON);
+        deviceAccessTestUtil.testDeviceHistory(publisherBDeviceXLocalId, publisherB.getAuthorizationToken(), ONE_OATH_HISTORY_RESPONSE_JSON);
     }
 
     @Test
@@ -289,10 +291,13 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
         // Try to relate device to publisher with a bad publisher token
-        String badToken = "obviously-bad-token";
+        AuthorizationToken badToken = new AuthorizationToken();
+        badToken.setType(AuthorizationTokenType.API_TOKEN);
+        badToken.setValue("obviously-bad-token");
+
         deviceTestUtil.deviceQueryBadPublisherToken(publisherALocalId, badToken, ERROR_401_RESPONSE_JSON);
 
-        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());
+        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getAuthorizationToken());
         // Create device
         deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
@@ -302,7 +307,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         // Test adding an IDP with a bad token
         identityProviderTestUtil.addIdpToDeviceError(HttpStatus.SC_UNAUTHORIZED, publisherALocalId, badToken, CREATE_OAUTH_IDP_REQUEST_JSON, ERROR_401_RESPONSE_JSON);
 
-        Long samlId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(1, publisherALocalId, publisherA.getToken(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
+        Long samlId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(1, publisherALocalId, publisherA.getAuthorizationToken(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
 
         // Test removing IDP with bad token
         identityProviderTestUtil.removeIdpForDeviceError(HttpStatus.SC_UNAUTHORIZED, publisherALocalId, badToken, samlId, ERROR_401_RESPONSE_JSON);
@@ -312,28 +317,28 @@ public class PublisherIntegrationTest extends BaseHttpTest {
     public void badLocalId() {
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
-        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());
+        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getAuthorizationToken());
         deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         String badLocalId = "obviously-bad-local-id";
-        deviceAccessTestUtil.testDeviceHistoryError(HttpStatus.SC_NOT_FOUND, badLocalId, publisherA.getToken(), ERROR_404_BAD_LOCAL_ID_RESPONSE_JSON);
+        deviceAccessTestUtil.testDeviceHistoryError(HttpStatus.SC_NOT_FOUND, badLocalId, publisherA.getAuthorizationToken(), ERROR_404_BAD_LOCAL_ID_RESPONSE_JSON);
 
-        identityProviderTestUtil.addIdpToDeviceError(HttpStatus.SC_NOT_FOUND, badLocalId, publisherA.getToken(), CREATE_OAUTH_IDP_REQUEST_JSON, ERROR_404_BAD_LOCAL_ID_RESPONSE_JSON);
+        identityProviderTestUtil.addIdpToDeviceError(HttpStatus.SC_NOT_FOUND, badLocalId, publisherA.getAuthorizationToken(), CREATE_OAUTH_IDP_REQUEST_JSON, ERROR_404_BAD_LOCAL_ID_RESPONSE_JSON);
 
-        Long samlId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(1, publisherALocalId, publisherA.getToken(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
+        Long samlId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(1, publisherALocalId, publisherA.getAuthorizationToken(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
 
-        identityProviderTestUtil.removeIdpForDeviceError(HttpStatus.SC_NOT_FOUND, badLocalId, publisherA.getToken(), samlId, ERROR_404_BAD_LOCAL_ID_RESPONSE_JSON);
+        identityProviderTestUtil.removeIdpForDeviceError(HttpStatus.SC_NOT_FOUND, badLocalId, publisherA.getAuthorizationToken(), samlId, ERROR_404_BAD_LOCAL_ID_RESPONSE_JSON);
     }
 
     @Test
     public void badIdentityProviderId() {
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
-        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());
+        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getAuthorizationToken());
         deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
-        identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(1, publisherALocalId, publisherA.getToken(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
-        identityProviderTestUtil.removeIdpForDeviceError(HttpStatus.SC_BAD_REQUEST, publisherALocalId, publisherA.getToken(), 0L, ERROR_400_BAD_IDENTITY_PROVIDER_ID_RESPONSE_JSON);
+        identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(1, publisherALocalId, publisherA.getAuthorizationToken(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
+        identityProviderTestUtil.removeIdpForDeviceError(HttpStatus.SC_BAD_REQUEST, publisherALocalId, publisherA.getAuthorizationToken(), 0L, ERROR_400_BAD_IDENTITY_PROVIDER_ID_RESPONSE_JSON);
     }
 
     @Test
@@ -341,7 +346,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         String badGlobalId = "obviously-bad-global-id";
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
-        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());
+        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getAuthorizationToken());
         deviceTestUtil.relateDeviceToPublisherError(HttpStatus.SC_NOT_FOUND, publisherALocalId, publisherA.getCode(), badGlobalId, ERROR_404_BAD_GLOBAL_ID_RESPONSE_JSON);
     }
 }

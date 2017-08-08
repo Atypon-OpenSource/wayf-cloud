@@ -21,7 +21,9 @@ import com.atypon.wayf.data.AuthorizationToken;
 import io.reactivex.Single;
 
 public interface AuthenticationFacade {
-    Single<String> createToken(Authenticatable authenticatable);
+    Single<AuthorizationToken> createToken(Authenticatable authenticatable);
     Authenticatable authenticate(AuthorizationToken token);
     AuthorizationToken parseAuthenticationValue(String authenticationValue);
+
+    boolean isStillValid(Authenticatable authenticatable);
 }

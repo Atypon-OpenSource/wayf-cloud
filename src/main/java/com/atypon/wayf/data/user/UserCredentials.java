@@ -14,15 +14,28 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.data.user;
 
-import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.AuthorizationToken;
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
+public class UserCredentials {
+    private String emailAddress;
+    private String password;
 
-public interface AuthenticationDao {
+    public UserCredentials() {
+    }
 
-    Completable create(Authenticatable authenticatable);
-    Maybe<Authenticatable> authenticate(AuthorizationToken token);
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

@@ -20,6 +20,8 @@ import com.atypon.wayf.data.publisher.Publisher;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.http.HttpStatus;
 
+import java.util.Date;
+
 /*
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -42,6 +44,9 @@ public interface Authenticatable {
     @JsonIgnore
     Type getType();
     void setType(Type type);
+
+    AuthorizationToken getAuthorizationToken();
+    void setAuthorizationToken(AuthorizationToken authorizationToken);
 
     static Publisher asPublisher(Authenticatable authenticatable) {
         if (authenticatable != null && Publisher.class.isAssignableFrom(authenticatable.getClass())) {

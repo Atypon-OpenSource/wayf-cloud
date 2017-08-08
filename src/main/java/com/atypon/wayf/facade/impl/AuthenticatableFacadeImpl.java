@@ -30,6 +30,7 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,21 +38,31 @@ import java.util.regex.Pattern;
 public class AuthenticatableFacadeImpl implements AuthenticationFacade {
     private static final Logger LOG = LoggerFactory.getLogger(AuthenticatableFacadeImpl.class);
 
+    private static final Long ADMIN_TOKEN_LIFESPAN = 7200000L; // 2 hours
+
     private static final String TOKEN_REGEX = "(Token|Bearer) (.*)";
     private static final Pattern TOKEN_MATCHER = Pattern.compile(TOKEN_REGEX, Pattern.DOTALL);
 
     @Inject
     @Named("authenticatableCache")
-    protected LoadingCache<String, Authenticatable> cache;
+    protected LoadingCache<AuthorizationToken, Authenticatable> cache;
 
     @Inject
     protected AuthenticationDao dbDao;
 
     @Override
-    public Single<String> createToken(Authenticatable authenticatable) {
-        String token = UUID.randomUUID().toString();
+    public Single<AuthorizationToken> createToken(Authenticatable authenticatable) {
+        AuthorizationToken token = new AuthorizationToken();
+        token.setType(AuthorizationTokenType.API_TOKEN);
+        token.setValue(UUID.randomUUID().toString());
 
-        return dbDao.create(token, authenticatable).toSingleDefault(token);
+        if (authenticatable.getType() == Authenticatable.Type.ADMIN) {
+            token.setValidUntil(new Date(System.currentTimeMillis() + ADMIN_TOKEN_LIFESPAN));
+        }
+
+        authenticatable.setAuthorizationToken(token);
+
+        return dbDao.create(authenticatable).toSingleDefault(token);
     }
 
     @Override
@@ -63,10 +74,14 @@ public class AuthenticatableFacadeImpl implements AuthenticationFacade {
         }
 
         try {
-            Authenticatable authenticatable = cache.get(token.getValue()).blockingGet();
+            Authenticatable authenticatable = cache.get(token).blockingGet();
 
             if (authenticatable == null) {
                 throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Could not authenticate token");
+            }
+
+            if (!isStillValid(authenticatable)) {
+                throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Expired token");
             }
 
             return authenticatable;
@@ -91,5 +106,18 @@ public class AuthenticatableFacadeImpl implements AuthenticationFacade {
         }
 
         throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Could not parse Authentication header");
+    }
+
+    @Override
+    public boolean isStillValid(Authenticatable authenticatable) {
+        if (authenticatable.getAuthorizationToken() == null) {
+            return false;
+        }
+
+        if (authenticatable.getAuthorizationToken().getValidUntil() == null) {
+            return true;
+        }
+
+        return authenticatable.getAuthorizationToken().getValidUntil().compareTo(new Date()) <= 0;
     }
 }

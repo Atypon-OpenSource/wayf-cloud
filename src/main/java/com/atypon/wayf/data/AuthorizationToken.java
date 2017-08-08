@@ -16,10 +16,13 @@
 
 package com.atypon.wayf.data;
 
+import java.util.Date;
+
 public class AuthorizationToken {
 
     private AuthorizationTokenType type;
     private String value;
+    private Date validUntil;
 
     public AuthorizationToken() {
     }
@@ -28,17 +31,23 @@ public class AuthorizationToken {
         return type;
     }
 
-    public AuthorizationToken setType(AuthorizationTokenType type) {
+    public void setType(AuthorizationTokenType type) {
         this.type = type;
-        return this;
     }
 
     public String getValue() {
         return value;
     }
 
-    public AuthorizationToken setValue(String value) {
+    public void setValue(String value) {
         this.value = value;
-        return this;
+    }
+
+    public Date getValidUntil() {
+        return validUntil;
+    }
+
+    public void setValidUntil(Date validUntil) {
+        this.validUntil = validUntil;
     }
 }

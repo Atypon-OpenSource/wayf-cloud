@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.integration;
 
+import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
@@ -37,7 +38,7 @@ public class DeviceAccessTestUtil {
         this.request = request;
     }
 
-    public void testDeviceHistoryError(int statusCode, String localId, String publisherToken, String expectedHistoryJson) {
+    public void testDeviceHistoryError(int statusCode, String localId, AuthorizationToken publisherToken, String expectedHistoryJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
@@ -59,7 +60,7 @@ public class DeviceAccessTestUtil {
     }
 
 
-    public String testDeviceHistory(String localId, String publisherToken, String expectedHistoryJson) {
+    public String testDeviceHistory(String localId, AuthorizationToken publisherToken, String expectedHistoryJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 

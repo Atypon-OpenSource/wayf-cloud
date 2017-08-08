@@ -18,6 +18,7 @@ package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.AuthenticationDao;
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.database.DbExecutor;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -26,15 +27,8 @@ import io.reactivex.Maybe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class AuthenticationDaoDbImpl implements AuthenticationDao {
     private static final Logger LOG = LoggerFactory.getLogger(AuthenticationDaoDbImpl.class);
-
-    private static final String TOKEN = "token";
-    public static final String AUTHENTICATABLE_ID = "id";
-    public static final String AUTHENTICATABLE_TYPE = "type";
 
     @Inject
     @Named("authentication.dao.db.create")
@@ -48,24 +42,16 @@ public class AuthenticationDaoDbImpl implements AuthenticationDao {
     private DbExecutor dbExecutor;
 
     @Override
-    public Completable create(String token, Authenticatable authenticatable) {
+    public Completable create(Authenticatable authenticatable) {
         LOG.debug("Creating authentication policy for [{}]", authenticatable);
 
-        Map<String, Object> args = new HashMap<>();
-        args.put(TOKEN, token);
-        args.put(AUTHENTICATABLE_ID, authenticatable.getId());
-        args.put(AUTHENTICATABLE_TYPE, authenticatable.getType().toString());
-
-        return dbExecutor.executeUpdate(createSql, args).toCompletable();
+        return dbExecutor.executeUpdate(createSql, authenticatable).toCompletable();
     }
 
     @Override
-    public Maybe<Authenticatable> authenticate(String token) {
+    public Maybe<Authenticatable> authenticate(AuthorizationToken token) {
         LOG.debug("Authenticating");
 
-        Map<String, Object> args = new HashMap<>();
-        args.put(TOKEN, token);
-
-        return dbExecutor.executeSelectFirst(authenticateSql, args, Authenticatable.class);
+        return dbExecutor.executeSelectFirst(authenticateSql, token, Authenticatable.class);
     }
 }

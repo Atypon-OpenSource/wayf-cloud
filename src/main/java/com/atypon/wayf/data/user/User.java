@@ -16,9 +16,12 @@
 
 package com.atypon.wayf.data.user;
 
+import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthorizationToken;
+
 import java.util.Date;
 
-public class User {
+public class User implements Authenticatable {
     private Long id;
 
     private String firstName;
@@ -26,6 +29,9 @@ public class User {
     private String email;
 
     private String phoneNumber;
+
+    private AuthorizationToken authorizationToken;
+    private UserCredentials credentials;
 
     private Date createdDate;
     private Date modifiedDate;
@@ -71,6 +77,33 @@ public class User {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.ADMIN;
+    }
+
+    @Override
+    public void setType(Type type) {
+    }
+
+    @Override
+    public AuthorizationToken getAuthorizationToken() {
+        return authorizationToken;
+    }
+
+    @Override
+    public void setAuthorizationToken(AuthorizationToken authorizationToken) {
+        this.authorizationToken = authorizationToken;
+    }
+
+    public UserCredentials getCredentials() {
+        return credentials;
+    }
+
+    public void setCredentials(UserCredentials credentials) {
+        this.credentials = credentials;
     }
 
     public Date getCreatedDate() {

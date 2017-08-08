@@ -23,6 +23,7 @@ import com.atypon.wayf.cache.impl.LoadingCacheRedisImpl;
 import com.atypon.wayf.dao.*;
 import com.atypon.wayf.dao.impl.*;
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.data.InflationPolicyParser;
 import com.atypon.wayf.data.InflationPolicyParserQueryParamImpl;
 import com.atypon.wayf.data.identity.IdentityProviderType;
@@ -229,8 +230,8 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("authenticatableRedisDao")
-    public RedisDao<String, Authenticatable> getAuthenticatableRedisDao(JedisPool jedisPool) {
-        return new RedisDaoImpl<String, Authenticatable>()
+    public RedisDao<AuthorizationToken, Authenticatable> getAuthenticatableRedisDao(JedisPool jedisPool) {
+        return new RedisDaoImpl<AuthorizationToken, Authenticatable>()
                 .setPrefix("AUTHENTICABLE")
                 .setPool(jedisPool)
                 .setTtlSeconds(172800)
@@ -241,10 +242,10 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("authenticatableRedisCache")
-    public LoadingCache<String, Authenticatable> getLoadingCache(
-            @Named("authenticatableRedisDao") RedisDao<String, Authenticatable> authenticatableRedisDao,
+    public LoadingCache<AuthorizationToken, Authenticatable> getLoadingCache(
+            @Named("authenticatableRedisDao") RedisDao<AuthorizationToken, Authenticatable> authenticatableRedisDao,
             AuthenticationDao authenticationDao) {
-        LoadingCacheRedisImpl<String, Authenticatable> l2Cache = new LoadingCacheRedisImpl<>();
+        LoadingCacheRedisImpl<AuthorizationToken, Authenticatable> l2Cache = new LoadingCacheRedisImpl<>();
         l2Cache.setRedisDao(authenticatableRedisDao);
         l2Cache.setCacheLoader((key) -> authenticationDao.authenticate(key));
 
@@ -253,9 +254,9 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("authenticatableCache")
-    public LoadingCache<String, Authenticatable> getLoadingCache(
-            @Named("authenticatableRedisCache") LoadingCache<String, Authenticatable> authenticatableRedisCache) {
-        LoadingCacheGuavaImpl<String, Authenticatable> l1Cache = new LoadingCacheGuavaImpl<>();
+    public LoadingCache<AuthorizationToken, Authenticatable> getLoadingCache(
+            @Named("authenticatableRedisCache") LoadingCache<AuthorizationToken, Authenticatable> authenticatableRedisCache) {
+        LoadingCacheGuavaImpl<AuthorizationToken, Authenticatable> l1Cache = new LoadingCacheGuavaImpl<>();
         l1Cache.setGuavaCache(CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build());
         l1Cache.setCacheLoader((key) -> authenticatableRedisCache.get(key));
 

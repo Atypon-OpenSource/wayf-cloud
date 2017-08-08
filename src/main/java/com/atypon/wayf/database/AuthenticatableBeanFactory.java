@@ -19,17 +19,20 @@ package com.atypon.wayf.database;
 import com.atypon.wayf.dao.impl.AuthenticationDaoDbImpl;
 import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.data.user.User;
 
 import java.util.Map;
 
 public class AuthenticatableBeanFactory implements BeanFactory<Authenticatable> {
-
+    private static final String TYPE = "type";
     @Override
     public Authenticatable createInstance(Map<String, Object> values) {
-        Object type = values.get(AuthenticationDaoDbImpl.AUTHENTICATABLE_TYPE);
+        Object type = values.get(TYPE);
 
         if (Authenticatable.Type.PUBLISHER.toString().equals(type)) {
             return new Publisher();
+        } else if (Authenticatable.Type.ADMIN.toString().equals(type)) {
+            return new User();
         }
 
         throw new UnsupportedOperationException();

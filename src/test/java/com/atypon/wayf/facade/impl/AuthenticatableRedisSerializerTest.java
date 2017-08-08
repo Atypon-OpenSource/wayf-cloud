@@ -16,6 +16,8 @@
 
 package com.atypon.wayf.facade.impl;
 
+import com.atypon.wayf.data.AuthorizationToken;
+import com.atypon.wayf.data.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
 import org.junit.Test;
 
@@ -28,10 +30,18 @@ public class AuthenticatableRedisSerializerTest {
         Publisher publisher = new Publisher();
         publisher.setId(123L);
 
+        AuthorizationToken token = new AuthorizationToken();
+        token.setValue("ab123");
+        token.setType(AuthorizationTokenType.API_TOKEN);
+
+        publisher.setAuthorizationToken(token);
+
         String serializedPublisher = AuthenticatableRedisSerializer.serialize(publisher);
         Publisher deserializedPublisher = (Publisher) AuthenticatableRedisSerializer.deserialize(serializedPublisher);
 
         assertEquals(publisher.getId(), deserializedPublisher.getId());
+        assertEquals(publisher.getAuthorizationToken().getType(), deserializedPublisher.getAuthorizationToken().getType());
+        assertEquals(publisher.getAuthorizationToken().getValue(), deserializedPublisher.getAuthorizationToken().getValue());
 
     }
 }

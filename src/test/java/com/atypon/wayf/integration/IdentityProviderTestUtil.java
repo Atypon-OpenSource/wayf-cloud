@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.integration;
 
+import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
@@ -82,7 +83,7 @@ public class IdentityProviderTestUtil {
         assertJsonEquals(expectedResponseJson, readIdpsResponse, readIdpsGeneratedFields);
     }
 
-    public void addIdpToDeviceError(int statusCode, String localId, String publisherToken, String idpBodyJson, String expectedResponseJson) {
+    public void addIdpToDeviceError(int statusCode, String localId, AuthorizationToken publisherToken, String idpBodyJson, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
@@ -104,7 +105,7 @@ public class IdentityProviderTestUtil {
         assertJsonEquals(expectedResponseJson, addIdpResponse, addIdpResponseGeneratedFields);
     }
 
-    public Long addIdpToDevice(String localId, String publisherToken, String idpBodyJson, String expectedResponseJson) {
+    public Long addIdpToDevice(String localId, AuthorizationToken publisherToken, String idpBodyJson, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
@@ -131,7 +132,7 @@ public class IdentityProviderTestUtil {
         return idpId;
     }
 
-    public Long testAddIdpToDeviceAndIdpResolution(int count, String localId, String publisherToken, String requestJson, String expectedResponseJson) {
+    public Long testAddIdpToDeviceAndIdpResolution(int count, String localId, AuthorizationToken publisherToken, String requestJson, String expectedResponseJson) {
         Long[] ids = new Long[count];
 
         for (int i = 0; i < count; i++) {
@@ -145,7 +146,7 @@ public class IdentityProviderTestUtil {
         return ids[0];
     }
 
-    public void removeIdpForDeviceError(int statusCode, String localId, String publisherToken, Long idpId, String expectedResponseJson) {
+    public void removeIdpForDeviceError(int statusCode, String localId, AuthorizationToken publisherToken, Long idpId, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
@@ -166,7 +167,7 @@ public class IdentityProviderTestUtil {
         assertJsonEquals(expectedResponseJson, removeIdpResponse, removeIdpResponseGeneratedFields);
     }
 
-    public void removeIdpForDevice(String localId, String publisherToken, Long idpId) {
+    public void removeIdpForDevice(String localId, AuthorizationToken publisherToken, Long idpId) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 

@@ -17,6 +17,8 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthorizationToken;
+import com.atypon.wayf.data.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
@@ -46,12 +48,15 @@ public class AuthenticationDaoDbImplTest {
 
     @Test
     public void testCreateAndAuthenticate() {
-        String token = UUID.randomUUID().toString();
+        AuthorizationToken token = new AuthorizationToken();
+        token.setType(AuthorizationTokenType.API_TOKEN);
+        token.setValue(UUID.randomUUID().toString());
 
         Publisher publisher = new Publisher();
         publisher.setId(123L);
+        publisher.setAuthorizationToken(token);
 
-        dao.create(token, publisher).blockingGet();
+        dao.create(publisher).blockingGet();
 
         Authenticatable authenticatable = dao.authenticate(token).blockingGet();
         assertNotNull(authenticatable);

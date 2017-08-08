@@ -16,6 +16,9 @@
 
 package com.atypon.wayf.integration;
 
+import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthorizationToken;
+import com.atypon.wayf.data.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
 import io.restassured.http.ContentType;
@@ -98,7 +101,7 @@ public class PublisherTestUtil {
         String[] createResponseGeneratedFields = {
                 "$.id",
                 "$.code",
-                "$.token",
+                "$.authorizationToken.value",
                 "$.contact.id",
                 "$.contact.createdDate",
                 "$.widgetLocation",
@@ -108,7 +111,8 @@ public class PublisherTestUtil {
         assertNotNullPaths(createResponse, createResponseGeneratedFields);
 
         Long id = Long.valueOf(readField(createResponse, "$.id"));
-        String token = readField(createResponse, "$.token");
+        String authorizationTokenType = readField(createResponse, "$.authorizationToken.type");
+        String authorizationTokenValue = readField(createResponse, "$.authorizationToken.value");
         String code = readField(createResponse, "$.code");
 
         assertJsonEquals(response, createResponse, createResponseGeneratedFields);
@@ -116,7 +120,11 @@ public class PublisherTestUtil {
         Publisher publisher = new Publisher();
         publisher.setId(id);
         publisher.setCode(code);
-        publisher.setToken(token);
+
+        AuthorizationToken token = new AuthorizationToken();
+        token.setType(AuthorizationTokenType.valueOf(authorizationTokenType));
+        token.setValue(authorizationTokenValue);
+        publisher.setAuthorizationToken(token);
 
         return publisher;
     }

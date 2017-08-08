@@ -91,7 +91,7 @@ public class PublisherFacadeImpl implements PublisherFacade {
 
                                 // Combine the results with the previously created publisher
                                 (token, filename, approvedRegistration) -> {
-                                    createdPublisher.setToken(token);
+                                    createdPublisher.setAuthorizationToken(token);
                                     createdPublisher.setWidgetLocation(filename);
                                     createdPublisher.setContact(publisher.getContact());
                                     return createdPublisher;

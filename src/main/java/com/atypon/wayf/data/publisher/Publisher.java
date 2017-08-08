@@ -17,6 +17,7 @@
 package com.atypon.wayf.data.publisher;
 
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
 import com.atypon.wayf.data.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -29,7 +30,7 @@ public class Publisher implements Authenticatable {
 
     private PublisherRegistration registration;
 
-    private String token;
+    private AuthorizationToken authorizationToken;
     private String salt;
     private String widgetLocation;
 
@@ -68,12 +69,14 @@ public class Publisher implements Authenticatable {
         this.registration = registration;
     }
 
-    public String getToken() {
-        return token;
+    @Override
+    public AuthorizationToken getAuthorizationToken() {
+        return authorizationToken;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    @Override
+    public void setAuthorizationToken(AuthorizationToken authorizationToken) {
+        this.authorizationToken = authorizationToken;
     }
 
     @JsonIgnore

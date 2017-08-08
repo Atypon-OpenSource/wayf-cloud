@@ -7,5 +7,8 @@
     "lastName" : "Test Last Name",
     "email" : "test@atypon.com",
     "phoneNumber" : "+1 (555) 555-5555"
+  },
+  "authorizationToken" : {
+    "type": "API_TOKEN"
   }
 }

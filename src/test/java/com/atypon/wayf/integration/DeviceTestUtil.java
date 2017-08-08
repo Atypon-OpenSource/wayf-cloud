@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.integration;
 
+import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
 import io.restassured.http.Cookie;
 import io.restassured.http.Method;
@@ -67,7 +68,7 @@ public class DeviceTestUtil {
         return deviceIdHeader;
     }
 
-    public void registerLocalId(String localId, String publisherToken) {
+    public void registerLocalId(String localId, AuthorizationToken publisherToken) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
         headers.put("User-Agent", "Test-Agent");
@@ -116,7 +117,7 @@ public class DeviceTestUtil {
         return deviceIdHeader;
     }
 
-    public void deviceQueryBadPublisherToken(String localId, String publisherToken, String expectedResponseJson) {
+    public void deviceQueryBadPublisherToken(String localId, AuthorizationToken publisherToken, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
         headers.put("User-Agent", "Test-Agent");
