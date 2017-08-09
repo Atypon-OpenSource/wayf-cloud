@@ -14,28 +14,13 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data.user;
+package com.atypon.wayf.facade;
 
-public class UserCredentials {
-    private String emailAddress;
-    private String password;
+import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthorizationToken;
+import io.reactivex.Single;
 
-    public UserCredentials() {
-    }
-
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+public interface AuthorizationTokenFacade {
+    Single<AuthorizationToken> createCredentials(Authenticatable authenticatable);
+    AuthorizationToken parseAuthorizationToken(String authenticationValue);
 }

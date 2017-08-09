@@ -23,6 +23,7 @@ import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.data.AuthorizationTokenType;
 import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.facade.AuthorizationTokenFacade;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.RequestContext;
@@ -40,13 +41,16 @@ import static org.junit.Assert.assertNotNull;
 
 public class AuthenticationFacadeImplTest {
 
-    @Inject
     private AuthenticationFacadeTestImpl facade;
+
+    @Inject
+    private AuthorizationTokenFacade authorizationTokenFacade;
 
     @Before
     public void setUp() {
         facade = new AuthenticationFacadeTestImpl();
         Guice.createInjector(new WayfGuiceModule()).injectMembers(facade);
+        Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
 
         WayfReactivexConfig.initializePlugins();
         RequestContextAccessor.set(new RequestContext());
@@ -58,7 +62,7 @@ public class AuthenticationFacadeImplTest {
         testPublisher.setId(1122L);
 
         // Test Create
-        AuthorizationToken token = facade.createToken(testPublisher).blockingGet();
+        AuthorizationToken token = authorizationTokenFacade.createCredentials(testPublisher).blockingGet();
         assertNotNull(token);
 
 
@@ -96,7 +100,7 @@ public class AuthenticationFacadeImplTest {
 
         String jwt = "Bearer " + jwtTokenValue;
 
-        AuthorizationToken token = facade.parseAuthenticationValue(jwt);
+        AuthorizationToken token = authorizationTokenFacade.parseAuthorizationToken(jwt);
 
         assertNotNull(token);
         assertEquals(AuthorizationTokenType.JWT, token.getType());
@@ -108,7 +112,7 @@ public class AuthenticationFacadeImplTest {
         String apiTokenValue = UUID.randomUUID().toString();
         String apiToken = "Token " + apiTokenValue;
 
-        AuthorizationToken token = facade.parseAuthenticationValue(apiToken);
+        AuthorizationToken token = authorizationTokenFacade.parseAuthorizationToken(apiToken);
 
         assertNotNull(token);
         assertEquals(AuthorizationTokenType.API_TOKEN, token.getType());
@@ -119,6 +123,6 @@ public class AuthenticationFacadeImplTest {
     public void testBadToken() {
         String badToken = "gobble-gook";
 
-        facade.parseAuthenticationValue(badToken);
+        authorizationTokenFacade.parseAuthorizationToken(badToken);
     }
 }

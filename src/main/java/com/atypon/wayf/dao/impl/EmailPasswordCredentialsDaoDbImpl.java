@@ -18,40 +18,42 @@ package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.AuthenticationDao;
 import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.AuthorizationToken;
+import com.atypon.wayf.data.EmailPasswordCredentials;
 import com.atypon.wayf.database.DbExecutor;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AuthenticationDaoDbImpl implements AuthenticationDao {
-    private static final Logger LOG = LoggerFactory.getLogger(AuthenticationDaoDbImpl.class);
+@Singleton
+public class EmailPasswordCredentialsDaoDbImpl implements AuthenticationDao<EmailPasswordCredentials> {
+    private static final Logger LOG = LoggerFactory.getLogger(AuthorizationTokenDaoDbImpl.class);
 
     @Inject
-    @Named("authentication.dao.db.create")
+    @Named("email-password-credentials.dao.db.create")
     private String createSql;
 
     @Inject
-    @Named("authentication.dao.db.authenticate")
+    @Named("email-password-credentials.dao.db.authenticate")
     private String authenticateSql;
 
     @Inject
     private DbExecutor dbExecutor;
 
     @Override
-    public Completable create(Authenticatable authenticatable) {
+    public Completable create(Authenticatable<EmailPasswordCredentials> authenticatable) {
         LOG.debug("Creating authentication policy for [{}]", authenticatable);
 
         return dbExecutor.executeUpdate(createSql, authenticatable).toCompletable();
     }
 
     @Override
-    public Maybe<Authenticatable> authenticate(AuthorizationToken token) {
+    public Maybe<Authenticatable> authenticate(EmailPasswordCredentials credentials) {
         LOG.debug("Authenticating");
 
-        return dbExecutor.executeSelectFirst(authenticateSql, token, Authenticatable.class);
+        return dbExecutor.executeSelectFirst(authenticateSql, credentials, Authenticatable.class);
     }
 }

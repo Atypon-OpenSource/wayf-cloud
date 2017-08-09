@@ -16,7 +16,6 @@
 
 package com.atypon.wayf.database;
 
-import com.atypon.wayf.dao.impl.AuthenticationDaoDbImpl;
 import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.user.User;

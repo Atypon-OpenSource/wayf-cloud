@@ -18,37 +18,39 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.LoadingCache;
 import com.atypon.wayf.dao.AuthenticationDao;
+import com.atypon.wayf.dao.impl.AuthorizationTokenDaoDbImpl;
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthenticationCredentials;
 import com.atypon.wayf.data.AuthorizationToken;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-public class AuthenticationFacadeTestImpl extends AuthenticatableFacadeImpl {
-    private LoadingCache<AuthorizationToken, Authenticatable> redisCache;
+public class AuthenticationFacadeTestImpl extends AuthenticationFacadeImpl {
+    private LoadingCache<AuthenticationCredentials, Authenticatable> redisCache;
 
-    public void setL1Cache(LoadingCache<AuthorizationToken, Authenticatable> l1Cache) {
+    public void setL1Cache(LoadingCache<AuthenticationCredentials, Authenticatable> l1Cache) {
         super.cache = l1Cache;
     }
 
-    public LoadingCache<AuthorizationToken, Authenticatable> getL1Cache() {
+    public LoadingCache<AuthenticationCredentials, Authenticatable> getL1Cache() {
         return cache;
     }
 
     public AuthenticationDao getDbDao() {
-        return dbDao;
+        return authorizationTokenDao;
     }
 
     @Inject
-    public void setDbDao(AuthenticationDao dao) {
-        super.dbDao = dao;
+    public void setDbDao(AuthorizationTokenDaoDbImpl dao) {
+        super.authorizationTokenDao = dao;
     }
 
     @Inject
-    public void setRedisDao(@Named("authenticatableRedisCache") LoadingCache<AuthorizationToken, Authenticatable> redisCache) {
+    public void setRedisDao(@Named("authenticatableRedisCache") LoadingCache<AuthenticationCredentials, Authenticatable> redisCache) {
         this.redisCache = redisCache;
     }
 
-    public LoadingCache<AuthorizationToken, Authenticatable> getRedisCache() {
+    public LoadingCache<AuthenticationCredentials, Authenticatable> getRedisCache() {
         return redisCache;
     }
 }

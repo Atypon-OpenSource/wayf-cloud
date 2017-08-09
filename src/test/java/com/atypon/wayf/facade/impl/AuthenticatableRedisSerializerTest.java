@@ -34,14 +34,14 @@ public class AuthenticatableRedisSerializerTest {
         token.setValue("ab123");
         token.setType(AuthorizationTokenType.API_TOKEN);
 
-        publisher.setAuthorizationToken(token);
+        publisher.setCredentials(token);
 
         String serializedPublisher = AuthenticatableRedisSerializer.serialize(publisher);
         Publisher deserializedPublisher = (Publisher) AuthenticatableRedisSerializer.deserialize(serializedPublisher);
 
         assertEquals(publisher.getId(), deserializedPublisher.getId());
-        assertEquals(publisher.getAuthorizationToken().getType(), deserializedPublisher.getAuthorizationToken().getType());
-        assertEquals(publisher.getAuthorizationToken().getValue(), deserializedPublisher.getAuthorizationToken().getValue());
+        assertEquals(publisher.getCredentials().getType(), deserializedPublisher.getCredentials().getType());
+        assertEquals(publisher.getCredentials().getValue(), deserializedPublisher.getCredentials().getValue());
 
     }
 }

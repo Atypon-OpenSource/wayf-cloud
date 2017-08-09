@@ -25,8 +25,6 @@ import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistrationStatus;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.reactivex.FacadePolicies;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -46,7 +44,7 @@ public class PublisherFacadeImpl implements PublisherFacade {
     private PublisherDao publisherDao;
 
     @Inject
-    private AuthenticationFacade authenticationFacade;
+    private AuthorizationTokenFacade authorizationTokenFacade;
 
     @Inject
     private ClientJsFacade clientJsFacade;
@@ -81,7 +79,7 @@ public class PublisherFacadeImpl implements PublisherFacade {
 
                         Single.zip(
                                 // Create an authorization token for the newly created publisher
-                                authenticationFacade.createToken(createdPublisher).compose(single -> FacadePolicies.applySingle(single)),
+                                authorizationTokenFacade.createCredentials(createdPublisher).compose(single -> FacadePolicies.applySingle(single)),
 
                                 // Generate the publisher specific Javascript widget
                                 clientJsFacade.generateWidgetForPublisher(createdPublisher).compose(single -> FacadePolicies.applySingle(single)),
@@ -91,7 +89,7 @@ public class PublisherFacadeImpl implements PublisherFacade {
 
                                 // Combine the results with the previously created publisher
                                 (token, filename, approvedRegistration) -> {
-                                    createdPublisher.setAuthorizationToken(token);
+                                    createdPublisher.setCredentials(token);
                                     createdPublisher.setWidgetLocation(filename);
                                     createdPublisher.setContact(publisher.getContact());
                                     return createdPublisher;

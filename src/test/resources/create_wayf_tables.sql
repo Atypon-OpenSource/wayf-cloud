@@ -116,6 +116,19 @@ CREATE TABLE `authorization_token` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1472 DEFAULT CHARSET=latin1;
 
 
+DROP TABLE IF EXISTS `email_password_credentials`;
+CREATE TABLE `email_password_credentials` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `authenticatable_type` varchar(25) NOT NULL,
+  `authenticatable_id` int(11) NOT NULL,
+  `email` varchar(50) NOT NULL,
+  `password` varchar(100) NOT NULL,
+  `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email_UNIQUE` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
+
 DROP TABLE IF EXISTS `publisher_local_id_device_xref`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;

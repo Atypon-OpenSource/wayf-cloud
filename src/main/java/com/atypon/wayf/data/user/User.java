@@ -18,10 +18,12 @@ package com.atypon.wayf.data.user;
 
 import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.AuthorizationToken;
+import com.atypon.wayf.data.EmailPasswordCredentials;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
 
-public class User implements Authenticatable {
+public class User implements Authenticatable<EmailPasswordCredentials> {
     private Long id;
 
     private String firstName;
@@ -31,7 +33,7 @@ public class User implements Authenticatable {
     private String phoneNumber;
 
     private AuthorizationToken authorizationToken;
-    private UserCredentials credentials;
+    private EmailPasswordCredentials credentials;
 
     private Date createdDate;
     private Date modifiedDate;
@@ -88,21 +90,12 @@ public class User implements Authenticatable {
     public void setType(Type type) {
     }
 
-    @Override
-    public AuthorizationToken getAuthorizationToken() {
-        return authorizationToken;
-    }
-
-    @Override
-    public void setAuthorizationToken(AuthorizationToken authorizationToken) {
-        this.authorizationToken = authorizationToken;
-    }
-
-    public UserCredentials getCredentials() {
+    @JsonIgnore
+    public EmailPasswordCredentials getCredentials() {
         return credentials;
     }
 
-    public void setCredentials(UserCredentials credentials) {
+    public void setCredentials(EmailPasswordCredentials credentials) {
         this.credentials = credentials;
     }
 

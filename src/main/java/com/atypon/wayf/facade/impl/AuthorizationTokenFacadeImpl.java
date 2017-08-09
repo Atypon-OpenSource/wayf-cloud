@@ -18,12 +18,10 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.LoadingCache;
 import com.atypon.wayf.dao.AuthenticationDao;
-import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.AuthorizationToken;
-import com.atypon.wayf.data.AuthorizationTokenType;
-import com.atypon.wayf.data.ServiceException;
-import com.atypon.wayf.facade.AuthenticationFacade;
+import com.atypon.wayf.data.*;
+import com.atypon.wayf.facade.AuthorizationTokenFacade;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.reactivex.Single;
 import org.apache.http.HttpStatus;
@@ -35,8 +33,9 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AuthenticatableFacadeImpl implements AuthenticationFacade {
-    private static final Logger LOG = LoggerFactory.getLogger(AuthenticatableFacadeImpl.class);
+@Singleton
+public class AuthorizationTokenFacadeImpl implements AuthorizationTokenFacade {
+    private static final Logger LOG = LoggerFactory.getLogger(AuthorizationTokenFacadeImpl.class);
 
     private static final Long ADMIN_TOKEN_LIFESPAN = 7200000L; // 2 hours
 
@@ -45,13 +44,13 @@ public class AuthenticatableFacadeImpl implements AuthenticationFacade {
 
     @Inject
     @Named("authenticatableCache")
-    protected LoadingCache<AuthorizationToken, Authenticatable> cache;
+    protected LoadingCache<AuthenticationCredentials, Authenticatable> cache;
 
     @Inject
-    protected AuthenticationDao dbDao;
+    protected AuthenticationDao<AuthorizationToken> dbDao;
 
     @Override
-    public Single<AuthorizationToken> createToken(Authenticatable authenticatable) {
+    public Single<AuthorizationToken> createCredentials(Authenticatable authenticatable) {
         AuthorizationToken token = new AuthorizationToken();
         token.setType(AuthorizationTokenType.API_TOKEN);
         token.setValue(UUID.randomUUID().toString());
@@ -60,39 +59,15 @@ public class AuthenticatableFacadeImpl implements AuthenticationFacade {
             token.setValidUntil(new Date(System.currentTimeMillis() + ADMIN_TOKEN_LIFESPAN));
         }
 
-        authenticatable.setAuthorizationToken(token);
+        authenticatable.setCredentials(token);
 
         return dbDao.create(authenticatable).toSingleDefault(token);
     }
 
-    @Override
-    public Authenticatable authenticate(AuthorizationToken token) {
-        LOG.debug("Authenticating token");
-
-        if (AuthorizationTokenType.API_TOKEN != token.getType()) {
-            return null;
-        }
-
-        try {
-            Authenticatable authenticatable = cache.get(token).blockingGet();
-
-            if (authenticatable == null) {
-                throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Could not authenticate token");
-            }
-
-            if (!isStillValid(authenticatable)) {
-                throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Expired token");
-            }
-
-            return authenticatable;
-        } catch (Exception e) {
-            throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Could not authenticate token", e);
-        }
-    }
 
     @Override
-    public AuthorizationToken parseAuthenticationValue(String authenticationValue) {
-        Matcher matcher = TOKEN_MATCHER.matcher(authenticationValue);
+    public AuthorizationToken parseAuthorizationToken(String authorizationToken) {
+        Matcher matcher = TOKEN_MATCHER.matcher(authorizationToken);
 
         if (matcher.find()) {
             String prefix = matcher.group(1);
@@ -108,16 +83,4 @@ public class AuthenticatableFacadeImpl implements AuthenticationFacade {
         throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Could not parse Authentication header");
     }
 
-    @Override
-    public boolean isStillValid(Authenticatable authenticatable) {
-        if (authenticatable.getAuthorizationToken() == null) {
-            return false;
-        }
-
-        if (authenticatable.getAuthorizationToken().getValidUntil() == null) {
-            return true;
-        }
-
-        return authenticatable.getAuthorizationToken().getValidUntil().compareTo(new Date()) <= 0;
-    }
 }

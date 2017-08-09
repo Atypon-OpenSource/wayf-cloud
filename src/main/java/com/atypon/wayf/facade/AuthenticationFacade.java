@@ -16,14 +16,16 @@
 
 package com.atypon.wayf.facade;
 
+import com.atypon.wayf.dao.AuthenticationDao;
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthenticationCredentials;
 import com.atypon.wayf.data.AuthorizationToken;
 import io.reactivex.Single;
 
 public interface AuthenticationFacade {
-    Single<AuthorizationToken> createToken(Authenticatable authenticatable);
-    Authenticatable authenticate(AuthorizationToken token);
-    AuthorizationToken parseAuthenticationValue(String authenticationValue);
+    Authenticatable authenticate(AuthenticationCredentials token);
 
     boolean isStillValid(Authenticatable authenticatable);
+
+    AuthenticationDao determineDao(AuthenticationCredentials credentials);
 }

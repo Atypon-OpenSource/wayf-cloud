@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
 
-public class Publisher implements Authenticatable {
+public class Publisher implements Authenticatable<AuthorizationToken> {
     private Long id;
     private PublisherStatus status;
 
@@ -70,12 +70,12 @@ public class Publisher implements Authenticatable {
     }
 
     @Override
-    public AuthorizationToken getAuthorizationToken() {
+    public AuthorizationToken getCredentials() {
         return authorizationToken;
     }
 
     @Override
-    public void setAuthorizationToken(AuthorizationToken authorizationToken) {
+    public void setCredentials(AuthorizationToken authorizationToken) {
         this.authorizationToken = authorizationToken;
     }
 

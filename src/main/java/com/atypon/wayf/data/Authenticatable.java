@@ -32,7 +32,7 @@ import java.util.Date;
         @JsonSubTypes.Type(value = Publisher.class, name = "PUBLISHER"),
         @JsonSubTypes.Type(value = User.class, name = "ADMIN")
 })*/
-public interface Authenticatable {
+public interface Authenticatable<T extends AuthenticationCredentials> {
     enum Type {
         PUBLISHER,
         ADMIN
@@ -45,8 +45,8 @@ public interface Authenticatable {
     Type getType();
     void setType(Type type);
 
-    AuthorizationToken getAuthorizationToken();
-    void setAuthorizationToken(AuthorizationToken authorizationToken);
+    T getCredentials();
+    void setCredentials(T credentials);
 
     static Publisher asPublisher(Authenticatable authenticatable) {
         if (authenticatable != null && Publisher.class.isAssignableFrom(authenticatable.getClass())) {

@@ -36,7 +36,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class AuthenticationDaoDbImplTest {
     @Inject
-    private AuthenticationDaoDbImpl dao;
+    private AuthorizationTokenDaoDbImpl dao;
 
     @Before
     public void setUp() {
@@ -54,7 +54,7 @@ public class AuthenticationDaoDbImplTest {
 
         Publisher publisher = new Publisher();
         publisher.setId(123L);
-        publisher.setAuthorizationToken(token);
+        publisher.setCredentials(token);
 
         dao.create(publisher).blockingGet();
 

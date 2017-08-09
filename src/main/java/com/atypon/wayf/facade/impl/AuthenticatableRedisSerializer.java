@@ -16,10 +16,7 @@
 
 package com.atypon.wayf.facade.impl;
 
-import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.AuthorizationToken;
-import com.atypon.wayf.data.AuthorizationTokenType;
-import com.atypon.wayf.data.ServiceException;
+import com.atypon.wayf.data.*;
 import com.atypon.wayf.data.publisher.Publisher;
 import org.apache.http.HttpStatus;
 import org.json.JSONException;
@@ -28,10 +25,14 @@ import org.json.JSONObject;
 import java.util.Date;
 
 public class AuthenticatableRedisSerializer {
+    private static final String EMAIL_PASSWORD_CREDENTIALS = "emailPassword";
+    private static final String AUTHORIZATION_TOKEN_CREDENTIALS = "authorizationToken";
+
     private enum AuthenticatableFields {
         ID("id"),
         TYPE("type"),
-        AUTHORIZATION_TOKEN("authorizationToken");
+        CREDENTIALS_TYPE("credentials_type"),
+        CREDENTIALS("credentials");
 
         private String fieldName;
 
@@ -60,27 +61,70 @@ public class AuthenticatableRedisSerializer {
         }
     }
 
+    private enum EmailPasswordCredentialsFields {
+        EMAIL("email"),
+        PASSWORD("password");
+
+        private String fieldName;
+
+        EmailPasswordCredentialsFields(String fieldName) {
+            this.fieldName = fieldName;
+        }
+
+        public String getFieldName() {
+            return fieldName;
+        }
+    }
+
     public static String serialize(Authenticatable authenticatable) {
         JSONObject authenticatableJsonObject = new JSONObject();
         authenticatableJsonObject.put(AuthenticatableFields.TYPE.getFieldName(), authenticatable.getType());
         authenticatableJsonObject.put(AuthenticatableFields.ID.getFieldName(), authenticatable.getId());
 
-        if (authenticatable.getAuthorizationToken() == null) {
+        if (authenticatable.getCredentials() == null) {
             throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "An AuthorizationToken is expected");
         }
 
-        JSONObject authorizationTokenJsonObject = new JSONObject();
-        authorizationTokenJsonObject.put(AuthorizationTokenFields.TOKEN_TYPE.getFieldName(), authenticatable.getAuthorizationToken().getType().toString());
-        authorizationTokenJsonObject.put(AuthorizationTokenFields.TOKEN_VALUE.getFieldName(), authenticatable.getAuthorizationToken().getValue());
+        JSONObject credentials = null;
 
-        if (authenticatable.getAuthorizationToken().getValidUntil() != null) {
-            authorizationTokenJsonObject.put(AuthorizationTokenFields.VALID_UNTIL.getFieldName(), authenticatable.getAuthorizationToken().getValidUntil().getTime());
+        if (EmailPasswordCredentials.class.isAssignableFrom(authenticatable.getCredentials().getClass())) {
+            credentials = serializeEmail((EmailPasswordCredentials) authenticatable.getCredentials());
+            authenticatableJsonObject.put(AuthenticatableFields.CREDENTIALS_TYPE.getFieldName(), EMAIL_PASSWORD_CREDENTIALS);
+        } else if (AuthorizationToken.class.isAssignableFrom(authenticatable.getCredentials().getClass())){
+            credentials = serializeToken((AuthorizationToken) authenticatable.getCredentials());
+            authenticatableJsonObject.put(AuthenticatableFields.CREDENTIALS_TYPE.getFieldName(), AUTHORIZATION_TOKEN_CREDENTIALS);
+
+        } else {
+            throw new ServiceException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Could not serialize autenticatable");
         }
 
-        authenticatableJsonObject.put(AuthenticatableFields.AUTHORIZATION_TOKEN.getFieldName(), authorizationTokenJsonObject);
+        authenticatableJsonObject.put(AuthenticatableFields.CREDENTIALS.getFieldName(), credentials);
 
         return authenticatableJsonObject.toString();
     }
+
+    private static JSONObject serializeEmail(EmailPasswordCredentials credentials) {
+        JSONObject emailJsonObject = new JSONObject();
+        emailJsonObject.put(EmailPasswordCredentialsFields.EMAIL.getFieldName(), credentials.getEmailAddress());
+        emailJsonObject.put(EmailPasswordCredentialsFields.PASSWORD.getFieldName(), credentials.getPassword());
+
+        return emailJsonObject;
+
+    }
+
+    private static JSONObject serializeToken(AuthorizationToken token) {
+        JSONObject authorizationTokenJsonObject = new JSONObject();
+        authorizationTokenJsonObject.put(AuthorizationTokenFields.TOKEN_TYPE.getFieldName(), token.getType().toString());
+        authorizationTokenJsonObject.put(AuthorizationTokenFields.TOKEN_VALUE.getFieldName(), token.getValue());
+
+        if (token.getValidUntil() != null) {
+            authorizationTokenJsonObject.put(AuthorizationTokenFields.VALID_UNTIL.getFieldName(), token.getValidUntil().getTime());
+        }
+
+        return authorizationTokenJsonObject;
+    }
+
+
 
     public static Authenticatable deserialize(String json) {
         JSONObject authenticatableJsonObject = new JSONObject(json);
@@ -94,19 +138,44 @@ public class AuthenticatableRedisSerializer {
 
         authenticatable.setId(authenticatableJsonObject.getLong(AuthenticatableFields.ID.getFieldName()));
 
-        JSONObject authorizationJsonObject = authenticatableJsonObject.getJSONObject(AuthenticatableFields.AUTHORIZATION_TOKEN.getFieldName());
+        String credentialsType = authenticatableJsonObject.getString(AuthenticatableFields.CREDENTIALS_TYPE.getFieldName());
+        JSONObject credentialsJsonObject = authenticatableJsonObject.getJSONObject(AuthenticatableFields.CREDENTIALS.getFieldName());
 
-        AuthorizationToken authorizationToken = new AuthorizationToken();
-        authorizationToken.setType(AuthorizationTokenType.valueOf(authorizationJsonObject.getString(AuthorizationTokenFields.TOKEN_TYPE.getFieldName())));
-        authorizationToken.setValue(authorizationJsonObject.getString(AuthorizationTokenFields.TOKEN_VALUE.getFieldName()));
+        AuthenticationCredentials credentials = null;
 
-        try {
-            authorizationToken.setValidUntil(new Date(authorizationJsonObject.getLong(AuthorizationTokenFields.VALID_UNTIL.getFieldName())));
-        } catch (JSONException e) {
-            // Thrown if validUntil does not exist which is valid for publisher tokens
+        if (EMAIL_PASSWORD_CREDENTIALS.equals(credentialsType)) {
+            credentials = deserializeEmailPassword(credentialsJsonObject);
+        } else if (AUTHORIZATION_TOKEN_CREDENTIALS.equals(credentialsType)) {
+            credentials = deserializeAuthorizationToken(credentialsJsonObject);
+        } else {
+            throw new ServiceException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Could not deserialize authenticatble");
         }
-        authenticatable.setAuthorizationToken(authorizationToken);
+
+        authenticatable.setCredentials(credentials);
 
         return authenticatable;
     }
+
+    private static AuthenticationCredentials deserializeEmailPassword(JSONObject credentials) {
+        EmailPasswordCredentials emailPasswordCredentials = new EmailPasswordCredentials();
+        emailPasswordCredentials.setEmailAddress(EmailPasswordCredentialsFields.EMAIL.getFieldName());
+        emailPasswordCredentials.setPassword(credentials.getString(EmailPasswordCredentialsFields.PASSWORD.getFieldName()));
+
+        return emailPasswordCredentials;
+    }
+
+    private static AuthenticationCredentials deserializeAuthorizationToken(JSONObject credentials) {
+        AuthorizationToken authorizationToken = new AuthorizationToken();
+        authorizationToken.setType(AuthorizationTokenType.valueOf(credentials.getString(AuthorizationTokenFields.TOKEN_TYPE.getFieldName())));
+        authorizationToken.setValue(credentials.getString(AuthorizationTokenFields.TOKEN_VALUE.getFieldName()));
+
+        try {
+            authorizationToken.setValidUntil(new Date(credentials.getLong(AuthorizationTokenFields.VALID_UNTIL.getFieldName())));
+        } catch (JSONException e) {
+            // Thrown if validUntil does not exist which is valid for publisher tokens
+        }
+
+        return authorizationToken;
+    }
+
 }

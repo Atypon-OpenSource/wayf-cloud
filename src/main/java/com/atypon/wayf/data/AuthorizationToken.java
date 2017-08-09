@@ -18,7 +18,7 @@ package com.atypon.wayf.data;
 
 import java.util.Date;
 
-public class AuthorizationToken {
+public class AuthorizationToken implements AuthenticationCredentials {
 
     private AuthorizationTokenType type;
     private String value;
