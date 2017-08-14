@@ -16,12 +16,16 @@
 
 package com.atypon.wayf.facade.impl;
 
+import com.atypon.wayf.cache.Cache;
 import com.atypon.wayf.dao.UserDao;
+import com.atypon.wayf.data.PasswordCredentials;
 import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.data.user.UserQuery;
-import com.atypon.wayf.facade.UserFacade;
+import com.atypon.wayf.facade.*;
 import com.atypon.wayf.reactivex.FacadePolicies;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import org.apache.http.HttpStatus;
@@ -34,12 +38,32 @@ public class UserFacadeImpl implements UserFacade {
     @Inject
     private UserDao dao;
 
+    @Inject
+    private CryptFacade cryptFacade;
+
+    @Inject
+    private PasswordCredentialsFacade credentialsFacade;
+
+
     @Override
     public Single<User> create(User user) {
         LOG.debug("Creating user [{}]", user);
 
         return dao.create(user)
-                .compose((single) -> FacadePolicies.applySingle(single));
+                .compose((single) -> FacadePolicies.applySingle(single))
+                .map((createdUser) -> {
+                        createdUser.setPasswordCredentials(user.getPasswordCredentials());
+                        return createdUser;
+                    }
+                )
+                .flatMap((createdUser) ->
+                        Maybe.zip(
+                                Maybe.just(createdUser),
+                                generateEmailCredentials(createdUser),
+
+                                (_user, credentials) -> _user
+                        ).toSingle(createdUser)
+                );
     }
 
     @Override
@@ -59,5 +83,22 @@ public class UserFacadeImpl implements UserFacade {
 
         return dao.filter(query)
                 .compose((observable) -> FacadePolicies.applyObservable(observable));
+    }
+
+    private Maybe<PasswordCredentials> generateEmailCredentials(User user) {
+        if (user.getPasswordCredentials() != null) {
+            PasswordCredentials credentials = user.getPasswordCredentials();
+
+            String salt = cryptFacade.generateSalt();
+            String encryptedPassword = cryptFacade.encrypt(salt, credentials.getPassword());
+
+            credentials.setSalt(salt);
+            credentials.setPassword(encryptedPassword);
+            credentials.setAuthenticatable(user);
+
+            return credentialsFacade.createCredentials(credentials).toMaybe();
+        }
+
+        return Maybe.empty();
     }
 }

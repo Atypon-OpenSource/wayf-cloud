@@ -74,6 +74,7 @@ public abstract class BaseHttpTest {
     protected DeviceAccessTestUtil deviceAccessTestUtil;
     protected IdentityProviderTestUtil identityProviderTestUtil;
     protected PublisherRegistrationTestUtil publisherRegistrationTestUtil;
+    protected UserTestUtil userTestUtil;
 
     public BaseHttpTest(String httpLoggingFilename) {
         LoggingHttpRequest request = new LoggingHttpRequest(httpLoggingFilename);
@@ -87,6 +88,7 @@ public abstract class BaseHttpTest {
         deviceAccessTestUtil = new DeviceAccessTestUtil(request);
         identityProviderTestUtil = new IdentityProviderTestUtil(request);
         publisherRegistrationTestUtil = new PublisherRegistrationTestUtil(request);
+        userTestUtil = new UserTestUtil(request);
     }
 
     @BeforeClass

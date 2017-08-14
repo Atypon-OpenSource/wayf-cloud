@@ -16,19 +16,23 @@
 
 package com.atypon.wayf.data;
 
-public class EmailPasswordCredentials implements AuthenticationCredentials {
+public class PasswordCredentials implements AuthenticationCredentials {
+    public static String PASSWORD_CREDETIALS_TYPE = "PASSWORD";
+
     private Authenticatable authenticatable;
     private String salt;
     private String emailAddress;
     private String password;
 
-    public EmailPasswordCredentials() {
+    public PasswordCredentials() {
     }
 
+    @Override
     public Authenticatable getAuthenticatable() {
         return authenticatable;
     }
 
+    @Override
     public void setAuthenticatable(Authenticatable authenticatable) {
         this.authenticatable = authenticatable;
     }

@@ -16,8 +16,9 @@
 
 package com.atypon.wayf.dao.impl;
 
-import com.atypon.wayf.dao.AuthenticationDao;
+import com.atypon.wayf.dao.AuthenticationCredentialsDao;
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthenticatedEntity;
 import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.database.DbExecutor;
 import com.google.inject.Inject;
@@ -29,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
-public class AuthorizationTokenDaoDbImpl implements AuthenticationDao<AuthorizationToken> {
+public class AuthorizationTokenDaoDbImpl implements AuthenticationCredentialsDao<AuthorizationToken> {
     private static final Logger LOG = LoggerFactory.getLogger(AuthorizationTokenDaoDbImpl.class);
 
     @Inject
@@ -44,16 +45,16 @@ public class AuthorizationTokenDaoDbImpl implements AuthenticationDao<Authorizat
     private DbExecutor dbExecutor;
 
     @Override
-    public Completable create(Authenticatable<AuthorizationToken> authenticatable) {
-        LOG.debug("Creating authentication policy for [{}]", authenticatable);
+    public Completable create(AuthorizationToken token) {
+        LOG.debug("Creating authentication policy  [{}]", token);
 
-        return dbExecutor.executeUpdate(createSql, authenticatable).toCompletable();
+        return dbExecutor.executeUpdate(createSql, token).toCompletable();
     }
 
     @Override
-    public Maybe<Authenticatable> authenticate(AuthorizationToken token) {
+    public Maybe<AuthenticatedEntity> authenticate(AuthorizationToken token) {
         LOG.debug("Authenticating");
 
-        return dbExecutor.executeSelectFirst(authenticateSql, token, Authenticatable.class);
+        return dbExecutor.executeSelectFirst(authenticateSql, token, AuthenticatedEntity.class);
     }
 }

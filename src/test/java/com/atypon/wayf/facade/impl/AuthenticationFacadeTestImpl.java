@@ -17,26 +17,25 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.LoadingCache;
-import com.atypon.wayf.dao.AuthenticationDao;
+import com.atypon.wayf.dao.AuthenticationCredentialsDao;
 import com.atypon.wayf.dao.impl.AuthorizationTokenDaoDbImpl;
-import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthenticatedEntity;
 import com.atypon.wayf.data.AuthenticationCredentials;
-import com.atypon.wayf.data.AuthorizationToken;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 public class AuthenticationFacadeTestImpl extends AuthenticationFacadeImpl {
-    private LoadingCache<AuthenticationCredentials, Authenticatable> redisCache;
+    private LoadingCache<AuthenticationCredentials, AuthenticatedEntity> redisCache;
 
-    public void setL1Cache(LoadingCache<AuthenticationCredentials, Authenticatable> l1Cache) {
-        super.cache = l1Cache;
+    public void setL1Cache(LoadingCache<AuthenticationCredentials, AuthenticatedEntity> l1Cache) {
+        super.persistence = l1Cache;
     }
 
-    public LoadingCache<AuthenticationCredentials, Authenticatable> getL1Cache() {
-        return cache;
+    public LoadingCache<AuthenticationCredentials, AuthenticatedEntity> getL1Cache() {
+        return persistence;
     }
 
-    public AuthenticationDao getDbDao() {
+    public AuthenticationCredentialsDao getDbDao() {
         return authorizationTokenDao;
     }
 
@@ -46,11 +45,11 @@ public class AuthenticationFacadeTestImpl extends AuthenticationFacadeImpl {
     }
 
     @Inject
-    public void setRedisDao(@Named("authenticatableRedisCache") LoadingCache<AuthenticationCredentials, Authenticatable> redisCache) {
+    public void setRedisDao(@Named("authenticatableRedisCache") LoadingCache<AuthenticationCredentials, AuthenticatedEntity> redisCache) {
         this.redisCache = redisCache;
     }
 
-    public LoadingCache<AuthenticationCredentials, Authenticatable> getRedisCache() {
+    public LoadingCache<AuthenticationCredentials, AuthenticatedEntity> getRedisCache() {
         return redisCache;
     }
 }

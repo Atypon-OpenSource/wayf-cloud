@@ -121,6 +121,7 @@ CREATE TABLE `email_password_credentials` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `authenticatable_type` varchar(25) NOT NULL,
   `authenticatable_id` int(11) NOT NULL,
+  `salt` varchar(30) NOT NULL,
   `email` varchar(50) NOT NULL,
   `password` varchar(100) NOT NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

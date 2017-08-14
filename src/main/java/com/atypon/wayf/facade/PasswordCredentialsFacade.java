@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.facade;
 
-public interface Authenticatable {
-    Object getId();
+import com.atypon.wayf.data.AuthorizationToken;
+import com.atypon.wayf.data.PasswordCredentials;
+import io.reactivex.Single;
+
+public interface PasswordCredentialsFacade {
+    Single<PasswordCredentials> createCredentials(PasswordCredentials credentials);
+    Single<AuthorizationToken> generateSessionToken(PasswordCredentials credentials);
 }

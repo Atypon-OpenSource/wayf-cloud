@@ -16,7 +16,7 @@
 
 package com.atypon.wayf.dao.impl;
 
-import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthenticatedEntity;
 import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.data.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
@@ -54,14 +54,16 @@ public class AuthenticationDaoDbImplTest {
 
         Publisher publisher = new Publisher();
         publisher.setId(123L);
-        publisher.setCredentials(token);
+        publisher.setToken(token);
 
-        dao.create(publisher).blockingGet();
+        token.setAuthenticatable(publisher);
+        dao.create(token).blockingGet();
 
-        Authenticatable authenticatable = dao.authenticate(token).blockingGet();
-        assertNotNull(authenticatable);
+        AuthenticatedEntity authenticated = dao.authenticate(token).blockingGet();
+        assertNotNull(authenticated);
 
-        assertEquals(Publisher.class, authenticatable.getClass());
-        assertEquals(publisher.getId(), authenticatable.getId());
+        assertEquals(AuthenticatedEntity.class, authenticated.getClass());
+        assertEquals(publisher.getId(), authenticated.getAuthenticatable().getId());
+        assertEquals(token.getValue(), ((AuthorizationToken) authenticated.getCredentials()).getValue());
     }
 }

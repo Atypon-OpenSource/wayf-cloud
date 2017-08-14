@@ -16,15 +16,29 @@
 
 package com.atypon.wayf.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Date;
 
-public class AuthorizationToken implements AuthenticationCredentials {
+public class AuthorizationToken implements ExpiringAuthenticationCredentials {
 
+    @JsonIgnore
+    private Authenticatable authenticatable;
     private AuthorizationTokenType type;
     private String value;
     private Date validUntil;
 
     public AuthorizationToken() {
+    }
+
+    @Override
+    public Authenticatable getAuthenticatable() {
+        return authenticatable;
+    }
+
+    @Override
+    public void setAuthenticatable(Authenticatable authenticatable) {
+        this.authenticatable = authenticatable;
     }
 
     public AuthorizationTokenType getType() {
@@ -43,10 +57,12 @@ public class AuthorizationToken implements AuthenticationCredentials {
         this.value = value;
     }
 
+    @Override
     public Date getValidUntil() {
         return validUntil;
     }
 
+    @Override
     public void setValidUntil(Date validUntil) {
         this.validUntil = validUntil;
     }

@@ -17,7 +17,7 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.DeviceDao;
-import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthenticatedEntity;
 import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceInfo;
@@ -27,26 +27,18 @@ import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessQuery;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.facade.DeviceAccessFacade;
-import com.atypon.wayf.facade.DeviceFacade;
-import com.atypon.wayf.facade.IdentityProviderUsageFacade;
-import com.atypon.wayf.facade.PublisherFacade;
-import com.atypon.wayf.reactivex.FacadePolicies;
+import com.atypon.wayf.facade.*;
 import com.atypon.wayf.request.RequestContextAccessor;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import org.apache.http.HttpStatus;
-import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -67,6 +59,9 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
     @Inject
     private IdentityProviderUsageFacade identityProviderUsageFacade;
+
+    @Inject
+    private CryptFacade cryptFacade;
 
     public DeviceFacadeImpl() {
     }
@@ -131,7 +126,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
     @Override
     public Completable registerLocalId(String localId) {
-        return deviceDao.registerLocalId(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()).getId(), localId);
+        return deviceDao.registerLocalId(AuthenticatedEntity.entityAsPublisher(RequestContextAccessor.get().getAuthenticated()).getId(), localId);
     }
 
     private Single<Device> resolveFromRequest(Publisher publisher, String localId) {
@@ -152,7 +147,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
     public Single<Device> readByLocalId(String localId) {
         LOG.debug("Reading device with local ID [{}]", localId);
 
-        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+        Publisher publisher = AuthenticatedEntity.entityAsPublisher(RequestContextAccessor.get().getAuthenticated());
 
         LOG.debug("Reading device with local ID [{}] and publisher ID [{}]", localId, publisher.getId());
 
@@ -192,6 +187,6 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
     @Override
     public String encryptLocalId(Long publisherId, String localId) {
-        return BCrypt.hashpw(localId, publisherFacade.getPublishersSalt(publisherId));
+        return cryptFacade.encrypt(publisherFacade.getPublishersSalt(publisherId), localId);
     }
 }

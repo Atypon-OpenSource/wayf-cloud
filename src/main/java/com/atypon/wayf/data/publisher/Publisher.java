@@ -17,6 +17,8 @@
 package com.atypon.wayf.data.publisher;
 
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthenticatedEntity;
+import com.atypon.wayf.data.AuthenticationCredentials;
 import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
 import com.atypon.wayf.data.user.User;
@@ -24,13 +26,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
 
-public class Publisher implements Authenticatable<AuthorizationToken> {
+public class Publisher implements Authenticatable {
     private Long id;
     private PublisherStatus status;
 
     private PublisherRegistration registration;
 
-    private AuthorizationToken authorizationToken;
+    private AuthorizationToken token;
     private String salt;
     private String widgetLocation;
 
@@ -69,16 +71,6 @@ public class Publisher implements Authenticatable<AuthorizationToken> {
         this.registration = registration;
     }
 
-    @Override
-    public AuthorizationToken getCredentials() {
-        return authorizationToken;
-    }
-
-    @Override
-    public void setCredentials(AuthorizationToken authorizationToken) {
-        this.authorizationToken = authorizationToken;
-    }
-
     @JsonIgnore
     public String getSalt() {
         return salt;
@@ -86,6 +78,14 @@ public class Publisher implements Authenticatable<AuthorizationToken> {
 
     public void setSalt(String salt) {
         this.salt = salt;
+    }
+
+    public AuthorizationToken getToken() {
+        return token;
+    }
+
+    public void setToken(AuthorizationToken token) {
+        this.token = token;
     }
 
     public String getWidgetLocation() {
@@ -134,15 +134,5 @@ public class Publisher implements Authenticatable<AuthorizationToken> {
 
     public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
-    }
-
-    @Override
-    public Type getType() {
-        return Type.PUBLISHER;
-    }
-
-    @Override
-    public void setType(Type type) {
-
     }
 }

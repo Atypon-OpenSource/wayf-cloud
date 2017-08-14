@@ -16,6 +16,10 @@
 
 package com.atypon.wayf.data;
 
-public interface Authenticatable {
-    Object getId();
+import java.util.Date;
+
+public interface ExpiringAuthenticationCredentials extends AuthenticationCredentials {
+
+    Date getValidUntil();
+    void setValidUntil(Date validUntil);
 }

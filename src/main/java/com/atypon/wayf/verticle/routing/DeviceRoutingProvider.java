@@ -16,7 +16,7 @@
 
 package com.atypon.wayf.verticle.routing;
 
-import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthenticatedEntity;
 import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.data.InflationPolicyParser;
 import com.atypon.wayf.data.ServiceException;
@@ -34,7 +34,6 @@ import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -49,9 +48,6 @@ import io.vertx.ext.web.impl.CookieImpl;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Singleton
 public class DeviceRoutingProvider implements RoutingProvider {
@@ -133,7 +129,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
     public Completable registerLocalId(RoutingContext routingContext) {
         String localId = RequestReader.readPathArgument(routingContext, LOCAL_ID_PARAM);
 
-        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+        Publisher publisher = AuthenticatedEntity.entityAsPublisher(RequestContextAccessor.get().getAuthenticated());
         String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
 
         return deviceFacade.registerLocalId(hashedLocalId);

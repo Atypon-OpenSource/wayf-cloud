@@ -91,15 +91,15 @@ public class DeviceAdminIntegrationTest extends BaseHttpTest {
 
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
-        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getCredentials());
+        deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());
 
         // Create device
         globalId = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Add the IDPs to the device multiple times and validate the IDP's ID is the same each time
-        Long samlId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(5, publisherALocalId, publisherA.getCredentials(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
-        Long openAthensId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(4, publisherALocalId, publisherA.getCredentials(), CREATE_OPEN_ATHENS_IDP_REQUEST_JSON, CREATE_OPEN_ATHENS_IDP_RESPONSE_JSON);
-        Long oauthId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(3, publisherALocalId, publisherA.getCredentials(), CREATE_OAUTH_IDP_REQUEST_JSON, CREATE_OAUTH_IDP_RESPONSE_JSON);
+        Long samlId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(5, publisherALocalId, publisherA.getToken(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
+        Long openAthensId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(4, publisherALocalId, publisherA.getToken(), CREATE_OPEN_ATHENS_IDP_REQUEST_JSON, CREATE_OPEN_ATHENS_IDP_RESPONSE_JSON);
+        Long oauthId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(3, publisherALocalId, publisherA.getToken(), CREATE_OAUTH_IDP_REQUEST_JSON, CREATE_OAUTH_IDP_RESPONSE_JSON);
 
         samlIdpId = samlId;
         idpIds = Lists.newArrayList(samlId, openAthensId, oauthId);
@@ -107,14 +107,14 @@ public class DeviceAdminIntegrationTest extends BaseHttpTest {
         // Relate the device to publisher B
         String publisherBLocalId = "local-id-publisher-b-" + UUID.randomUUID().toString();
 
-        deviceTestUtil.registerLocalId(publisherBLocalId, publisherB.getCredentials());
+        deviceTestUtil.registerLocalId(publisherBLocalId, publisherB.getToken());
         deviceTestUtil.relateDeviceToPublisher(publisherBLocalId, publisherB.getCode(), globalId, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Remove the SAML entity from the device from publisher A
-        identityProviderTestUtil.removeIdpForDevice(publisherALocalId, publisherA.getCredentials(), samlId);
+        identityProviderTestUtil.removeIdpForDevice(publisherALocalId, publisherA.getToken(), samlId);
 
         // Add back the SAML identity to the device
-        identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(5, publisherBLocalId, publisherB.getCredentials(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
+        identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(5, publisherBLocalId, publisherB.getToken(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
     }
 
     @Test

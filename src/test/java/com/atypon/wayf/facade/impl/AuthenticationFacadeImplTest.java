@@ -18,7 +18,7 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.CacheLoader;
 import com.atypon.wayf.cache.LoadingCache;
-import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthenticatedEntity;
 import com.atypon.wayf.data.AuthorizationToken;
 import com.atypon.wayf.data.AuthorizationTokenType;
 import com.atypon.wayf.data.ServiceException;
@@ -62,24 +62,24 @@ public class AuthenticationFacadeImplTest {
         testPublisher.setId(1122L);
 
         // Test Create
-        AuthorizationToken token = authorizationTokenFacade.createCredentials(testPublisher).blockingGet();
+        AuthorizationToken token = authorizationTokenFacade.generateToken(testPublisher).blockingGet();
         assertNotNull(token);
 
 
         // Test Read
-        Authenticatable authenticated = facade.authenticate(token);
+        AuthenticatedEntity authenticated = facade.authenticate(token);
         assertNotNull(authenticated);
-        assertEquals(Publisher.class, authenticated.getClass());
-        assertEquals(testPublisher.getId(), authenticated.getId());
+        assertEquals(Publisher.class, authenticated.getAuthenticatable().getClass());
+        assertEquals(testPublisher.getId(), authenticated.getAuthenticatable().getId());
 
         CacheLoader l1CacheLoader =  ((LoadingCache) facade.getL1Cache()).getCacheLoader();
         ((LoadingCache) facade.getL1Cache()).setCacheLoader((key) -> Maybe.empty());
         // Remove the L2 Cache and see if we can read from L1
 
-        Authenticatable authenticatedFromL1 = facade.authenticate(token);
+        AuthenticatedEntity authenticatedFromL1 = facade.authenticate(token);
         assertNotNull(authenticatedFromL1);
-        assertEquals(Publisher.class, authenticatedFromL1.getClass());
-        assertEquals(testPublisher.getId(), authenticatedFromL1.getId());
+        assertEquals(Publisher.class, authenticatedFromL1.getAuthenticatable().getClass());
+        assertEquals(testPublisher.getId(), authenticatedFromL1.getAuthenticatable().getId());
 
         // Reset the L2 Cache
         ((LoadingCache) facade.getL1Cache()).setCacheLoader(l1CacheLoader);
@@ -88,10 +88,10 @@ public class AuthenticationFacadeImplTest {
         facade.getL1Cache().invalidateAll();
         facade.getRedisCache().setCacheLoader((key) -> Maybe.empty());
 
-        Authenticatable authenticatedFromL2 = facade.authenticate(token);
+        AuthenticatedEntity authenticatedFromL2 = facade.authenticate(token);
         assertNotNull(authenticatedFromL2);
-        assertEquals(Publisher.class, authenticatedFromL2.getClass());
-        assertEquals(testPublisher.getId(), authenticatedFromL2.getId());
+        assertEquals(Publisher.class, authenticatedFromL2.getAuthenticatable().getClass());
+        assertEquals(testPublisher.getId(), authenticatedFromL2.getAuthenticatable().getId());
     }
 
     @Test

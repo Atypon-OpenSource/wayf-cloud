@@ -28,6 +28,7 @@ import com.atypon.wayf.data.identity.OauthEntity;
 import com.atypon.wayf.data.identity.OpenAthensEntity;
 import com.atypon.wayf.data.identity.SamlEntity;
 import com.atypon.wayf.database.AuthenticatableBeanFactory;
+import com.atypon.wayf.database.AuthenticationCredentialsBeanFactory;
 import com.atypon.wayf.database.BeanFactory;
 import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.facade.*;
@@ -85,16 +86,21 @@ public class WayfGuiceModule extends AbstractModule {
             properties.load(classLoader.getResourceAsStream("dao/error-logger-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/publisher-registration-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/user-dao-db.properties"));
-            properties.load(classLoader.getResourceAsStream("dao/email-password-credentials-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/password-credentials-dao-db.properties"));
 
             Names.bindProperties(binder(), properties);
 
             bind(DeviceIdentityProviderBlacklistFacade.class).to(DeviceIdentityProviderBlacklistFacadeImpl.class);
             bind(IdentityProviderUsageFacade.class).to(IdentityProviderUsageFacadeImpl.class);
 
+            bind(CryptFacade.class).to(CryptFacadeBcryptImpl.class);
+
+            bind(PasswordCredentialsFacade.class).to(PasswordCredentialsFacadeImpl.class);
+            bind(PasswordCredentialsDao.class).to(PasswordCredentialsDaoDbImpl.class);
+
             bind(AuthorizationTokenFacade.class).to(AuthorizationTokenFacadeImpl.class);
-            bind(new TypeLiteral<AuthenticationDao<EmailPasswordCredentials>>(){}).to(EmailPasswordCredentialsDaoDbImpl.class);
-            bind(new TypeLiteral<AuthenticationDao<AuthorizationToken>>(){}).to(AuthorizationTokenDaoDbImpl.class);
+            bind(new TypeLiteral<AuthenticationCredentialsDao<PasswordCredentials>>(){}).to(PasswordCredentialsDaoDbImpl.class);
+            bind(new TypeLiteral<AuthenticationCredentialsDao<AuthorizationToken>>(){}).to(AuthorizationTokenDaoDbImpl.class);
 
             bind(AuthenticationFacade.class).to(AuthenticationFacadeImpl.class);
 
@@ -185,10 +191,12 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides @Named("beanFactoryMap")
-    public Map<Class<?>, BeanFactory<?>> provideBeanFactoryMap(AuthenticatableBeanFactory authenticatableBeanFactory) {
+    public Map<Class<?>, BeanFactory<?>> provideBeanFactoryMap(AuthenticatableBeanFactory authenticatableBeanFactory,
+                                                               AuthenticationCredentialsBeanFactory credentialsBeanFactory) {
         Map<Class<?>, BeanFactory<?>> beanFactoryMap = new HashMap<>();
 
         beanFactoryMap.put(Authenticatable.class, authenticatableBeanFactory);
+        beanFactoryMap.put(AuthenticationCredentials.class, credentialsBeanFactory);
 
         return beanFactoryMap;
     }
@@ -230,22 +238,22 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("authenticatableRedisDao")
-    public RedisDao<AuthenticationCredentials, Authenticatable> getAuthenticatableRedisDao(JedisPool jedisPool) {
-        return new RedisDaoImpl<AuthenticationCredentials, Authenticatable>()
+    public RedisDao<AuthenticationCredentials, AuthenticatedEntity> getAuthenticatableRedisDao(JedisPool jedisPool) {
+        return new RedisDaoImpl<AuthenticationCredentials, AuthenticatedEntity>()
                 .setPrefix("AUTHENTICABLE")
                 .setPool(jedisPool)
                 .setTtlSeconds(172800)
                 .setDeserializer((json) -> AuthenticatableRedisSerializer.deserialize((String) json))
-                .setSerializer((authenticatable) -> AuthenticatableRedisSerializer.serialize((Authenticatable) authenticatable));
+                .setSerializer((authenticatable) -> AuthenticatableRedisSerializer.serialize((AuthenticatedEntity) authenticatable));
     }
 
 
     @Provides
     @Named("authenticatableRedisCache")
-    public LoadingCache<AuthenticationCredentials, Authenticatable> getLoadingCache(
-            @Named("authenticatableRedisDao") RedisDao<AuthenticationCredentials, Authenticatable> authenticatableRedisDao,
+    public LoadingCache<AuthenticationCredentials, AuthenticatedEntity> getLoadingCache(
+            @Named("authenticatableRedisDao") RedisDao<AuthenticationCredentials, AuthenticatedEntity> authenticatableRedisDao,
             AuthenticationFacade authenticationFacade) {
-        LoadingCacheRedisImpl<AuthenticationCredentials, Authenticatable> l2Cache = new LoadingCacheRedisImpl<>();
+        LoadingCacheRedisImpl<AuthenticationCredentials, AuthenticatedEntity> l2Cache = new LoadingCacheRedisImpl<>();
         l2Cache.setRedisDao(authenticatableRedisDao);
         l2Cache.setCacheLoader((key) -> authenticationFacade.determineDao(key).authenticate(key));
 
@@ -254,9 +262,9 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("authenticatableCache")
-    public LoadingCache<AuthenticationCredentials, Authenticatable> getLoadingCache(
-            @Named("authenticatableRedisCache") LoadingCache<AuthenticationCredentials, Authenticatable> authenticatableRedisCache) {
-        LoadingCacheGuavaImpl<AuthenticationCredentials, Authenticatable> l1Cache = new LoadingCacheGuavaImpl<>();
+    public LoadingCache<AuthenticationCredentials, AuthenticatedEntity> getLoadingCache(
+            @Named("authenticatableRedisCache") LoadingCache<AuthenticationCredentials, AuthenticatedEntity> authenticatableRedisCache) {
+        LoadingCacheGuavaImpl<AuthenticationCredentials, AuthenticatedEntity> l1Cache = new LoadingCacheGuavaImpl<>();
         l1Cache.setGuavaCache(CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build());
         l1Cache.setCacheLoader((key) -> authenticatableRedisCache.get(key));
 
@@ -266,7 +274,7 @@ public class WayfGuiceModule extends AbstractModule {
     @Provides
     @Named("publisherSaltRedisDao")
     public RedisDao<Long, String> getPublisherSaltRedisDao(JedisPool jedisPool) {
-        return new RedisDaoImpl<String, Authenticatable>()
+        return new RedisDaoImpl<String, AuthenticatedEntity>()
                 .setPrefix("PUBLISHER_SALT")
                 .setPool(jedisPool)
                 .setTtlSeconds(172800)
@@ -293,6 +301,40 @@ public class WayfGuiceModule extends AbstractModule {
         LoadingCacheGuavaImpl<Long, String> l1Cache = new LoadingCacheGuavaImpl<>();
         l1Cache.setGuavaCache(CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build());
         l1Cache.setCacheLoader((key) -> publisherSaltRedisCache.get(key));
+
+        return l1Cache;
+    }
+
+    @Provides
+    @Named("passwordSaltRedisDao")
+    public RedisDao<String, String> getAdminSaltRedisDao(JedisPool jedisPool) {
+        return new RedisDaoImpl<String, AuthenticatedEntity>()
+                .setPrefix("ADMIN_SALT")
+                .setPool(jedisPool)
+                .setTtlSeconds(172800)
+                .setDeserializer((salt) -> salt)
+                .setSerializer((salt) -> salt);
+    }
+
+    @Provides
+    @Named("passwordSaltRedisCache")
+    public LoadingCache<String, String> getAdminSaltLoadingCache(
+            @Named("passwordSaltRedisDao") RedisDao<String, String> adminSaltRedisDao,
+            PasswordCredentialsDao credentialsDao) {
+        LoadingCacheRedisImpl<String, String> l2Cache = new LoadingCacheRedisImpl<>();
+        l2Cache.setRedisDao(adminSaltRedisDao);
+        l2Cache.setCacheLoader((email) -> credentialsDao.getSaltForEmail(email));
+
+        return l2Cache;
+    }
+
+    @Provides
+    @Named("passwordSaltCache")
+    public Cache<String, String> getAdminSaltLoadingCache(
+            @Named("passwordSaltRedisCache") LoadingCache<String, String> adminSaltRedisCache) {
+        LoadingCacheGuavaImpl<String, String> l1Cache = new LoadingCacheGuavaImpl<>();
+        l1Cache.setGuavaCache(CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build());
+        l1Cache.setCacheLoader((key) -> adminSaltRedisCache.get(key));
 
         return l1Cache;
     }

@@ -17,4 +17,6 @@
 package com.atypon.wayf.data;
 
 public interface AuthenticationCredentials {
+    void setAuthenticatable(Authenticatable authenticatable);
+    Authenticatable getAuthenticatable();
 }

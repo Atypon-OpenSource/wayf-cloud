@@ -50,7 +50,7 @@ public class LoadingCacheGuavaImpl<K, V> implements com.atypon.wayf.cache.Loadin
 
     @Override
     public Maybe<V> get(K key) {
-        LOG.debug("Reading from cache [{}]", key);
+        LOG.debug("Reading from persistence [{}]", key);
 
         return Maybe.fromCallable(() -> guavaCache.getIfPresent(key))
                 .switchIfEmpty(load(key));

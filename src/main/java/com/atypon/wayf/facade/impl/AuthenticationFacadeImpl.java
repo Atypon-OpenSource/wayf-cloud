@@ -17,7 +17,7 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.LoadingCache;
-import com.atypon.wayf.dao.AuthenticationDao;
+import com.atypon.wayf.dao.AuthenticationCredentialsDao;
 import com.atypon.wayf.data.*;
 import com.atypon.wayf.facade.AuthenticationFacade;
 import com.google.inject.Inject;
@@ -33,43 +33,43 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
 
     @Inject
     @Named("authenticatableCache")
-    protected LoadingCache<AuthenticationCredentials, Authenticatable> cache;
+    protected LoadingCache<AuthenticationCredentials, AuthenticatedEntity> persistence;
 
     @Inject
-    protected AuthenticationDao<AuthorizationToken> authorizationTokenDao;
+    protected AuthenticationCredentialsDao<AuthorizationToken> authorizationTokenDao;
 
     @Inject
-    protected AuthenticationDao<EmailPasswordCredentials> emailPasswordCredentialsDao;
+    protected AuthenticationCredentialsDao<PasswordCredentials> emailPasswordCredentialsDao;
 
     @Override
-    public Authenticatable authenticate(AuthenticationCredentials credentials) {
+    public AuthenticatedEntity authenticate(AuthenticationCredentials credentials) {
         LOG.debug("Authenticating credentials");
 
         try {
-            Authenticatable authenticatable = cache.get(credentials).blockingGet();
+            AuthenticatedEntity authenticatedEntity = persistence.get(credentials).blockingGet();
 
-            if (authenticatable == null) {
+            if (authenticatedEntity == null) {
                 throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Could not authenticate credentials");
             }
 
-            if (!isStillValid(authenticatable)) {
+            if (!isStillValid(authenticatedEntity)) {
                 throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Expired credentials");
             }
 
-            return authenticatable;
+            return authenticatedEntity;
         } catch (Exception e) {
             throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Could not authenticate credentials", e);
         }
     }
 
     @Override
-    public boolean isStillValid(Authenticatable authenticatable) {
-        if (authenticatable.getCredentials() == null) {
+    public boolean isStillValid(AuthenticatedEntity authenticated) {
+        if (authenticated.getCredentials() == null) {
             return false;
         }
 
-        if (AuthorizationToken.class.isAssignableFrom(authenticatable.getCredentials().getClass())) {
-            AuthorizationToken credentials = (AuthorizationToken) authenticatable.getCredentials();
+        if (AuthorizationToken.class.isAssignableFrom(authenticated.getCredentials().getClass())) {
+            AuthorizationToken credentials = (AuthorizationToken) authenticated.getCredentials();
             if (credentials.getValidUntil() == null) {
                 return true;
             }
@@ -81,10 +81,10 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
     }
 
     @Override
-    public AuthenticationDao determineDao(AuthenticationCredentials credentials) {
+    public AuthenticationCredentialsDao determineDao(AuthenticationCredentials credentials) {
         if (AuthorizationToken.class.isAssignableFrom(credentials.getClass())) {
             return authorizationTokenDao;
-        } else if (EmailPasswordCredentials.class.isAssignableFrom(credentials.getClass())) {
+        } else if (PasswordCredentials.class.isAssignableFrom(credentials.getClass())) {
             return emailPasswordCredentialsDao;
         }
 

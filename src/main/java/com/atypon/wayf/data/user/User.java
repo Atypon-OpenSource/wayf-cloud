@@ -17,13 +17,12 @@
 package com.atypon.wayf.data.user;
 
 import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.AuthorizationToken;
-import com.atypon.wayf.data.EmailPasswordCredentials;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.atypon.wayf.data.PasswordCredentials;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Date;
 
-public class User implements Authenticatable<EmailPasswordCredentials> {
+public class User implements Authenticatable {
     private Long id;
 
     private String firstName;
@@ -32,8 +31,8 @@ public class User implements Authenticatable<EmailPasswordCredentials> {
 
     private String phoneNumber;
 
-    private AuthorizationToken authorizationToken;
-    private EmailPasswordCredentials credentials;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private PasswordCredentials passwordCredentials;
 
     private Date createdDate;
     private Date modifiedDate;
@@ -81,22 +80,12 @@ public class User implements Authenticatable<EmailPasswordCredentials> {
         this.phoneNumber = phoneNumber;
     }
 
-    @Override
-    public Type getType() {
-        return Type.ADMIN;
+    public PasswordCredentials getPasswordCredentials() {
+        return passwordCredentials;
     }
 
-    @Override
-    public void setType(Type type) {
-    }
-
-    @JsonIgnore
-    public EmailPasswordCredentials getCredentials() {
-        return credentials;
-    }
-
-    public void setCredentials(EmailPasswordCredentials credentials) {
-        this.credentials = credentials;
+    public void setPasswordCredentials(PasswordCredentials passwordCredentials) {
+        this.passwordCredentials = passwordCredentials;
     }
 
     public Date getCreatedDate() {

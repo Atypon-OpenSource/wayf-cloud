@@ -1,0 +1,10 @@
+{
+  "firstName" : "Test",
+  "lastName" : "Admin",
+  "email" : "test@atypon.com",
+  "phoneNumber" : "+(1) 555 555 5555",
+  "passwordCredentials" : {
+    "emailAddress" : null,
+    "password": "testPassword"
+  }
+}

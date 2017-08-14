@@ -14,27 +14,16 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.database;
+package com.atypon.wayf.dao;
 
 import com.atypon.wayf.data.Authenticatable;
 import com.atypon.wayf.data.AuthenticatedEntity;
-import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.user.User;
+import com.atypon.wayf.data.AuthenticationCredentials;
+import io.reactivex.Completable;
+import io.reactivex.Maybe;
 
-import java.util.Map;
+public interface AuthenticationCredentialsDao<T extends AuthenticationCredentials> {
 
-public class AuthenticatableBeanFactory implements BeanFactory<Authenticatable> {
-    private static final String TYPE = "authenticatable.type";
-    @Override
-    public Authenticatable createInstance(Map<String, Object> values) {
-        Object type = values.get(TYPE);
-
-        if (Publisher.class.getSimpleName().equals(type)) {
-            return new Publisher();
-        } else if (User.class.getSimpleName().equals(type)) {
-            return new User();
-        }
-
-        throw new UnsupportedOperationException();
-    }
+    Completable create(T credentials);
+    Maybe<AuthenticatedEntity> authenticate(T credentials);
 }

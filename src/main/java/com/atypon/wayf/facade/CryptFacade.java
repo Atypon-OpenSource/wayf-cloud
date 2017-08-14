@@ -14,16 +14,10 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.facade;
 
-import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.AuthenticationCredentials;
-import com.atypon.wayf.data.AuthorizationToken;
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
+public interface CryptFacade {
 
-public interface AuthenticationDao<T extends AuthenticationCredentials> {
-
-    Completable create(Authenticatable<T> authenticatable);
-    Maybe<Authenticatable> authenticate(T credentials);
+    String generateSalt();
+    String encrypt(String salt, String valueToEncrypt);
 }

@@ -17,10 +17,7 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.impl.ErrorLoggerDaoMockImpl;
-import com.atypon.wayf.data.AuthorizationToken;
-import com.atypon.wayf.data.AuthorizationTokenType;
-import com.atypon.wayf.data.ErrorLogEntry;
-import com.atypon.wayf.data.ServiceException;
+import com.atypon.wayf.data.*;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.ErrorLoggerFacade;
 import com.atypon.wayf.integration.AuthorizationTokenTestUtil;
@@ -30,6 +27,7 @@ import com.google.common.collect.Lists;
 import io.vertx.core.http.HttpMethod;
 import org.junit.Before;
 import org.junit.Test;
+import org.omg.CORBA._PolicyStub;
 
 import java.net.InetAddress;
 import java.util.HashMap;
@@ -73,6 +71,10 @@ public class ErrorLoggerFacadeTest {
         token.setType(AuthorizationTokenType.API_TOKEN);
         token.setValue(tokenValue);
 
+        AuthenticatedEntity authenticatedEntity = new AuthenticatedEntity();
+        authenticatedEntity.setAuthenticatable(authenticatable);
+        authenticatedEntity.setCredentials(token);
+
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("Authentication", Lists.newArrayList(AuthorizationTokenTestUtil.generateApiTokenHeaderValue(token)));
         headers.put("X-Forwarded-For", Lists.newArrayList(forwardedFor));
@@ -86,7 +88,7 @@ public class ErrorLoggerFacadeTest {
                 .setHeaders(headers)
                 .setDeviceId(globalId)
                 .setAuthorizationToken(token)
-                .setAuthenticated(authenticatable)
+                .setAuthenticated(authenticatedEntity)
                 .setHttpMethod(httpMethod)
                 .setUserAgent(userAgent)
                 .setRequestBody(requestBody);
@@ -97,7 +99,7 @@ public class ErrorLoggerFacadeTest {
 
         ErrorLogEntry loggedError = mockDao.getLastLoggedError();
 
-        assertEquals(authenticatable.getType() + "-" + authenticatable.getId(), loggedError.getAuthenticatedParty());
+        assertEquals(authenticatable.getClass().getSimpleName() + "-" + authenticatable.getId(), loggedError.getAuthenticatedParty());
         assertEquals(errorMessage, loggedError.getExceptionMessage());
         assertEquals(statusCode, loggedError.getResponseCode());
         assertEquals(url, loggedError.getRequestUrl());

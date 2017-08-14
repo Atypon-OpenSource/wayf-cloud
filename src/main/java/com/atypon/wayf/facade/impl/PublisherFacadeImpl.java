@@ -56,6 +56,9 @@ public class PublisherFacadeImpl implements PublisherFacade {
     private UserFacade userFacade;
 
     @Inject
+    private CryptFacade cryptFacade;
+
+    @Inject
     @Named("publisherSaltCache")
     private Cache<Long, String> saltCache;
 
@@ -65,7 +68,7 @@ public class PublisherFacadeImpl implements PublisherFacade {
     @Override
     public Single<Publisher> create(Publisher publisher) {
         publisher.setStatus(PublisherStatus.ACTIVE);
-        publisher.setSalt(generateSalt());
+        publisher.setSalt(cryptFacade.generateSalt());
 
         return userFacade.create(publisher.getContact()) // Create the contact user
                 .flatMap((contact) -> {
@@ -79,7 +82,7 @@ public class PublisherFacadeImpl implements PublisherFacade {
 
                         Single.zip(
                                 // Create an authorization token for the newly created publisher
-                                authorizationTokenFacade.createCredentials(createdPublisher).compose(single -> FacadePolicies.applySingle(single)),
+                                authorizationTokenFacade.generateToken(createdPublisher).compose(single -> FacadePolicies.applySingle(single)),
 
                                 // Generate the publisher specific Javascript widget
                                 clientJsFacade.generateWidgetForPublisher(createdPublisher).compose(single -> FacadePolicies.applySingle(single)),
@@ -89,7 +92,7 @@ public class PublisherFacadeImpl implements PublisherFacade {
 
                                 // Combine the results with the previously created publisher
                                 (token, filename, approvedRegistration) -> {
-                                    createdPublisher.setCredentials(token);
+                                    createdPublisher.setToken(token);
                                     createdPublisher.setWidgetLocation(filename);
                                     createdPublisher.setContact(publisher.getContact());
                                     return createdPublisher;
@@ -114,15 +117,6 @@ public class PublisherFacadeImpl implements PublisherFacade {
         query.setCodes(publisherCode);
 
         return singleOrException(filter(query), HttpStatus.SC_BAD_REQUEST, "Could not find publisher for code [{}]", publisherCode);
-    }
-
-    private String generateSalt() {
-        SecureRandom random = new SecureRandom();
-
-        byte bytes[] = new byte[20];
-        random.nextBytes(bytes);
-
-        return BCrypt.gensalt(10, random);
     }
 
     private Single<PublisherRegistration> handleRegistrationApproval(Publisher publisher) {

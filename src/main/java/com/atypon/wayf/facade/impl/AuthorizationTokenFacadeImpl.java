@@ -17,7 +17,7 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.LoadingCache;
-import com.atypon.wayf.dao.AuthenticationDao;
+import com.atypon.wayf.dao.AuthenticationCredentialsDao;
 import com.atypon.wayf.data.*;
 import com.atypon.wayf.facade.AuthorizationTokenFacade;
 import com.google.inject.Inject;
@@ -37,33 +37,35 @@ import java.util.regex.Pattern;
 public class AuthorizationTokenFacadeImpl implements AuthorizationTokenFacade {
     private static final Logger LOG = LoggerFactory.getLogger(AuthorizationTokenFacadeImpl.class);
 
-    private static final Long ADMIN_TOKEN_LIFESPAN = 7200000L; // 2 hours
-
     private static final String TOKEN_REGEX = "(Token|Bearer) (.*)";
     private static final Pattern TOKEN_MATCHER = Pattern.compile(TOKEN_REGEX, Pattern.DOTALL);
 
     @Inject
     @Named("authenticatableCache")
-    protected LoadingCache<AuthenticationCredentials, Authenticatable> cache;
+    protected LoadingCache<AuthenticationCredentials, AuthenticatedEntity> cache;
 
     @Inject
-    protected AuthenticationDao<AuthorizationToken> dbDao;
+    protected AuthenticationCredentialsDao<AuthorizationToken> dbDao;
 
     @Override
-    public Single<AuthorizationToken> createCredentials(Authenticatable authenticatable) {
+    public Single<AuthorizationToken> generateToken(Authenticatable authenticatable) {
+        return generateExpiringToken(authenticatable, null);
+    }
+
+    @Override
+    public Single<AuthorizationToken> generateExpiringToken(Authenticatable authenticatable, Long ttlMillis) {
         AuthorizationToken token = new AuthorizationToken();
         token.setType(AuthorizationTokenType.API_TOKEN);
         token.setValue(UUID.randomUUID().toString());
 
-        if (authenticatable.getType() == Authenticatable.Type.ADMIN) {
-            token.setValidUntil(new Date(System.currentTimeMillis() + ADMIN_TOKEN_LIFESPAN));
+        if (ttlMillis != null) {
+            token.setValidUntil(new Date(System.currentTimeMillis() + ttlMillis));
         }
 
-        authenticatable.setCredentials(token);
+        token.setAuthenticatable(authenticatable);
 
-        return dbDao.create(authenticatable).toSingleDefault(token);
+        return dbDao.create(token).toSingleDefault(token);
     }
-
 
     @Override
     public AuthorizationToken parseAuthorizationToken(String authorizationToken) {

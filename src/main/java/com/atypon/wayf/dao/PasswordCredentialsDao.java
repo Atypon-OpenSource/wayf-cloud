@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.dao;
 
-public interface Authenticatable {
-    Object getId();
+import com.atypon.wayf.data.PasswordCredentials;
+import io.reactivex.Maybe;
+
+public interface PasswordCredentialsDao extends AuthenticationCredentialsDao<PasswordCredentials> {
+
+    Maybe<String> getSaltForEmail(String email);
 }

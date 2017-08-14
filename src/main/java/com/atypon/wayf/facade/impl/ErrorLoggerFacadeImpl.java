@@ -18,6 +18,7 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.ErrorLoggerDao;
 import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.AuthenticatedEntity;
 import com.atypon.wayf.data.ErrorLogEntry;
 import com.atypon.wayf.facade.ErrorLoggerFacade;
 import com.atypon.wayf.request.RequestContext;
@@ -83,9 +84,10 @@ public class ErrorLoggerFacadeImpl implements ErrorLoggerFacade {
 
         logEntry.setDeviceGlobalId(requestContext.getDeviceId());
 
-        Authenticatable authenticated = requestContext.getAuthenticated();
-        if(authenticated != null) {
-            logEntry.setAuthenticatedParty(authenticated.getType() + "-" + authenticated.getId());
+        AuthenticatedEntity authenticated = requestContext.getAuthenticated();
+        if (authenticated != null && authenticated.getAuthenticatable() != null) {
+            Authenticatable entity = authenticated.getAuthenticatable();
+            logEntry.setAuthenticatedParty(entity.getClass().getSimpleName() + "-" + entity.getId());
         }
 
         logEntry.setHeaders(trim(requestContext.getHeaders().toString(), HEADERS_MAX_LENGTH));
