@@ -28,10 +28,12 @@ public class AdminUserIntegrationTest extends BaseHttpTest {
 
     private static final String CREATE_ADMIN_REQUEST_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "user/create_admin_user_request.json");
     private static final String CREATE_ADMIN_RESPONSE_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "user/create_admin_user_response.json");
+    private static final String CREATE_ADMIN_NO_TOKEN_RESPONSE_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "user/create_admin_user_no_token_response.json");
 
     private static final String CREATE_PUBLISHER_REQUEST_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "publisher/create_publisher_a_request.json");
     private static final String CREATE_PUBLISHER_RESPONSE_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "publisher/create_publisher_a_response.json");
-
+    private static final String CREATE_PUBLISHER_NO_TOKEN_RESPONSE_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "publisher/create_publisher_no_token_response.json");
+    private static final String CREATE_PUBLISHER_BAD_TOKEN_RESPONSE_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "publisher/create_publisher_bad_token_response.json");
 
     private static final String LOGIN_REQUEST_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "user/admin_user_login.json");
 
@@ -46,12 +48,44 @@ public class AdminUserIntegrationTest extends BaseHttpTest {
     }
 
     @Test
+    public void testCreateAdminNoToken() {
+        String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
+        userTestUtil.testCreateUserNoToken(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_NO_TOKEN_RESPONSE_JSON);
+    }
+
+    @Test
     public void testCreateAndLogin() {
+        String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
+        userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);
+
+        String adminToken = userTestUtil.testLogin(credentialsEmail, LOGIN_REQUEST_JSON);
+    }
+
+    @Test
+    public void testCreatePublisherNoToken() {
+        publisherTestUtil.testCreatePublisherNoToken(CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_NO_TOKEN_RESPONSE_JSON);
+    }
+
+    @Test
+    public void testPublisherWithToken() {
         String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
         userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);
 
         String adminToken = userTestUtil.testLogin(credentialsEmail, LOGIN_REQUEST_JSON);
 
         publisherTestUtil.testCreatePublisher(adminToken, CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_RESPONSE_JSON);
+    }
+
+    @Test
+    public void testOnlyOneActiveToken() {
+        String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
+        userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);
+
+        String firstToken = userTestUtil.testLogin(credentialsEmail, LOGIN_REQUEST_JSON);
+        String secondToken = userTestUtil.testLogin(credentialsEmail, LOGIN_REQUEST_JSON);
+
+        publisherTestUtil.testCreatePublisher(secondToken, CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_RESPONSE_JSON);
+        publisherTestUtil.testCreatePublisherBadToken(firstToken, CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_BAD_TOKEN_RESPONSE_JSON);
+
     }
 }

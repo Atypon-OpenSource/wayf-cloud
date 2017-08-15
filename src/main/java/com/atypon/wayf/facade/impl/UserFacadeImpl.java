@@ -17,11 +17,13 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.UserDao;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.authentication.PasswordCredentials;
 import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.data.user.UserQuery;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.reactivex.FacadePolicies;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
@@ -85,6 +87,8 @@ public class UserFacadeImpl implements UserFacade {
 
     private Maybe<PasswordCredentials> generateEmailCredentials(User user) {
         if (user.getPasswordCredentials() != null) {
+            AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
+
             PasswordCredentials credentials = user.getPasswordCredentials();
 
             String salt = cryptFacade.generateSalt();

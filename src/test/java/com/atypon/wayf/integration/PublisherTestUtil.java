@@ -183,4 +183,47 @@ public class PublisherTestUtil {
 
         return publisher;
     }
+
+    public void testCreatePublisherNoToken(String requestBody, String response) {
+        String errorResponse =
+                request
+                        .contentType(ContentType.JSON)
+                        .body(requestBody)
+                        .method(Method.POST)
+                        .url("/1/publisher")
+                        .execute()
+                        .statusCode(401)
+                        .extract().response().asString();
+
+        String[] errorResponseGeneratedFields = {
+                "$.stacktrace"
+        };
+        assertJsonEquals(response, errorResponse, errorResponseGeneratedFields);
+    }
+
+    public void testCreatePublisherBadToken(String adminToken, String requestBody, String response) {
+        AuthorizationToken adminAuthToken = new AuthorizationToken();
+        adminAuthToken.setValue(adminToken);
+        adminAuthToken.setType(AuthorizationTokenType.API_TOKEN);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(adminAuthToken));
+
+        String errorResponse =
+                request
+                        .contentType(ContentType.JSON)
+                        .body(requestBody)
+                        .headers(headers)
+                        .method(Method.POST)
+                        .url("/1/publisher")
+                        .execute()
+                        .statusCode(401)
+                        .extract().response().asString();
+
+        String[] errorResponseGeneratedFields = {
+                "$.stacktrace"
+        };
+
+        assertJsonEquals(response, errorResponse, errorResponseGeneratedFields);
+    }
 }

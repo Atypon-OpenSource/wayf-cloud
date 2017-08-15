@@ -20,6 +20,9 @@ import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.atypon.wayf.integration.HttpTestUtil.assertJsonEquals;
 import static com.atypon.wayf.integration.HttpTestUtil.assertNotNullPaths;
 import static com.atypon.wayf.integration.HttpTestUtil.setField;
@@ -32,13 +35,37 @@ public class UserTestUtil {
         this.request = request;
     }
 
+    public void testCreateUserNoToken(String credentialsEmail, String requestJson, String expectedResponseJson) {
+        requestJson = setField(requestJson, "$.passwordCredentials.emailAddress", credentialsEmail);
+
+        String errorResponse =
+                request
+                        .contentType(ContentType.JSON)
+                        .method(Method.POST)
+                        .body(requestJson)
+                        .url("/1/user")
+                        .execute()
+                        .statusCode(401)
+                        .extract().response().asString();
+
+        String[] errorResponseGeneratedFields = {
+                "$.stacktrace"
+        };
+
+        assertJsonEquals(expectedResponseJson, errorResponse, errorResponseGeneratedFields);
+    }
+
     public void testCreateUser(String credentialsEmail, String requestJson, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
+
         requestJson = setField(requestJson, "$.passwordCredentials.emailAddress", credentialsEmail);
 
         String createResponse =
                 request
                         .contentType(ContentType.JSON)
                         .method(Method.POST)
+                        .headers(headers)
                         .body(requestJson)
                         .url("/1/user")
                         .execute()
