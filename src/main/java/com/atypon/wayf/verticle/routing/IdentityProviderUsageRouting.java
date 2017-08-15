@@ -67,7 +67,7 @@ public class IdentityProviderUsageRouting implements RoutingProvider {
 
         String localId = RequestReader.readRequiredPathParameter(routingContext, LOCAL_ID_PARAM_NAME, LOCAL_ID_ARG_DESCRIPTION);
 
-        Publisher publisher = AuthenticatedEntity.entityAsPublisher(RequestContextAccessor.get().getAuthenticated());
+        Publisher publisher = AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated());
         String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
 
         return identityProviderUsageFacade.buildRecentHistory(hashedLocalId);

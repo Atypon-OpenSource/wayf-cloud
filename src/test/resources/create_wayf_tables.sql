@@ -104,7 +104,7 @@ CREATE TABLE `device_idp_blacklist` (
 
 DROP TABLE IF EXISTS `authorization_token`;
 CREATE TABLE `authorization_token` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `authenticatable` VARCHAR(50) NOT NULL,
   `authenticatable_type` varchar(25) NOT NULL,
   `authenticatable_id` int(11) NOT NULL,
   `token_type` varchar(30) DEFAULT NULL,
@@ -112,8 +112,8 @@ CREATE TABLE `authorization_token` (
   `valid_until` timestamp NULL DEFAULT NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1472 DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`authenticatable`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
 DROP TABLE IF EXISTS `email_password_credentials`;
@@ -248,3 +248,13 @@ CREATE TABLE `error_log` (
   PRIMARY KEY (`id`),
 UNIQUE KEY `id_UNIQUE` (`id`)
 );
+
+
+INSERT INTO wayf.user (first_name, last_name, email, phone_number, created_date)
+	VALUES ('Default', 'Admin', 'test@atypon.com', '+1 (585) 555-5555', CURRENT_TIMESTAMP);
+
+INSERT INTO wayf.email_password_credentials (authenticatable_type, authenticatable_id, salt, email, password, created_date)
+	VALUES ('User', 1, '$2a$10$s0.WBFOZzUJi8MMp8r8yWO', 'test@atypon.com', '$2a$10$s0.WBFOZzUJi8MMp8r8yWOg.IoN84sQWIjFnpns1KBugITDfe2Hw2', CURRENT_TIMESTAMP);
+
+INSERT INTO wayf.authorization_token (authenticatable, authenticatable_type, authenticatable_id, token_type, token_value, created_date)
+  VALUES ('User-1', 'User', 1, 'API_TOKEN', 'DEFAULT_PLEASE_CHANGE', CURRENT_TIMESTAMP);

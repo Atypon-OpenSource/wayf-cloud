@@ -26,6 +26,11 @@ import java.util.Date;
 
 public class AuthorizationTokenTestUtil {
     private static final String SECRET_JWT_KEY = "shh_its_a_secret";
+    private static final String DEFAULT_ADMIN_TOKEN = "DEFAULT_PLEASE_CHANGE";
+
+    public static String generateDefaultApiTokenHeaderValue() {
+        return AuthorizationTokenType.API_TOKEN.getPrefix() + " " + DEFAULT_ADMIN_TOKEN;
+    }
 
     public static String generateApiTokenHeaderValue(AuthorizationToken authorizationToken) {
         return authorizationToken.getType().getPrefix() + " " + authorizationToken.getValue();

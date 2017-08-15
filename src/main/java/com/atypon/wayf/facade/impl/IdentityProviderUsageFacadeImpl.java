@@ -84,7 +84,7 @@ public class IdentityProviderUsageFacadeImpl implements IdentityProviderUsageFac
                                 // Log this access
                                 deviceAccessFacade.create(new DeviceAccess.Builder()
                                         .device(device)
-                                        .publisher(AuthenticatedEntity.entityAsPublisher(RequestContextAccessor.get().getAuthenticated()))
+                                        .publisher(AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated()))
                                         .type(DeviceAccessType.READ_IDP_HISTORY)
                                         .build()).subscribeOn(Schedulers.io()),
 

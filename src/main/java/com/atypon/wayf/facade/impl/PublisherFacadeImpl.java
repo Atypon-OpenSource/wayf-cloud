@@ -18,13 +18,16 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.Cache;
 import com.atypon.wayf.dao.PublisherDao;
+import com.atypon.wayf.data.AuthenticatedEntity;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.data.publisher.PublisherStatus;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistrationStatus;
+import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.reactivex.FacadePolicies;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -69,6 +72,9 @@ public class PublisherFacadeImpl implements PublisherFacade {
     public Single<Publisher> create(Publisher publisher) {
         publisher.setStatus(PublisherStatus.ACTIVE);
         publisher.setSalt(cryptFacade.generateSalt());
+
+
+        User admin = AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
 
         return userFacade.create(publisher.getContact()) // Create the contact user
                 .flatMap((contact) -> {

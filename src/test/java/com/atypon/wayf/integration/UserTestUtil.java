@@ -54,7 +54,7 @@ public class UserTestUtil {
         assertJsonEquals(expectedResponseJson, createResponse, createResponseGeneratedFields);
     }
 
-    public void testLogin(String credentialsEmail, String requestJson) {
+    public String testLogin(String credentialsEmail, String requestJson) {
         requestJson = setField(requestJson, "$.emailAddress", credentialsEmail);
 
         String adminToken =
@@ -67,8 +67,8 @@ public class UserTestUtil {
                         .statusCode(200)
                         .extract().cookie("adminToken");
 
-
-
         assertNotNull(adminToken);
+
+        return adminToken;
     }
 }

@@ -74,7 +74,7 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
                 return true;
             }
 
-            return credentials.getValidUntil().compareTo(new Date()) <= 0;
+            return credentials.getValidUntil().compareTo(new Date()) > 0;
         }
 
         return true;

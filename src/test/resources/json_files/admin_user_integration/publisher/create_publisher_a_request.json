@@ -1,0 +1,10 @@
+{
+  "code" : "PUBLISHER_A",
+  "name" : "Publisher A",
+  "contact" : {
+    "firstName" : "Test First Name",
+    "lastName" : "Test Last Name",
+    "email" : "test@atypon.com",
+    "phoneNumber" : "+1 (555) 555-5555"
+  }
+}

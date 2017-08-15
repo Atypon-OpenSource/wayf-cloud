@@ -17,6 +17,7 @@
 package com.atypon.wayf.data;
 
 import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.data.user.User;
 import org.apache.http.HttpStatus;
 
 import java.util.Date;
@@ -50,7 +51,7 @@ public class AuthenticatedEntity {
         this.credentials = credentials;
     }
 
-    public static Publisher entityAsPublisher(AuthenticatedEntity authenticatable) {
+    public static Publisher authenticatedAsPublisher(AuthenticatedEntity authenticatable) {
         if (authenticatable != null
                 && authenticatable.getAuthenticatable() != null
                 && Publisher.class.isAssignableFrom(authenticatable.getAuthenticatable().getClass())) {
@@ -58,5 +59,15 @@ public class AuthenticatedEntity {
         }
 
         throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "An authenticated Publisher is required");
+    }
+
+    public static User authenticatedAsAdmin(AuthenticatedEntity authenticatable) {
+        if (authenticatable != null
+                && authenticatable.getAuthenticatable() != null
+                && User.class.isAssignableFrom(authenticatable.getAuthenticatable().getClass())) {
+            return (User) authenticatable.getAuthenticatable();
+        }
+
+        throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "An authenticated Administrator is required");
     }
 }

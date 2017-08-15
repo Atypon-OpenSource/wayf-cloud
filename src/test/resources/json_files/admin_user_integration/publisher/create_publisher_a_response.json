@@ -1,0 +1,14 @@
+{
+  "code" : "PUBLISHER_A",
+  "name" : "Publisher A",
+  "status" : "ACTIVE",
+  "contact" : {
+    "firstName" : "Test First Name",
+    "lastName" : "Test Last Name",
+    "email" : "test@atypon.com",
+    "phoneNumber" : "+1 (555) 555-5555"
+  },
+  "token" : {
+    "type": "API_TOKEN"
+  }
+}

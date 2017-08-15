@@ -106,7 +106,7 @@ public class IdentityProviderRouting implements RoutingProvider {
         String localId = RequestReader.readRequiredPathParameter(routingContext, LOCAL_ID_PARAM_NAME, LOCAL_ID_ARG_DESCRIPTION);
         IdentityProvider body = RequestReader.readRequestBody(routingContext, IdentityProvider.class).blockingGet();
 
-        Publisher publisher = AuthenticatedEntity.entityAsPublisher(RequestContextAccessor.get().getAuthenticated());
+        Publisher publisher = AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated());
         String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
 
         return identityProviderFacade.recordIdentityProviderUse(hashedLocalId, body);
@@ -117,7 +117,7 @@ public class IdentityProviderRouting implements RoutingProvider {
 
         String localId = RequestReader.readRequiredPathParameter(routingContext, LOCAL_ID_PARAM_NAME, LOCAL_ID_ARG_DESCRIPTION);
 
-        Publisher publisher = AuthenticatedEntity.entityAsPublisher(RequestContextAccessor.get().getAuthenticated());
+        Publisher publisher = AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated());
         String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
 
         Long idpId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, IDP_ID_PARAM_NAME, IDP_ID_ARG_DESCRIPTION));

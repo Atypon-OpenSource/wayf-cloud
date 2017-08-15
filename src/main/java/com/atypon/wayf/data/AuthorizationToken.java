@@ -66,4 +66,9 @@ public class AuthorizationToken implements ExpiringAuthenticationCredentials {
     public void setValidUntil(Date validUntil) {
         this.validUntil = validUntil;
     }
+
+    @JsonIgnore
+    public String getAuthenticatableKey() {
+        return authenticatable.getClass().getSimpleName() + "-" + authenticatable.getId();
+    }
 }

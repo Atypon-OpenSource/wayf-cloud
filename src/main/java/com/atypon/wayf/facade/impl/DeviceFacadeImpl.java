@@ -126,7 +126,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
     @Override
     public Completable registerLocalId(String localId) {
-        return deviceDao.registerLocalId(AuthenticatedEntity.entityAsPublisher(RequestContextAccessor.get().getAuthenticated()).getId(), localId);
+        return deviceDao.registerLocalId(AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated()).getId(), localId);
     }
 
     private Single<Device> resolveFromRequest(Publisher publisher, String localId) {
@@ -147,7 +147,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
     public Single<Device> readByLocalId(String localId) {
         LOG.debug("Reading device with local ID [{}]", localId);
 
-        Publisher publisher = AuthenticatedEntity.entityAsPublisher(RequestContextAccessor.get().getAuthenticated());
+        Publisher publisher = AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated());
 
         LOG.debug("Reading device with local ID [{}] and publisher ID [{}]", localId, publisher.getId());
 

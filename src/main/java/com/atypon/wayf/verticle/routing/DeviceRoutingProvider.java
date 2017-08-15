@@ -129,7 +129,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
     public Completable registerLocalId(RoutingContext routingContext) {
         String localId = RequestReader.readPathArgument(routingContext, LOCAL_ID_PARAM);
 
-        Publisher publisher = AuthenticatedEntity.entityAsPublisher(RequestContextAccessor.get().getAuthenticated());
+        Publisher publisher = AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated());
         String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
 
         return deviceFacade.registerLocalId(hashedLocalId);
