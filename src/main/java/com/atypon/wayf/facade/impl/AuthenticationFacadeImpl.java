@@ -46,6 +46,7 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
     public AuthenticatedEntity authenticate(AuthenticationCredentials credentials) {
         LOG.debug("Authenticating credentials");
 
+        // Use the cached version of credentials to leverage better equals and hashcode
         if (PasswordCredentials.class.isAssignableFrom(credentials.getClass())) {
             credentials = new CachedPasswordCredentials((PasswordCredentials) credentials);
         } else if (AuthorizationToken.class.isAssignableFrom(credentials.getClass())) {

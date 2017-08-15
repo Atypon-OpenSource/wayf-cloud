@@ -27,8 +27,6 @@ import org.json.JSONObject;
 import java.util.Date;
 
 public class AuthenticatableRedisSerializer {
-    private static final String PUBLISHER = "publisher";
-    private static final String ADMIN_USER = "adminUser";
     private static final String EMAIL_PASSWORD_CREDENTIALS = "emailPassword";
     private static final String AUTHORIZATION_TOKEN_CREDENTIALS = "authorizationToken";
 
@@ -83,14 +81,7 @@ public class AuthenticatableRedisSerializer {
     public static String serialize(AuthenticatedEntity authenticatedEntity) {
         JSONObject authenticatableJsonObject = new JSONObject();
 
-        if (Publisher.class.isAssignableFrom(authenticatedEntity.getAuthenticatable().getClass())) {
-            authenticatableJsonObject.put(AuthenticatableFields.AUTHENTICATABLE_TYPE.getFieldName(), PUBLISHER);
-        } else if (User.class.isAssignableFrom(authenticatedEntity.getAuthenticatable().getClass())) {
-            authenticatableJsonObject.put(AuthenticatableFields.AUTHENTICATABLE_TYPE.getFieldName(), ADMIN_USER);
-        } else {
-            throw new ServiceException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Could not serialize authenticated entity");
-        }
-
+        authenticatableJsonObject.put(AuthenticatableFields.AUTHENTICATABLE_TYPE.getFieldName(), authenticatedEntity.getAuthenticatable().getAuthenticatableType());
         authenticatableJsonObject.put(AuthenticatableFields.AUTHENTICATABLE_ID.getFieldName(), authenticatedEntity.getAuthenticatable().getId().toString());
 
         if (authenticatedEntity.getCredentials() == null) {
@@ -143,13 +134,15 @@ public class AuthenticatableRedisSerializer {
 
         String id = authenticatableJsonObject.getString(AuthenticatableFields.AUTHENTICATABLE_ID.getFieldName());
 
+        AuthenticatableType type = authenticatableJsonObject.getEnum(AuthenticatableType.class, AuthenticatableFields.AUTHENTICATABLE_TYPE.getFieldName());
+
         Authenticatable authenticatable = null;
-        if (PUBLISHER.equals(authenticatableJsonObject.getString(AuthenticatableFields.AUTHENTICATABLE_TYPE.getFieldName()))) {
+        if (AuthenticatableType.PUBLISHER == type) {
             Publisher publisher = new Publisher();
             publisher.setId(Long.valueOf(id));
 
             authenticatable = publisher;
-        } else if (ADMIN_USER.equals(authenticatableJsonObject.getString(AuthenticatableFields.AUTHENTICATABLE_TYPE.getFieldName()))) {
+        } else if (AuthenticatableType.USER == type) {
             User admin = new User();
             admin.setId(Long.valueOf(id));
 

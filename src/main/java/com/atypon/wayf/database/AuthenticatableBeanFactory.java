@@ -17,6 +17,7 @@
 package com.atypon.wayf.database;
 
 import com.atypon.wayf.data.authentication.Authenticatable;
+import com.atypon.wayf.data.authentication.AuthenticatableType;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.user.User;
 
@@ -28,9 +29,9 @@ public class AuthenticatableBeanFactory implements BeanFactory<Authenticatable> 
     public Authenticatable createInstance(Map<String, Object> values) {
         Object type = values.get(TYPE);
 
-        if (Publisher.class.getSimpleName().equals(type)) {
+        if (AuthenticatableType.PUBLISHER.toString().equals(type)) {
             return new Publisher();
-        } else if (User.class.getSimpleName().equals(type)) {
+        } else if (AuthenticatableType.USER.toString().equals(type)) {
             return new User();
         }
 

@@ -17,6 +17,7 @@
 package com.atypon.wayf.data.publisher;
 
 import com.atypon.wayf.data.authentication.Authenticatable;
+import com.atypon.wayf.data.authentication.AuthenticatableType;
 import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
 import com.atypon.wayf.data.user.User;
@@ -76,6 +77,12 @@ public class Publisher implements Authenticatable {
 
     public void setSalt(String salt) {
         this.salt = salt;
+    }
+
+    @Override
+    @JsonIgnore
+    public AuthenticatableType getAuthenticatableType() {
+        return AuthenticatableType.PUBLISHER;
     }
 
     public AuthorizationToken getToken() {

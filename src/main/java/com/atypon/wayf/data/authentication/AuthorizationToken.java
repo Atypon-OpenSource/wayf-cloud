@@ -69,6 +69,6 @@ public class AuthorizationToken implements ExpiringAuthenticationCredentials {
 
     @JsonIgnore
     public String getAuthenticatableKey() {
-        return authenticatable.getClass().getSimpleName() + "-" + authenticatable.getId();
+        return authenticatable.getAuthenticatableType() + "-" + authenticatable.getId();
     }
 }

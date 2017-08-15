@@ -16,7 +16,7 @@
 
 package com.atypon.wayf.data.authentication;
 
-public interface Authenticatable {
-    Object getId();
-    AuthenticatableType getAuthenticatableType();
+public enum AuthenticatableType {
+    PUBLISHER,
+    USER;
 }

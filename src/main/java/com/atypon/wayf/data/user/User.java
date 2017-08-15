@@ -17,7 +17,9 @@
 package com.atypon.wayf.data.user;
 
 import com.atypon.wayf.data.authentication.Authenticatable;
+import com.atypon.wayf.data.authentication.AuthenticatableType;
 import com.atypon.wayf.data.authentication.PasswordCredentials;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Date;
@@ -40,12 +42,19 @@ public class User implements Authenticatable {
     public User() {
     }
 
+    @Override
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    @Override
+    @JsonIgnore
+    public AuthenticatableType getAuthenticatableType() {
+        return AuthenticatableType.USER;
     }
 
     public String getFirstName() {

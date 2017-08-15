@@ -17,6 +17,7 @@
 package com.atypon.wayf.database;
 
 
+import com.atypon.wayf.data.authentication.AuthenticatableType;
 import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.publisher.Publisher;
@@ -55,7 +56,7 @@ public class BeanMapperTest {
     @Test
     public void testBeanFactory() {
         Map<String, Object> row = new HashMap<>();
-        row.put("authenticatable.type", Publisher.class.getSimpleName().toString());
+        row.put("authenticatable.type", AuthenticatableType.PUBLISHER.toString());
         row.put("authenticatable.id", 123L);
 
         AuthenticatedEntity authenticated = beanMapper.map(row, AuthenticatedEntity.class);
