@@ -17,8 +17,8 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.PasswordCredentialsDao;
-import com.atypon.wayf.data.AuthenticatedEntity;
-import com.atypon.wayf.data.PasswordCredentials;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.PasswordCredentials;
 import com.atypon.wayf.database.DbExecutor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

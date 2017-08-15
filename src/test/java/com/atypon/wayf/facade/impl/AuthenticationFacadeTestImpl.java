@@ -19,8 +19,8 @@ package com.atypon.wayf.facade.impl;
 import com.atypon.wayf.cache.LoadingCache;
 import com.atypon.wayf.dao.AuthenticationCredentialsDao;
 import com.atypon.wayf.dao.impl.AuthorizationTokenDaoDbImpl;
-import com.atypon.wayf.data.AuthenticatedEntity;
-import com.atypon.wayf.data.AuthenticationCredentials;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthenticationCredentials;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 

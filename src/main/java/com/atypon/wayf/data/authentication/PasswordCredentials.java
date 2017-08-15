@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.data.authentication;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.atypon.wayf.data.authentication.Authenticatable;
+import com.atypon.wayf.data.authentication.AuthenticationCredentials;
 
-import java.util.Date;
+public class PasswordCredentials implements AuthenticationCredentials {
+    public static String PASSWORD_CREDETIALS_TYPE = "PASSWORD";
 
-public class AuthorizationToken implements ExpiringAuthenticationCredentials {
-
-    @JsonIgnore
     private Authenticatable authenticatable;
-    private AuthorizationTokenType type;
-    private String value;
-    private Date validUntil;
+    private String salt;
+    private String emailAddress;
+    private String password;
 
-    public AuthorizationToken() {
+    public PasswordCredentials() {
     }
 
     @Override
@@ -41,34 +40,27 @@ public class AuthorizationToken implements ExpiringAuthenticationCredentials {
         this.authenticatable = authenticatable;
     }
 
-    public AuthorizationTokenType getType() {
-        return type;
+    public String getSalt() {
+        return salt;
     }
 
-    public void setType(AuthorizationTokenType type) {
-        this.type = type;
+    public void setSalt(String salt) {
+        this.salt = salt;
     }
 
-    public String getValue() {
-        return value;
+    public String getEmailAddress() {
+        return emailAddress;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
     }
 
-    @Override
-    public Date getValidUntil() {
-        return validUntil;
+    public String getPassword() {
+        return password;
     }
 
-    @Override
-    public void setValidUntil(Date validUntil) {
-        this.validUntil = validUntil;
-    }
-
-    @JsonIgnore
-    public String getAuthenticatableKey() {
-        return authenticatable.getClass().getSimpleName() + "-" + authenticatable.getId();
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

@@ -16,8 +16,8 @@
 
 package com.atypon.wayf.integration.publisher;
 
-import com.atypon.wayf.data.AuthorizationToken;
-import com.atypon.wayf.data.AuthorizationTokenType;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.integration.HttpTestUtil;
 import com.atypon.wayf.request.ResponseWriter;

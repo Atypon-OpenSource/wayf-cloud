@@ -18,7 +18,7 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.Cache;
 import com.atypon.wayf.dao.PublisherDao;
-import com.atypon.wayf.data.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.data.publisher.PublisherStatus;
@@ -34,9 +34,6 @@ import com.google.inject.name.Named;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import org.apache.http.HttpStatus;
-import org.mindrot.jbcrypt.BCrypt;
-
-import java.security.SecureRandom;
 
 import static com.atypon.wayf.reactivex.FacadePolicies.singleOrException;
 

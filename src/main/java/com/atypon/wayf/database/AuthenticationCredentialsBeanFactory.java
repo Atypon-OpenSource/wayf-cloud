@@ -16,9 +16,10 @@
 
 package com.atypon.wayf.database;
 
-import com.atypon.wayf.data.*;
-import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.data.user.User;
+import com.atypon.wayf.data.authentication.AuthenticationCredentials;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
+import com.atypon.wayf.data.authentication.PasswordCredentials;
 import com.google.inject.Singleton;
 
 import java.util.Map;

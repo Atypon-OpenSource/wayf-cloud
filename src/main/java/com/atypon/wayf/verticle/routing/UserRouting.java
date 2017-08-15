@@ -16,7 +16,7 @@
 
 package com.atypon.wayf.verticle.routing;
 
-import com.atypon.wayf.data.PasswordCredentials;
+import com.atypon.wayf.data.authentication.PasswordCredentials;
 import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.data.user.UserQuery;
 import com.atypon.wayf.facade.PasswordCredentialsFacade;

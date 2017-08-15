@@ -16,7 +16,7 @@
 
 package com.atypon.wayf.dao;
 
-import com.atypon.wayf.data.PasswordCredentials;
+import com.atypon.wayf.data.authentication.PasswordCredentials;
 import io.reactivex.Maybe;
 
 public interface PasswordCredentialsDao extends AuthenticationCredentialsDao<PasswordCredentials> {

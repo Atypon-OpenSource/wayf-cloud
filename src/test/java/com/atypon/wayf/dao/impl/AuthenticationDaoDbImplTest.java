@@ -16,9 +16,9 @@
 
 package com.atypon.wayf.dao.impl;
 
-import com.atypon.wayf.data.AuthenticatedEntity;
-import com.atypon.wayf.data.AuthorizationToken;
-import com.atypon.wayf.data.AuthorizationTokenType;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;

@@ -16,15 +16,13 @@
 
 package com.atypon.wayf.facade.impl;
 
-import com.atypon.wayf.cache.Cache;
 import com.atypon.wayf.dao.UserDao;
-import com.atypon.wayf.data.PasswordCredentials;
+import com.atypon.wayf.data.authentication.PasswordCredentials;
 import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.data.user.UserQuery;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.reactivex.FacadePolicies;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;

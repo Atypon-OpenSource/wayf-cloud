@@ -18,6 +18,9 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.impl.ErrorLoggerDaoMockImpl;
 import com.atypon.wayf.data.*;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.ErrorLoggerFacade;
 import com.atypon.wayf.integration.AuthorizationTokenTestUtil;
@@ -27,7 +30,6 @@ import com.google.common.collect.Lists;
 import io.vertx.core.http.HttpMethod;
 import org.junit.Before;
 import org.junit.Test;
-import org.omg.CORBA._PolicyStub;
 
 import java.net.InetAddress;
 import java.util.HashMap;

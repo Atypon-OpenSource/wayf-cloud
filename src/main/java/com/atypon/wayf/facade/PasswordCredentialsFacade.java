@@ -16,8 +16,8 @@
 
 package com.atypon.wayf.facade;
 
-import com.atypon.wayf.data.AuthorizationToken;
-import com.atypon.wayf.data.PasswordCredentials;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.PasswordCredentials;
 import io.reactivex.Single;
 
 public interface PasswordCredentialsFacade {

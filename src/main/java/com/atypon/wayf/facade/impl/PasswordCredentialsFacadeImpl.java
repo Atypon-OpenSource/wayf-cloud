@@ -18,9 +18,8 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.Cache;
 import com.atypon.wayf.dao.PasswordCredentialsDao;
-import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.AuthorizationToken;
-import com.atypon.wayf.data.PasswordCredentials;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.PasswordCredentials;
 import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.facade.AuthenticationFacade;
 import com.atypon.wayf.facade.AuthorizationTokenFacade;

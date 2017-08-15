@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.data.authentication;
 
-public interface Authenticatable {
-    Object getId();
+import com.atypon.wayf.data.authentication.AuthenticationCredentials;
+
+import java.util.Date;
+
+public interface ExpiringAuthenticationCredentials extends AuthenticationCredentials {
+
+    Date getValidUntil();
+    void setValidUntil(Date validUntil);
 }

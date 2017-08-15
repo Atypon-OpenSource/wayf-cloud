@@ -17,8 +17,8 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.ErrorLoggerDao;
-import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.Authenticatable;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.ErrorLogEntry;
 import com.atypon.wayf.facade.ErrorLoggerFacade;
 import com.atypon.wayf.request.RequestContext;

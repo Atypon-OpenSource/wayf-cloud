@@ -16,8 +16,8 @@
 
 package com.atypon.wayf.verticle.routing;
 
-import com.atypon.wayf.data.AuthenticatedEntity;
-import com.atypon.wayf.data.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.data.InflationPolicyParser;
 import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.device.Device;

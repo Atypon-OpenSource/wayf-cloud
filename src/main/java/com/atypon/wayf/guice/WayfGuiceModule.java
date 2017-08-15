@@ -23,6 +23,7 @@ import com.atypon.wayf.cache.impl.LoadingCacheRedisImpl;
 import com.atypon.wayf.dao.*;
 import com.atypon.wayf.dao.impl.*;
 import com.atypon.wayf.data.*;
+import com.atypon.wayf.data.authentication.*;
 import com.atypon.wayf.data.identity.IdentityProviderType;
 import com.atypon.wayf.data.identity.OauthEntity;
 import com.atypon.wayf.data.identity.OpenAthensEntity;

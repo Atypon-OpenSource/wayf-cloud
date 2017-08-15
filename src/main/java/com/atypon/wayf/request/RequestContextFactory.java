@@ -16,8 +16,7 @@
 
 package com.atypon.wayf.request;
 
-import com.atypon.wayf.data.AuthorizationToken;
-import com.atypon.wayf.facade.AuthenticationFacade;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.facade.AuthorizationTokenFacade;
 import com.google.inject.Inject;
 import io.vertx.ext.web.Cookie;

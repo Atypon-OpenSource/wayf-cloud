@@ -19,6 +19,7 @@ package com.atypon.wayf.facade.impl;
 import com.atypon.wayf.cache.LoadingCache;
 import com.atypon.wayf.dao.AuthenticationCredentialsDao;
 import com.atypon.wayf.data.*;
+import com.atypon.wayf.data.authentication.*;
 import com.atypon.wayf.facade.AuthenticationFacade;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -44,6 +45,14 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
     @Override
     public AuthenticatedEntity authenticate(AuthenticationCredentials credentials) {
         LOG.debug("Authenticating credentials");
+
+        if (PasswordCredentials.class.isAssignableFrom(credentials.getClass())) {
+            credentials = new CachedPasswordCredentials((PasswordCredentials) credentials);
+        } else if (AuthorizationToken.class.isAssignableFrom(credentials.getClass())) {
+            credentials = new CachedAuthorizationToken((AuthorizationToken) credentials);
+        } else {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Invalid authentication credentials");
+        }
 
         try {
             AuthenticatedEntity authenticatedEntity = persistence.get(credentials).blockingGet();

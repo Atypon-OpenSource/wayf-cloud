@@ -17,6 +17,8 @@
 package com.atypon.wayf.cache.impl;
 
 import com.atypon.wayf.cache.CacheLoader;
+import com.atypon.wayf.cache.Deserializer;
+import com.atypon.wayf.cache.Serializer;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;

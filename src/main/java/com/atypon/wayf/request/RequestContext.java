@@ -16,8 +16,8 @@
 
 package com.atypon.wayf.request;
 
-import com.atypon.wayf.data.AuthenticatedEntity;
-import com.atypon.wayf.data.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

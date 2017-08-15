@@ -17,6 +17,7 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.data.*;
+import com.atypon.wayf.data.authentication.*;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.user.User;
 import org.apache.http.HttpStatus;

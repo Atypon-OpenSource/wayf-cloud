@@ -16,12 +16,11 @@
 
 package com.atypon.wayf.integration;
 
-import com.atypon.wayf.data.AuthorizationToken;
-import com.atypon.wayf.data.AuthorizationTokenType;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
 import io.restassured.http.ContentType;
-import io.restassured.http.Cookie;
 import io.restassured.http.Method;
 
 import java.util.HashMap;

@@ -16,9 +16,8 @@
 
 package com.atypon.wayf.facade;
 
-import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.AuthenticatedEntity;
-import com.atypon.wayf.data.AuthorizationToken;
+import com.atypon.wayf.data.authentication.Authenticatable;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
 import io.reactivex.Single;
 
 public interface AuthorizationTokenFacade {

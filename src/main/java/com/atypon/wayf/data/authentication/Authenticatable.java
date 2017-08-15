@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.data.authentication;
 
-public interface AuthenticationCredentials {
-    void setAuthenticatable(Authenticatable authenticatable);
-    Authenticatable getAuthenticatable();
+public interface Authenticatable {
+    Object getId();
 }

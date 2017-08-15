@@ -17,7 +17,7 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.DeviceDao;
-import com.atypon.wayf.data.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceInfo;

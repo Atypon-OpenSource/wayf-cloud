@@ -16,9 +16,9 @@
 
 package com.atypon.wayf.verticle;
 
-import com.atypon.wayf.data.AuthenticatedEntity;
-import com.atypon.wayf.data.AuthorizationToken;
-import com.atypon.wayf.data.AuthorizationTokenType;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.facade.AuthenticationFacade;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.atypon.wayf.request.RequestContextFactory;

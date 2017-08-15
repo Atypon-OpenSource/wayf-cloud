@@ -16,13 +16,10 @@
 
 package com.atypon.wayf.integration;
 
-import com.atypon.wayf.data.AuthorizationToken;
-import com.atypon.wayf.data.AuthorizationTokenType;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-
-import javax.xml.bind.DatatypeConverter;
-import java.util.Date;
 
 public class AuthorizationTokenTestUtil {
     private static final String SECRET_JWT_KEY = "shh_its_a_secret";

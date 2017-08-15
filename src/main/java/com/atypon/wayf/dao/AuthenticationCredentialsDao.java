@@ -16,9 +16,8 @@
 
 package com.atypon.wayf.dao;
 
-import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.AuthenticatedEntity;
-import com.atypon.wayf.data.AuthenticationCredentials;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthenticationCredentials;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 

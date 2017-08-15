@@ -16,8 +16,8 @@
 
 package com.atypon.wayf.data.user;
 
-import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.PasswordCredentials;
+import com.atypon.wayf.data.authentication.Authenticatable;
+import com.atypon.wayf.data.authentication.PasswordCredentials;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Date;

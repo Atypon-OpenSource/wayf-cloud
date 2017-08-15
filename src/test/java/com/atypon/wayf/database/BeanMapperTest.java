@@ -17,7 +17,7 @@
 package com.atypon.wayf.database;
 
 
-import com.atypon.wayf.data.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.guice.WayfGuiceModule;

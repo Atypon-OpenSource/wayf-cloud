@@ -18,9 +18,9 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.CacheLoader;
 import com.atypon.wayf.cache.LoadingCache;
-import com.atypon.wayf.data.AuthenticatedEntity;
-import com.atypon.wayf.data.AuthorizationToken;
-import com.atypon.wayf.data.AuthorizationTokenType;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.AuthorizationTokenFacade;
