@@ -110,7 +110,7 @@ public class UserFacadeImpl implements UserFacade {
     public Completable delete(Long id) {
         User adminUser = AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
 
-        if (adminUser.getId() == id) {
+        if (adminUser.getId().equals(id)) {
             throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "User may not delete themselves");
         }
 

@@ -16,6 +16,8 @@
 
 package com.atypon.wayf.integration;
 
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
@@ -127,6 +129,32 @@ public class UserTestUtil {
 
         String[] responseGeneratedFields = {
                 "$.message",
+                "$.stacktrace"
+        };
+
+        assertJsonEquals(expectedResponse, response, responseGeneratedFields);
+
+    }
+
+    public void deleteSelf(String token, Long userId, String expectedResponse) {
+        AuthorizationToken authToken = new AuthorizationToken();
+        authToken.setType(AuthorizationTokenType.API_TOKEN);
+        authToken.setValue(token);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(authToken));
+
+        String response =
+                request
+                        .contentType(ContentType.JSON)
+                        .method(Method.DELETE)
+                        .headers(headers)
+                        .url("/1/user/" + userId)
+                        .execute()
+                        .statusCode(400)
+                        .extract().response().asString();
+
+        String[] responseGeneratedFields = {
                 "$.stacktrace"
         };
 

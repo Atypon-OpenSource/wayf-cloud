@@ -36,6 +36,7 @@ public class AdminUserIntegrationTest extends BaseHttpTest {
     private static final String CREATE_PUBLISHER_BAD_TOKEN_RESPONSE_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "publisher/create_publisher_bad_token_response.json");
 
     private static final String LOGIN_REQUEST_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "user/admin_user_login.json");
+    private static final String DELETE_SELF_RESPONSE_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "user/delete_self_response.json");
 
     public AdminUserIntegrationTest() {
         super(HTTP_LOGGING_FILE);
@@ -99,5 +100,15 @@ public class AdminUserIntegrationTest extends BaseHttpTest {
         userTestUtil.readDeletedUser(userId, "{}");
 
         publisherTestUtil.testCreatePublisherBadToken(adminToken, CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_BAD_TOKEN_RESPONSE_JSON);
+    }
+
+    @Test
+    public void testDeleteSelf() {
+        String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
+        Long userId = userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);
+
+        String adminToken = userTestUtil.testLogin(credentialsEmail, LOGIN_REQUEST_JSON);
+
+        userTestUtil.deleteSelf(adminToken, userId, DELETE_SELF_RESPONSE_JSON);
     }
 }
