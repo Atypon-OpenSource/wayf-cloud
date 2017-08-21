@@ -67,6 +67,7 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
                 emailPasswordCredentialsDao.getCredentialsForAuthenticatable(authenticatable));
     }
 
+    @Override
     public Completable revokeCredentials(Authenticatable authenticatable) {
         return getCredentialsForAuthenticatable(authenticatable)
                 .flatMapCompletable((credentials) -> revokeCredentials(credentials));

@@ -26,6 +26,7 @@ import com.atypon.wayf.reactivex.DaoPolicies;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -49,6 +50,10 @@ public class UserDaoDbImpl implements UserDao {
     private String filterSql;
 
     @Inject
+    @Named("user.dao.db.delete")
+    private String deleteSql;
+
+    @Inject
     private DbExecutor dbExecutor;
 
     public UserDaoDbImpl() {
@@ -69,10 +74,10 @@ public class UserDaoDbImpl implements UserDao {
     public Maybe<User> read(Long id) {
         LOG.debug("Reading user with id [{}] in db", id);
 
-        PublisherRegistration publisherRegistration = new PublisherRegistration();
-        publisherRegistration.setId(id);
+        User user = new User();
+        user.setId(id);
 
-        return Single.just(publisherRegistration)
+        return Single.just(user)
                 .compose((single) -> DaoPolicies.applySingle(single))
                 .flatMapMaybe((_user) -> dbExecutor.executeSelectFirst(readSql, _user, User.class));
     }
@@ -84,5 +89,15 @@ public class UserDaoDbImpl implements UserDao {
         return Observable.just(filter)
                 .compose((observable) -> DaoPolicies.applyObservable(observable))
                 .flatMap((_filter) -> dbExecutor.executeSelect(filterSql, _filter, User.class));
+    }
+
+    @Override
+    public Completable delete(Long id) {
+        LOG.debug("Deleting user with id [{}]", id);
+
+        User user = new User();
+        user.setId(id);
+
+        return dbExecutor.executeUpdate(deleteSql, user).toCompletable();
     }
 }

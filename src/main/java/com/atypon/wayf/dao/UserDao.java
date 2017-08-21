@@ -18,6 +18,7 @@ package com.atypon.wayf.dao;
 
 import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.data.user.UserQuery;
+import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -25,5 +26,6 @@ import io.reactivex.Single;
 public interface UserDao {
     Single<User> create(User user);
     Maybe<User> read(Long id);
+    Completable delete(Long id);
     Observable<User> filter(UserQuery query);
 }

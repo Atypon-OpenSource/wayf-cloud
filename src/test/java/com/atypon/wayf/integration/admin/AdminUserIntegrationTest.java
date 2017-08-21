@@ -86,6 +86,18 @@ public class AdminUserIntegrationTest extends BaseHttpTest {
 
         publisherTestUtil.testCreatePublisher(secondToken, CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_RESPONSE_JSON);
         publisherTestUtil.testCreatePublisherBadToken(firstToken, CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_BAD_TOKEN_RESPONSE_JSON);
+    }
 
+    @Test
+    public void testDelete() {
+        String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
+        Long userId = userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);
+
+        String adminToken = userTestUtil.testLogin(credentialsEmail, LOGIN_REQUEST_JSON);
+
+        userTestUtil.deleteUser(userId);
+        userTestUtil.readDeletedUser(userId, "{}");
+
+        publisherTestUtil.testCreatePublisherBadToken(adminToken, CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_BAD_TOKEN_RESPONSE_JSON);
     }
 }

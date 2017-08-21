@@ -23,9 +23,7 @@ import io.restassured.http.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.atypon.wayf.integration.HttpTestUtil.assertJsonEquals;
-import static com.atypon.wayf.integration.HttpTestUtil.assertNotNullPaths;
-import static com.atypon.wayf.integration.HttpTestUtil.setField;
+import static com.atypon.wayf.integration.HttpTestUtil.*;
 import static org.junit.Assert.assertNotNull;
 
 public class UserTestUtil {
@@ -55,7 +53,7 @@ public class UserTestUtil {
         assertJsonEquals(expectedResponseJson, errorResponse, errorResponseGeneratedFields);
     }
 
-    public void testCreateUser(String credentialsEmail, String requestJson, String expectedResponseJson) {
+    public Long testCreateUser(String credentialsEmail, String requestJson, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
 
@@ -72,6 +70,8 @@ public class UserTestUtil {
                         .statusCode(200)
                         .extract().response().asString();
 
+        Long userId = Long.valueOf(readField(createResponse, "$.id"));
+
         String[] createResponseGeneratedFields = {
                 "$.id",
                 "$.createdDate"
@@ -79,6 +79,8 @@ public class UserTestUtil {
 
         assertNotNullPaths(createResponse, createResponseGeneratedFields);
         assertJsonEquals(expectedResponseJson, createResponse, createResponseGeneratedFields);
+
+        return userId;
     }
 
     public String testLogin(String credentialsEmail, String requestJson) {
@@ -97,5 +99,38 @@ public class UserTestUtil {
         assertNotNull(adminToken);
 
         return adminToken;
+    }
+
+    public void deleteUser(Long userId) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
+
+        request
+                .contentType(ContentType.JSON)
+                .method(Method.DELETE)
+                .headers(headers)
+                .url("/1/user/" + userId)
+                .execute()
+                .statusCode(200).extract().response();
+
+    }
+
+    public void readDeletedUser(Long userId, String expectedResponse) {
+        String response =
+                request
+                        .contentType(ContentType.JSON)
+                        .method(Method.GET)
+                        .url("/1/user/" + userId)
+                        .execute()
+                        .statusCode(404)
+                        .extract().response().asString();
+
+        String[] responseGeneratedFields = {
+                "$.message",
+                "$.stacktrace"
+        };
+
+        assertJsonEquals(expectedResponse, response, responseGeneratedFields);
+
     }
 }

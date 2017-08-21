@@ -17,12 +17,17 @@
 package com.atypon.wayf.facade;
 
 import com.atypon.wayf.dao.AuthenticationCredentialsDao;
+import com.atypon.wayf.data.authentication.Authenticatable;
 import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.authentication.AuthenticationCredentials;
+import io.reactivex.Completable;
 import io.reactivex.Single;
 
 public interface AuthenticationFacade {
     <C extends AuthenticationCredentials> Single<C> createCredentials(C credentials);
+
+    Completable revokeCredentials(Authenticatable authenticatable);
+
     AuthenticatedEntity authenticate(AuthenticationCredentials token);
 
     boolean isStillValid(AuthenticatedEntity authenticatable);

@@ -17,6 +17,8 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.UserDao;
+import com.atypon.wayf.data.ServiceException;
+import com.atypon.wayf.data.authentication.Authenticatable;
 import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.authentication.PasswordCredentials;
 import com.atypon.wayf.data.user.User;
@@ -25,6 +27,7 @@ import com.atypon.wayf.facade.*;
 import com.atypon.wayf.reactivex.FacadePolicies;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
+import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -101,5 +104,21 @@ public class UserFacadeImpl implements UserFacade {
         }
 
         return Maybe.empty();
+    }
+
+    @Override
+    public Completable delete(Long id) {
+        User adminUser = AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
+
+        if (adminUser.getId() == id) {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "User may not delete themselves");
+        }
+
+        User userToDelete = new User();
+        userToDelete.setId(id);
+
+        return dao.delete(id)
+                .compose((completable) -> FacadePolicies.applyCompletable(completable))
+                .andThen(authenticationFacade.revokeCredentials(userToDelete));
     }
 }

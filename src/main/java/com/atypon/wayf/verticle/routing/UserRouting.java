@@ -46,9 +46,10 @@ public class UserRouting implements RoutingProvider {
     private static final String USER_ID_PARAM_NAME = "id";
     private static final String USER_ID_PARAM = ":" + USER_ID_PARAM_NAME;
 
-    private static final String READ_USER = USER_BASE_URL + "/" +  USER_ID_PARAM;
+    private static final String READ_USER = USER_BASE_URL + "/" + USER_ID_PARAM;
     private static final String FILTER_USERS = USER_BASE_URL + "s";
     private static final String LOGIN_URL = USER_BASE_URL + "/credentials";
+    private static final String DELETE_USER = USER_BASE_URL + "/" + USER_ID_PARAM;
 
     private static final String USER_ID_ARG_DESCRIPTION = "User ID";
 
@@ -74,6 +75,8 @@ public class UserRouting implements RoutingProvider {
         router.get(READ_USER).handler(handlerFactory.single((rc) -> readUser(rc)));
         router.get(FILTER_USERS).handler(handlerFactory.observable((rc) -> filterUsers(rc)));
         router.patch(LOGIN_URL).handler(handlerFactory.completable((rc) -> login(rc)));
+        router.delete(DELETE_USER).handler(handlerFactory.completable((rc) -> deleteUser(rc)));
+
     }
 
     public Single<User> createUser(RoutingContext routingContext) {
@@ -104,14 +107,20 @@ public class UserRouting implements RoutingProvider {
         return RequestReader.readRequestBody(routingContext, PasswordCredentials.class)
                 .flatMap((credentials) -> passwordCredentialsFacade.generateSessionToken(credentials))
                 .flatMapCompletable((authorizationToken) ->
-                    Completable.fromAction(() -> {
-                        Cookie cookie = new CookieImpl("adminToken", authorizationToken.getValue())
-                            .setDomain(wayfDomain)
-                            .setMaxAge(Math.toIntExact(authorizationToken.getValidUntil().getTime() / 1000L))
-                            .setPath("/");
+                        Completable.fromAction(() -> {
+                            Cookie cookie = new CookieImpl("adminToken", authorizationToken.getValue())
+                                    .setDomain(wayfDomain)
+                                    .setMaxAge(Math.toIntExact(authorizationToken.getValidUntil().getTime() / 1000L))
+                                    .setPath("/");
 
-                        routingContext.addCookie(cookie);
-                    })
+                            routingContext.addCookie(cookie);
+                        })
                 );
+    }
+
+    public Completable deleteUser(RoutingContext routingContext) {
+        Long userId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, USER_ID_PARAM_NAME, USER_ID_ARG_DESCRIPTION));
+
+        return userFacade.delete(userId);
     }
 }
