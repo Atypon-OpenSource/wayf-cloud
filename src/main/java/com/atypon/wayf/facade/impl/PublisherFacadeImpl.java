@@ -44,9 +44,6 @@ public class PublisherFacadeImpl implements PublisherFacade {
     private PublisherDao publisherDao;
 
     @Inject
-    private AuthorizationTokenFacade authorizationTokenFacade;
-
-    @Inject
     private ClientJsFacade clientJsFacade;
 
     @Inject
@@ -57,6 +54,12 @@ public class PublisherFacadeImpl implements PublisherFacade {
 
     @Inject
     private CryptFacade cryptFacade;
+
+    @Inject
+    private AuthenticationFacade authenticationFacade;
+
+    @Inject
+    private AuthorizationTokenFactory authorizationTokenFactory;
 
     @Inject
     @Named("publisherSaltCache")
@@ -85,7 +88,8 @@ public class PublisherFacadeImpl implements PublisherFacade {
 
                         Single.zip(
                                 // Create an authorization token for the newly created publisher
-                                authorizationTokenFacade.generateToken(createdPublisher).compose(single -> FacadePolicies.applySingle(single)),
+                                authenticationFacade.createCredentials(authorizationTokenFactory.generateToken(createdPublisher))
+                                        .compose(single -> FacadePolicies.applySingle(single)),
 
                                 // Generate the publisher specific Javascript widget
                                 clientJsFacade.generateWidgetForPublisher(createdPublisher).compose(single -> FacadePolicies.applySingle(single)),

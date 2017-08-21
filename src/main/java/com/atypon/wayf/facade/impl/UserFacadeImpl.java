@@ -42,8 +42,7 @@ public class UserFacadeImpl implements UserFacade {
     private CryptFacade cryptFacade;
 
     @Inject
-    private PasswordCredentialsFacade credentialsFacade;
-
+    private AuthenticationFacade authenticationFacade;
 
     @Override
     public Single<User> create(User user) {
@@ -98,7 +97,7 @@ public class UserFacadeImpl implements UserFacade {
             credentials.setPassword(encryptedPassword);
             credentials.setAuthenticatable(user);
 
-            return credentialsFacade.createCredentials(credentials).toMaybe();
+            return authenticationFacade.createCredentials(credentials).toMaybe();
         }
 
         return Maybe.empty();

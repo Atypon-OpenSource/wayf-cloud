@@ -16,14 +16,8 @@
 
 package com.atypon.wayf.facade;
 
-import com.atypon.wayf.data.authentication.Authenticatable;
 import com.atypon.wayf.data.authentication.AuthorizationToken;
 import io.reactivex.Single;
 
 public interface AuthorizationTokenFacade {
-    Single<AuthorizationToken> generateToken(Authenticatable authenticatable);
-
-    Single<AuthorizationToken> generateExpiringToken(Authenticatable authenticatable, Long ttlMillis);
-
-    AuthorizationToken parseAuthorizationToken(String authenticationValue);
 }

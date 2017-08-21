@@ -21,6 +21,5 @@ import com.atypon.wayf.data.authentication.PasswordCredentials;
 import io.reactivex.Single;
 
 public interface PasswordCredentialsFacade {
-    Single<PasswordCredentials> createCredentials(PasswordCredentials credentials);
     Single<AuthorizationToken> generateSessionToken(PasswordCredentials credentials);
 }

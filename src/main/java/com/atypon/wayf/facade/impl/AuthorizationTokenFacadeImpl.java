@@ -16,74 +16,22 @@
 
 package com.atypon.wayf.facade.impl;
 
-import com.atypon.wayf.cache.LoadingCache;
 import com.atypon.wayf.dao.AuthenticationCredentialsDao;
-import com.atypon.wayf.data.*;
-import com.atypon.wayf.data.authentication.*;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.facade.AuthorizationTokenFacade;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import io.reactivex.Single;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Date;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Singleton
 public class AuthorizationTokenFacadeImpl implements AuthorizationTokenFacade {
     private static final Logger LOG = LoggerFactory.getLogger(AuthorizationTokenFacadeImpl.class);
 
-    private static final String TOKEN_REGEX = "(Token|Bearer) (.*)";
-    private static final Pattern TOKEN_MATCHER = Pattern.compile(TOKEN_REGEX, Pattern.DOTALL);
-
-    @Inject
-    @Named("authenticatableCache")
-    protected LoadingCache<AuthenticationCredentials, AuthenticatedEntity> cache;
-
     @Inject
     protected AuthenticationCredentialsDao<AuthorizationToken> dbDao;
 
-    @Override
-    public Single<AuthorizationToken> generateToken(Authenticatable authenticatable) {
-        return generateExpiringToken(authenticatable, null);
-    }
 
-    @Override
-    public Single<AuthorizationToken> generateExpiringToken(Authenticatable authenticatable, Long ttlMillis) {
-        AuthorizationToken token = new AuthorizationToken();
-        token.setType(AuthorizationTokenType.API_TOKEN);
-        token.setValue(UUID.randomUUID().toString());
-
-        if (ttlMillis != null) {
-            token.setValidUntil(new Date(System.currentTimeMillis() + ttlMillis));
-        }
-
-        token.setAuthenticatable(authenticatable);
-
-        return dbDao.create(token).toSingleDefault(token);
-    }
-
-    @Override
-    public AuthorizationToken parseAuthorizationToken(String authorizationToken) {
-        Matcher matcher = TOKEN_MATCHER.matcher(authorizationToken);
-
-        if (matcher.find()) {
-            String prefix = matcher.group(1);
-            String value = matcher.group(2);
-
-            AuthorizationToken token = new AuthorizationToken();
-            token.setType(AuthorizationTokenType.fromPrefix(prefix));
-            token.setValue(value);
-
-            return token;
-        }
-
-        throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Could not parse Authentication header");
-    }
 
 }

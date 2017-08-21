@@ -17,6 +17,7 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.AuthenticationCredentialsDao;
+import com.atypon.wayf.data.authentication.Authenticatable;
 import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.database.DbExecutor;
@@ -25,6 +26,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +43,14 @@ public class AuthorizationTokenDaoDbImpl implements AuthenticationCredentialsDao
     private String authenticateSql;
 
     @Inject
+    @Named("authorization-token.dao.db.tokens-for-authenticatable")
+    private String tokensForAuthenticatableSql;
+
+    @Inject
+    @Named("authorization-token.dao.db.delete")
+    private String deleteSql;
+
+    @Inject
     private DbExecutor dbExecutor;
 
     @Override
@@ -55,5 +65,19 @@ public class AuthorizationTokenDaoDbImpl implements AuthenticationCredentialsDao
         LOG.debug("Authenticating");
 
         return dbExecutor.executeSelectFirst(authenticateSql, token, AuthenticatedEntity.class);
+    }
+
+    @Override
+    public Observable<AuthorizationToken> getCredentialsForAuthenticatable(Authenticatable authenticatable) {
+        LOG.debug("Selecting tokens for [{}-{}]", authenticatable.getAuthenticatableType(), authenticatable.getId());
+
+        return dbExecutor.executeSelect(tokensForAuthenticatableSql, authenticatable, AuthorizationToken.class);
+    }
+
+    @Override
+    public Completable delete(AuthorizationToken credentials) {
+        LOG.debug("Deleting credentials for [{}-{}]", credentials.getType(), credentials.getValue());
+
+        return dbExecutor.executeUpdate(deleteSql, credentials).toCompletable();
     }
 }

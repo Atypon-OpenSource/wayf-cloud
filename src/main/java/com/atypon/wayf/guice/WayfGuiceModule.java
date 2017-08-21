@@ -17,7 +17,9 @@
 package com.atypon.wayf.guice;
 
 import com.atypon.wayf.cache.Cache;
+import com.atypon.wayf.cache.CacheManager;
 import com.atypon.wayf.cache.LoadingCache;
+import com.atypon.wayf.cache.impl.CacheManagerImpl;
 import com.atypon.wayf.cache.impl.LoadingCacheGuavaImpl;
 import com.atypon.wayf.cache.impl.LoadingCacheRedisImpl;
 import com.atypon.wayf.dao.*;
@@ -96,15 +98,17 @@ public class WayfGuiceModule extends AbstractModule {
 
             bind(CryptFacade.class).to(CryptFacadeBcryptImpl.class);
 
+            bind(CacheManager.class).to(CacheManagerImpl.class);
+
             bind(PasswordCredentialsFacade.class).to(PasswordCredentialsFacadeImpl.class);
             bind(PasswordCredentialsDao.class).to(PasswordCredentialsDaoDbImpl.class);
 
             bind(AuthorizationTokenFacade.class).to(AuthorizationTokenFacadeImpl.class);
+            bind(AuthorizationTokenFactory.class).to(AuthorizationTokenFactoryImpl.class);
             bind(new TypeLiteral<AuthenticationCredentialsDao<PasswordCredentials>>(){}).to(PasswordCredentialsDaoDbImpl.class);
             bind(new TypeLiteral<AuthenticationCredentialsDao<AuthorizationToken>>(){}).to(AuthorizationTokenDaoDbImpl.class);
 
             bind(AuthenticationFacade.class).to(AuthenticationFacadeImpl.class);
-
             bind(DeviceAccessFacade.class).to(DeviceAccessFacadeImpl.class);
             bind(DeviceAccessDao.class).to(DeviceAccessDaoDbImpl.class);
 
@@ -238,6 +242,12 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides
+    @Named("authenticationCacheGroup")
+    public String getAuthenticationCacheGroupName() {
+        return "AUTHENTICATION_CACHE_GROUP";
+    }
+
+    @Provides
     @Named("authenticatableRedisDao")
     public RedisDao<AuthenticationCredentials, AuthenticatedEntity> getAuthenticatableRedisDao(JedisPool jedisPool) {
         return new RedisDaoImpl<AuthenticationCredentials, AuthenticatedEntity>()
@@ -248,26 +258,25 @@ public class WayfGuiceModule extends AbstractModule {
                 .setSerializer((authenticatable) -> AuthenticatableRedisSerializer.serialize((AuthenticatedEntity) authenticatable));
     }
 
-
-    @Provides
-    @Named("authenticatableRedisCache")
-    public LoadingCache<AuthenticationCredentials, AuthenticatedEntity> getLoadingCache(
-            @Named("authenticatableRedisDao") RedisDao<AuthenticationCredentials, AuthenticatedEntity> authenticatableRedisDao,
-            AuthenticationFacade authenticationFacade) {
-        LoadingCacheRedisImpl<AuthenticationCredentials, AuthenticatedEntity> l2Cache = new LoadingCacheRedisImpl<>();
-        l2Cache.setRedisDao(authenticatableRedisDao);
-        l2Cache.setCacheLoader((key) -> authenticationFacade.determineDao(key).authenticate(key));
-
-        return l2Cache;
-    }
-
     @Provides
     @Named("authenticatableCache")
     public LoadingCache<AuthenticationCredentials, AuthenticatedEntity> getLoadingCache(
-            @Named("authenticatableRedisCache") LoadingCache<AuthenticationCredentials, AuthenticatedEntity> authenticatableRedisCache) {
+            @Named("authenticatableRedisDao") RedisDao<AuthenticationCredentials, AuthenticatedEntity> authenticatableRedisDao,
+            AuthenticationFacade authenticationFacade,
+            CacheManager cacheManager,
+            @Named("authenticationCacheGroup") String authenticationCacheGroupName
+    ) {
+        LoadingCacheRedisImpl<AuthenticationCredentials, AuthenticatedEntity> l2Cache = new LoadingCacheRedisImpl<>();
+        l2Cache.setRedisDao(authenticatableRedisDao);
+        l2Cache.setCacheLoader((key) -> authenticationFacade.determineDao(key).authenticate(key));
+        l2Cache.setName("AUTHENTICATION_REDIS_CACHE");
+
         LoadingCacheGuavaImpl<AuthenticationCredentials, AuthenticatedEntity> l1Cache = new LoadingCacheGuavaImpl<>();
         l1Cache.setGuavaCache(CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build());
-        l1Cache.setCacheLoader((key) -> authenticatableRedisCache.get(key));
+        l1Cache.setCacheLoader((key) -> l2Cache.get(key));
+        l2Cache.setName("AUTHENTICATION_GUAVA_CACHE");
+
+        cacheManager.registerCacheGroup(authenticationCacheGroupName, l1Cache, l2Cache);
 
         return l1Cache;
     }

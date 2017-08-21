@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 public class LoadingCacheRedisImpl<K, V> implements com.atypon.wayf.cache.LoadingCache<K, V> {
     private static final Logger LOG  = LoggerFactory.getLogger(LoadingCacheRedisImpl.class);
 
+    private String name;
     private RedisDao<K, V> redisDao;
     private CacheLoader<K, V> cacheLoader;
 
@@ -44,6 +45,15 @@ public class LoadingCacheRedisImpl<K, V> implements com.atypon.wayf.cache.Loadin
     @Override
     public CacheLoader<K, V> getCacheLoader() {
         return cacheLoader;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     @Override

@@ -16,13 +16,18 @@
 
 package com.atypon.wayf.facade.impl;
 
+import com.atypon.wayf.cache.CacheManager;
 import com.atypon.wayf.cache.LoadingCache;
 import com.atypon.wayf.dao.AuthenticationCredentialsDao;
+import com.atypon.wayf.dao.RedisDao;
 import com.atypon.wayf.data.*;
 import com.atypon.wayf.data.authentication.*;
 import com.atypon.wayf.facade.AuthenticationFacade;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +38,10 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
     private static final Logger LOG = LoggerFactory.getLogger(AuthenticationFacadeImpl.class);
 
     @Inject
+    @Named("authenticationCacheGroup")
+    protected String authenticationCacheGroupName;
+
+    @Inject
     @Named("authenticatableCache")
     protected LoadingCache<AuthenticationCredentials, AuthenticatedEntity> persistence;
 
@@ -41,6 +50,35 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
 
     @Inject
     protected AuthenticationCredentialsDao<PasswordCredentials> emailPasswordCredentialsDao;
+
+    @Inject
+    private CacheManager cacheManager;
+
+    public <C extends AuthenticationCredentials> Single<C> createCredentials(C credentials) {
+        return determineDao(credentials).create(credentials)
+                .andThen(getCredentialsForAuthenticatable(credentials.getAuthenticatable()))
+                .flatMapCompletable((existingCredentials) -> Completable.fromAction(() -> cacheManager.evictForGroup(authenticationCacheGroupName, credentials)))
+                .andThen(Single.just(credentials));
+    }
+
+    private Observable<AuthenticationCredentials> getCredentialsForAuthenticatable(Authenticatable authenticatable) {
+        return Observable.concat(
+                authorizationTokenDao.getCredentialsForAuthenticatable(authenticatable),
+                emailPasswordCredentialsDao.getCredentialsForAuthenticatable(authenticatable));
+    }
+
+    public Completable revokeCredentials(Authenticatable authenticatable) {
+        return getCredentialsForAuthenticatable(authenticatable)
+                .flatMapCompletable((credentials) -> revokeCredentials(credentials));
+    }
+
+
+    public Completable revokeCredentials(AuthenticationCredentials credentials) {
+        return Completable.mergeArray(
+                determineDao(credentials).delete(credentials),
+                Completable.fromAction(() -> cacheManager.evictForGroup(authenticationCacheGroupName, credentials))
+        );
+    }
 
     @Override
     public AuthenticatedEntity authenticate(AuthenticationCredentials credentials) {

@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.cache;
 
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
-import io.reactivex.Observable;
-
-public interface RedisDao<K, V> {
-    String getPrefix();
-    int getTtlSeconds();
-
-    Maybe<V> get(K key);
-    Completable set(K key, V value);
-
-    Completable remove(K... keys);
-    Completable removeAll();
+public interface CacheManager {
+    <K, V> void registerCacheGroup(String groupName, Cache<K, V>... caches);
+    void evictAllForGroup(String groupName);
+    void evictAllForCache(String groupName, String cacheName);
+    void evictForGroup(String groupName, Object key);
 }

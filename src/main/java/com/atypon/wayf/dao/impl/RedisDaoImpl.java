@@ -22,6 +22,7 @@ import com.atypon.wayf.cache.Deserializer;
 import com.atypon.wayf.cache.Serializer;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

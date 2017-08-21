@@ -18,13 +18,10 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.Cache;
 import com.atypon.wayf.dao.PasswordCredentialsDao;
+import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.data.authentication.PasswordCredentials;
-import com.atypon.wayf.data.ServiceException;
-import com.atypon.wayf.facade.AuthenticationFacade;
-import com.atypon.wayf.facade.AuthorizationTokenFacade;
-import com.atypon.wayf.facade.CryptFacade;
-import com.atypon.wayf.facade.PasswordCredentialsFacade;
+import com.atypon.wayf.facade.*;
 import com.atypon.wayf.reactivex.FacadePolicies;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -50,12 +47,7 @@ public class PasswordCredentialsFacadeImpl implements PasswordCredentialsFacade 
     private AuthenticationFacade authenticationFacade;
 
     @Inject
-    private AuthorizationTokenFacade authorizationTokenFacade;
-
-    @Override
-    public Single<PasswordCredentials> createCredentials(PasswordCredentials credentials) {
-        return credentialsDao.create(credentials).toSingleDefault(credentials);
-    }
+    private AuthorizationTokenFactory authorizationTokenFactory;
 
     private Single<String> getSaltForEmail(String email) {
         return FacadePolicies.singleOrException(credentialsDao.getSaltForEmail(email), HttpStatus.SC_BAD_REQUEST, "Invalid email address");
@@ -74,6 +66,9 @@ public class PasswordCredentialsFacadeImpl implements PasswordCredentialsFacade 
                         return authenticationFacade.authenticate(credentials);
                     }
                 )
-                .flatMap((authenticatedEntity) -> authorizationTokenFacade.generateExpiringToken(authenticatedEntity.getAuthenticatable(), ADMIN_TOKEN_LIFESPAN));
+                .flatMap((authenticatedEntity) -> {
+                        AuthorizationToken token = authorizationTokenFactory.generateExpiringToken(authenticatedEntity.getAuthenticatable(), ADMIN_TOKEN_LIFESPAN);
+                        return authenticationFacade.createCredentials(token);
+                });
     }
 }

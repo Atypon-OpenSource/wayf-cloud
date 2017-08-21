@@ -16,13 +16,17 @@
 
 package com.atypon.wayf.dao;
 
+import com.atypon.wayf.data.authentication.Authenticatable;
 import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.authentication.AuthenticationCredentials;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 
 public interface AuthenticationCredentialsDao<T extends AuthenticationCredentials> {
 
     Completable create(T credentials);
     Maybe<AuthenticatedEntity> authenticate(T credentials);
+    Observable<T> getCredentialsForAuthenticatable(Authenticatable authenticatable);
+    Completable delete(T credentials);
 }

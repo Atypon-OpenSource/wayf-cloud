@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.facade;
 
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
-import io.reactivex.Observable;
+import com.atypon.wayf.data.authentication.Authenticatable;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
 
-public interface RedisDao<K, V> {
-    String getPrefix();
-    int getTtlSeconds();
-
-    Maybe<V> get(K key);
-    Completable set(K key, V value);
-
-    Completable remove(K... keys);
-    Completable removeAll();
+public interface AuthorizationTokenFactory {
+    AuthorizationToken generateToken(Authenticatable authenticatable);
+    AuthorizationToken generateExpiringToken(Authenticatable authenticatable, Long ttlMillis);
+    AuthorizationToken fromAuthorizationHeader(String authenticationValue);
 }

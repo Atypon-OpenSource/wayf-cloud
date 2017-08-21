@@ -17,14 +17,14 @@
 package com.atypon.wayf.dao.impl;
 
 import com.atypon.wayf.dao.PasswordCredentialsDao;
-import com.atypon.wayf.data.authentication.AuthenticatedEntity;
-import com.atypon.wayf.data.authentication.PasswordCredentials;
+import com.atypon.wayf.data.authentication.*;
 import com.atypon.wayf.database.DbExecutor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +43,15 @@ public class PasswordCredentialsDaoDbImpl implements PasswordCredentialsDao {
     @Inject
     @Named("password-credentials.dao.db.get-salt")
     private String getSaltSql;
+
+
+    @Inject
+    @Named("password-credentials.dao.db.tokens-for-authenticatable")
+    private String passwordsForAuthenticatableSql;
+
+    @Inject
+    @Named("password-credentials.dao.db.delete")
+    private String deleteSql;
 
     @Inject
     private DbExecutor dbExecutor;
@@ -70,5 +79,19 @@ public class PasswordCredentialsDaoDbImpl implements PasswordCredentialsDao {
 
         return dbExecutor.executeSelectFirst(getSaltSql, credentials, PasswordCredentials.class)
                 .map((_credentials) -> _credentials.getSalt());
+    }
+
+    @Override
+    public Observable<PasswordCredentials> getCredentialsForAuthenticatable(Authenticatable authenticatable) {
+        LOG.debug("Selecting passwords for [{}-{}]", authenticatable.getAuthenticatableType(), authenticatable.getId());
+
+        return dbExecutor.executeSelect(passwordsForAuthenticatableSql, authenticatable, PasswordCredentials.class);
+    }
+
+    @Override
+    public Completable delete(PasswordCredentials credentials) {
+        LOG.debug("Deleting credentials for [{}-{}]", credentials.getEmailAddress());
+
+        return dbExecutor.executeUpdate(deleteSql, credentials).toCompletable();
     }
 }

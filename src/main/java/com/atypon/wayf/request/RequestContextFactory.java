@@ -18,6 +18,7 @@ package com.atypon.wayf.request;
 
 import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.facade.AuthorizationTokenFacade;
+import com.atypon.wayf.facade.AuthorizationTokenFactory;
 import com.google.inject.Inject;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
@@ -33,7 +34,7 @@ public class RequestContextFactory {
     private static final Logger LOG = LoggerFactory.getLogger(RequestContextFactory.class);
 
     @Inject
-    private AuthorizationTokenFacade authenticationTokenFacade;
+    private AuthorizationTokenFactory authorizationTokenFactory;
 
     public RequestContext fromRoutingContext(RoutingContext routingContext) {
         RequestContext requestContext = new RequestContext();
@@ -77,7 +78,7 @@ public class RequestContextFactory {
         String authorizationHeaderValue = RequestReader.getHeaderValue(routingContext, RequestReader.AUTHORIZATION_HEADER);
         if (authorizationHeaderValue != null && !authorizationHeaderValue.isEmpty()) {
             try {
-                AuthorizationToken token = authenticationTokenFacade.parseAuthorizationToken(authorizationHeaderValue);
+                AuthorizationToken token = authorizationTokenFactory.fromAuthorizationHeader(authorizationHeaderValue);
                 requestContext.setAuthorizationToken(token);
             } catch (Exception e) {
                 LOG.error("Could not parse authorization header", e);
