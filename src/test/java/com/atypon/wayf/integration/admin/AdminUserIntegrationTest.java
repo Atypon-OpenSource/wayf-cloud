@@ -44,6 +44,10 @@ public class AdminUserIntegrationTest extends BaseHttpTest {
     private static final String LIST_ADMIN_USER_RESPONSE_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "user/list_admin_user_response.json");
     private static final String LIST_ADMIN_USER_NO_CRENDTIALS_RESPONSE_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "user/list_admin_user_no_credentials_response.json");
 
+    private static final String CURRENT_USER_RESPONSE_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "user/current_user_response.json");
+    private static final String CURRENT_USER_INVALID_TOKEN_RESPONSE_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "user/current_user_invalid_token_response.json");
+
+
     public AdminUserIntegrationTest() {
         super(HTTP_LOGGING_FILE);
     }
@@ -160,5 +164,25 @@ public class AdminUserIntegrationTest extends BaseHttpTest {
         String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
         Long userId = userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);
         userTestUtil.testListAdminUsersNoCredentials(userId, LIST_ADMIN_USER_NO_CRENDTIALS_RESPONSE_JSON);
+    }
+
+    @Test
+    public void testGetMe() {
+        String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
+        userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);
+
+        String adminToken = userTestUtil.testLogin(credentialsEmail, LOGIN_REQUEST_JSON);
+        userTestUtil.testMe(adminToken, CURRENT_USER_RESPONSE_JSON);
+    }
+
+    @Test
+    public void testGetMeInvalidToken() {
+        String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
+        userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);
+
+        String adminToken1 = userTestUtil.testLogin(credentialsEmail, LOGIN_REQUEST_JSON);
+        String adminToken2 = userTestUtil.testLogin(credentialsEmail, LOGIN_REQUEST_JSON);
+
+        userTestUtil.testMeInvalidToken(adminToken1, CURRENT_USER_INVALID_TOKEN_RESPONSE_JSON);
     }
 }

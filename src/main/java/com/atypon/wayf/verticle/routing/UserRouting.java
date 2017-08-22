@@ -16,11 +16,12 @@
 
 package com.atypon.wayf.verticle.routing;
 
+import com.atypon.wayf.data.ServiceException;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.data.authentication.PasswordCredentials;
 import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.data.user.UserQuery;
-import com.atypon.wayf.facade.PasswordCredentialsFacade;
-import com.atypon.wayf.facade.UserFacade;
+import com.atypon.wayf.facade.*;
 import com.atypon.wayf.request.RequestParamMapper;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
@@ -35,6 +36,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.impl.CookieImpl;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +53,7 @@ public class UserRouting implements RoutingProvider {
     private static final String LOGIN_URL = USER_BASE_URL + "/credentials";
     private static final String CHANGE_PASSWORD_URL = USER_BASE_URL + "/" + USER_ID_PARAM + "/credentials";
     private static final String DELETE_USER = USER_BASE_URL + "/" + USER_ID_PARAM;
+    private static final String ME_URL = "/1/me";
 
     private static final String USER_ID_ARG_DESCRIPTION = "User ID";
 
@@ -62,6 +65,12 @@ public class UserRouting implements RoutingProvider {
 
     @Inject
     private WayfRequestHandlerFactory handlerFactory;
+
+    @Inject
+    private AuthorizationTokenFactory authorizationTokenFactory;
+
+    @Inject
+    private AuthenticationFacade authenticationFacade;
 
     @Inject
     @Named("wayf.domain")
@@ -76,6 +85,7 @@ public class UserRouting implements RoutingProvider {
         router.get(READ_USER).handler(handlerFactory.single((rc) -> readUser(rc)));
         router.get(FILTER_USERS).handler(handlerFactory.observable((rc) -> filterUsers(rc)));
         router.post(LOGIN_URL).handler(handlerFactory.completable((rc) -> login(rc)));
+        router.get(ME_URL).handler(handlerFactory.single((rc) -> getCurrentUser(rc)));
         router.delete(DELETE_USER).handler(handlerFactory.completable((rc) -> deleteUser(rc)));
         router.put(CHANGE_PASSWORD_URL).handler(handlerFactory.completable((rc) -> resetPassword(rc)));
     }
@@ -130,6 +140,18 @@ public class UserRouting implements RoutingProvider {
 
         return RequestReader.readRequestBody(routingContext, PasswordCredentials.class)
                 .flatMapCompletable((passwordCredentials) -> passwordCredentialsFacade.resetPassword(userId, passwordCredentials));
+    }
 
+    public Single<User> getCurrentUser(RoutingContext routingContext) {
+        String authorizationHeader = RequestReader.getHeaderValue(routingContext, RequestReader.AUTHORIZATION_HEADER);
+
+        if (authorizationHeader == null) {
+            throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "No authorization token provided");
+        }
+
+        AuthorizationToken token = authorizationTokenFactory.fromAuthorizationHeader(authorizationHeader);
+
+        return Single.just((User) authenticationFacade.authenticate(token).getAuthenticatable())
+                .flatMap((user) -> userFacade.read(user.getId()));
     }
 }

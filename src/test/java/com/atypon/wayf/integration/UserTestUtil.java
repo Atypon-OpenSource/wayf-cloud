@@ -243,4 +243,58 @@ public class UserTestUtil {
         assertJsonEquals(expectedResponse, response, responseGeneratedFields);
     }
 
+    public void testMe(String token, String expectedResponse) {
+        AuthorizationToken authToken = new AuthorizationToken();
+        authToken.setType(AuthorizationTokenType.API_TOKEN);
+        authToken.setValue(token);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(authToken));
+
+        String response =
+                requestFactory
+                        .request()
+                        .contentType(ContentType.JSON)
+                        .method(Method.GET)
+                        .headers(headers)
+                        .url("/1/me")
+                        .execute()
+                        .statusCode(200)
+                        .extract().response().asString();
+
+        String[] responseGeneratedFields = {
+                "$.id",
+                "$.createdDate"
+        };
+
+        assertNotNullPaths(response, responseGeneratedFields);
+        assertJsonEquals(expectedResponse, response, responseGeneratedFields);
+    }
+
+    public void testMeInvalidToken(String token, String expectedResponse) {
+        AuthorizationToken authToken = new AuthorizationToken();
+        authToken.setType(AuthorizationTokenType.API_TOKEN);
+        authToken.setValue(token);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(authToken));
+
+        String response =
+                requestFactory
+                        .request()
+                        .contentType(ContentType.JSON)
+                        .method(Method.GET)
+                        .headers(headers)
+                        .url("/1/me")
+                        .execute()
+                        .statusCode(401)
+                        .extract().response().asString();
+
+        String[] responseGeneratedFields = {
+                "$.stacktrace"
+        };
+
+        assertNotNullPaths(response, responseGeneratedFields);
+        assertJsonEquals(expectedResponse, response, responseGeneratedFields);
+    }
 }
