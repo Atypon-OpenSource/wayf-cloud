@@ -37,6 +37,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.impl.CookieImpl;
 import org.apache.http.HttpStatus;
+import org.apache.http.auth.AUTH;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +85,7 @@ public class UserRouting implements RoutingProvider {
         router.post(USER_BASE_URL).handler(handlerFactory.single((rc) -> createUser(rc)));
         router.get(READ_USER).handler(handlerFactory.single((rc) -> readUser(rc)));
         router.get(FILTER_USERS).handler(handlerFactory.observable((rc) -> filterUsers(rc)));
-        router.post(LOGIN_URL).handler(handlerFactory.completable((rc) -> login(rc)));
+        router.post(LOGIN_URL).handler(handlerFactory.single((rc) -> login(rc)));
         router.get(ME_URL).handler(handlerFactory.single((rc) -> getCurrentUser(rc)));
         router.delete(DELETE_USER).handler(handlerFactory.completable((rc) -> deleteUser(rc)));
         router.put(CHANGE_PASSWORD_URL).handler(handlerFactory.completable((rc) -> resetPassword(rc)));
@@ -114,18 +115,20 @@ public class UserRouting implements RoutingProvider {
         return userFacade.filter(userQuery);
     }
 
-    public Completable login(RoutingContext routingContext) {
+    public Single<AuthorizationToken> login(RoutingContext routingContext) {
         return RequestReader.readRequestBody(routingContext, PasswordCredentials.class)
                 .flatMap((credentials) -> passwordCredentialsFacade.generateSessionToken(credentials))
-                .flatMapCompletable((authorizationToken) ->
-                        Completable.fromAction(() -> {
+                .map((authorizationToken) ->
+                        {
                             Cookie cookie = new CookieImpl("adminToken", authorizationToken.getValue())
                                     .setDomain(wayfDomain)
                                     .setMaxAge(Math.toIntExact(authorizationToken.getValidUntil().getTime() / 1000L))
                                     .setPath("/");
 
                             routingContext.addCookie(cookie);
-                        })
+
+                            return authorizationToken;
+                        }
                 );
     }
 
