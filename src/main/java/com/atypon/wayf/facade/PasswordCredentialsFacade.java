@@ -18,8 +18,13 @@ package com.atypon.wayf.facade;
 
 import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.data.authentication.PasswordCredentials;
+import com.atypon.wayf.data.user.User;
+import io.reactivex.Completable;
 import io.reactivex.Single;
 
 public interface PasswordCredentialsFacade {
+    Completable resetPassword(Long userId, PasswordCredentials credentials);
     Single<AuthorizationToken> generateSessionToken(PasswordCredentials credentials);
+
+    Single<PasswordCredentials> generateEmailCredentials(User user);
 }

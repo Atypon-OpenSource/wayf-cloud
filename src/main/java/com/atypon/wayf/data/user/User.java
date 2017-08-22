@@ -34,7 +34,7 @@ public class User implements Authenticatable {
     private String phoneNumber;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private PasswordCredentials passwordCredentials;
+    private PasswordCredentials credentials;
 
     private Date createdDate;
     private Date modifiedDate;
@@ -89,12 +89,12 @@ public class User implements Authenticatable {
         this.phoneNumber = phoneNumber;
     }
 
-    public PasswordCredentials getPasswordCredentials() {
-        return passwordCredentials;
+    public PasswordCredentials getCredentials() {
+        return credentials;
     }
 
-    public void setPasswordCredentials(PasswordCredentials passwordCredentials) {
-        this.passwordCredentials = passwordCredentials;
+    public void setCredentials(PasswordCredentials credentials) {
+        this.credentials = credentials;
     }
 
     public Date getCreatedDate() {

@@ -18,7 +18,6 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.UserDao;
 import com.atypon.wayf.data.ServiceException;
-import com.atypon.wayf.data.authentication.Authenticatable;
 import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.authentication.PasswordCredentials;
 import com.atypon.wayf.data.user.User;
@@ -47,6 +46,9 @@ public class UserFacadeImpl implements UserFacade {
     @Inject
     private AuthenticationFacade authenticationFacade;
 
+    @Inject
+    private PasswordCredentialsFacade passwordCredentialsFacade;
+
     @Override
     public Single<User> create(User user) {
         LOG.debug("Creating user [{}]", user);
@@ -54,7 +56,7 @@ public class UserFacadeImpl implements UserFacade {
         return dao.create(user)
                 .compose((single) -> FacadePolicies.applySingle(single))
                 .map((createdUser) -> {
-                        createdUser.setPasswordCredentials(user.getPasswordCredentials());
+                        createdUser.setCredentials(user.getCredentials());
                         return createdUser;
                     }
                 )
@@ -87,25 +89,6 @@ public class UserFacadeImpl implements UserFacade {
                 .compose((observable) -> FacadePolicies.applyObservable(observable));
     }
 
-    private Maybe<PasswordCredentials> generateEmailCredentials(User user) {
-        if (user.getPasswordCredentials() != null) {
-            AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
-
-            PasswordCredentials credentials = user.getPasswordCredentials();
-
-            String salt = cryptFacade.generateSalt();
-            String encryptedPassword = cryptFacade.encrypt(salt, credentials.getPassword());
-
-            credentials.setSalt(salt);
-            credentials.setPassword(encryptedPassword);
-            credentials.setAuthenticatable(user);
-
-            return authenticationFacade.createCredentials(credentials).toMaybe();
-        }
-
-        return Maybe.empty();
-    }
-
     @Override
     public Completable delete(Long id) {
         User adminUser = AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
@@ -120,5 +103,14 @@ public class UserFacadeImpl implements UserFacade {
         return dao.delete(id)
                 .compose((completable) -> FacadePolicies.applyCompletable(completable))
                 .andThen(authenticationFacade.revokeCredentials(userToDelete));
+    }
+
+
+    private Maybe<PasswordCredentials> generateEmailCredentials(User user) {
+        if (user.getCredentials() != null) {
+            return passwordCredentialsFacade.generateEmailCredentials(user).toMaybe();
+        }
+
+        return Maybe.empty();
     }
 }

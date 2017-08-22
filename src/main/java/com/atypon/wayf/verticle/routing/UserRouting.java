@@ -49,6 +49,7 @@ public class UserRouting implements RoutingProvider {
     private static final String READ_USER = USER_BASE_URL + "/" + USER_ID_PARAM;
     private static final String FILTER_USERS = USER_BASE_URL + "s";
     private static final String LOGIN_URL = USER_BASE_URL + "/credentials";
+    private static final String CHANGE_PASSWORD_URL = USER_BASE_URL + "/" + USER_ID_PARAM + "/credentials";
     private static final String DELETE_USER = USER_BASE_URL + "/" + USER_ID_PARAM;
 
     private static final String USER_ID_ARG_DESCRIPTION = "User ID";
@@ -74,9 +75,9 @@ public class UserRouting implements RoutingProvider {
         router.post(USER_BASE_URL).handler(handlerFactory.single((rc) -> createUser(rc)));
         router.get(READ_USER).handler(handlerFactory.single((rc) -> readUser(rc)));
         router.get(FILTER_USERS).handler(handlerFactory.observable((rc) -> filterUsers(rc)));
-        router.patch(LOGIN_URL).handler(handlerFactory.completable((rc) -> login(rc)));
+        router.post(LOGIN_URL).handler(handlerFactory.completable((rc) -> login(rc)));
         router.delete(DELETE_USER).handler(handlerFactory.completable((rc) -> deleteUser(rc)));
-
+        router.put(CHANGE_PASSWORD_URL).handler(handlerFactory.completable((rc) -> resetPassword(rc)));
     }
 
     public Single<User> createUser(RoutingContext routingContext) {
@@ -122,5 +123,13 @@ public class UserRouting implements RoutingProvider {
         Long userId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, USER_ID_PARAM_NAME, USER_ID_ARG_DESCRIPTION));
 
         return userFacade.delete(userId);
+    }
+
+    public Completable resetPassword(RoutingContext routingContext) {
+        Long userId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, USER_ID_PARAM_NAME, USER_ID_ARG_DESCRIPTION));
+
+        return RequestReader.readRequestBody(routingContext, PasswordCredentials.class)
+                .flatMapCompletable((passwordCredentials) -> passwordCredentialsFacade.resetPassword(userId, passwordCredentials));
+
     }
 }

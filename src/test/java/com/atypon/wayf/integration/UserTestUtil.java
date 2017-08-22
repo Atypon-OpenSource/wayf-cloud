@@ -36,7 +36,7 @@ public class UserTestUtil {
     }
 
     public void testCreateUserNoToken(String credentialsEmail, String requestJson, String expectedResponseJson) {
-        requestJson = setField(requestJson, "$.passwordCredentials.emailAddress", credentialsEmail);
+        requestJson = setField(requestJson, "$.credentials.emailAddress", credentialsEmail);
 
         String errorResponse =
                 requestFactory
@@ -60,7 +60,7 @@ public class UserTestUtil {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
 
-        requestJson = setField(requestJson, "$.passwordCredentials.emailAddress", credentialsEmail);
+        requestJson = setField(requestJson, "$.credentials.emailAddress", credentialsEmail);
 
         String createResponse =
                 requestFactory
@@ -94,7 +94,7 @@ public class UserTestUtil {
                 requestFactory
                         .request()
                         .contentType(ContentType.JSON)
-                        .method(Method.PATCH)
+                        .method(Method.POST)
                         .body(requestJson)
                         .url("/1/user/credentials")
                         .execute()
@@ -104,6 +104,21 @@ public class UserTestUtil {
         assertNotNull(adminToken);
 
         return adminToken;
+    }
+
+    public void resetLogin(Long userId, String requestJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
+
+        requestFactory
+                .request()
+                .headers(headers)
+                .contentType(ContentType.JSON)
+                .method(Method.PUT)
+                .body(requestJson)
+                .url("/1/user/" + userId + "/credentials")
+                .execute()
+                .statusCode(200);
     }
 
     public void deleteUser(Long userId) {
@@ -183,6 +198,5 @@ public class UserTestUtil {
         };
 
         assertJsonEquals(expectedResponse, response, responseGeneratedFields);
-
     }
 }

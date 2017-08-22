@@ -19,13 +19,18 @@ package com.atypon.wayf.facade.impl;
 import com.atypon.wayf.cache.Cache;
 import com.atypon.wayf.dao.PasswordCredentialsDao;
 import com.atypon.wayf.data.ServiceException;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.data.authentication.PasswordCredentials;
+import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.reactivex.FacadePolicies;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 import org.apache.http.HttpStatus;
 
@@ -54,6 +59,28 @@ public class PasswordCredentialsFacadeImpl implements PasswordCredentialsFacade 
     }
 
     @Override
+    public Completable resetPassword(Long userId, PasswordCredentials credentials) {
+        AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
+
+        User user = new User();
+        user.setId(userId);
+
+        return FacadePolicies.singleOrException(
+                    authenticationFacade.getCredentialsForAuthenticatable(user)
+                        .filter((userCredentials) -> PasswordCredentials.class.isAssignableFrom(userCredentials.getClass())),
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    "Could not determine user's login credentials")
+                .flatMap((passwordCredentials) -> {
+                        credentials.setEmailAddress(((PasswordCredentials)passwordCredentials).getEmailAddress()); // Copy over the email address
+                        user.setCredentials(credentials);
+
+                        return authenticationFacade.revokeCredentials(user) // Revoke all existing credentials
+                                .andThen(generateEmailCredentials(user)); // Create the new credentials
+
+                }).toCompletable();
+    }
+
+    @Override
     public Single<AuthorizationToken> generateSessionToken(PasswordCredentials credentials) {
         if (credentials.getEmailAddress() == null) {
             throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Email Address is required to login");
@@ -70,5 +97,21 @@ public class PasswordCredentialsFacadeImpl implements PasswordCredentialsFacade 
                         AuthorizationToken token = authorizationTokenFactory.generateExpiringToken(authenticatedEntity.getAuthenticatable(), ADMIN_TOKEN_LIFESPAN);
                         return authenticationFacade.createCredentials(token);
                 });
+    }
+
+    @Override
+    public Single<PasswordCredentials> generateEmailCredentials(User user) {
+        AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
+
+        PasswordCredentials credentials = user.getCredentials();
+
+        String salt = cryptFacade.generateSalt();
+        String encryptedPassword = cryptFacade.encrypt(salt, credentials.getPassword());
+
+        credentials.setSalt(salt);
+        credentials.setPassword(encryptedPassword);
+        credentials.setAuthenticatable(user);
+
+        return authenticationFacade.createCredentials(credentials);
     }
 }

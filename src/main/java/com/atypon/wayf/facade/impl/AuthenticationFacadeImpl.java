@@ -57,11 +57,12 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
     public <C extends AuthenticationCredentials> Single<C> createCredentials(C credentials) {
         return determineDao(credentials).create(credentials)
                 .andThen(getCredentialsForAuthenticatable(credentials.getAuthenticatable()))
-                .flatMapCompletable((existingCredentials) -> Completable.fromAction(() -> cacheManager.evictForGroup(authenticationCacheGroupName, credentials)))
+                .flatMapCompletable((existingCredentials) -> evictCredentials(credentials))
                 .andThen(Single.just(credentials));
     }
 
-    private Observable<AuthenticationCredentials> getCredentialsForAuthenticatable(Authenticatable authenticatable) {
+    @Override
+    public Observable<AuthenticationCredentials> getCredentialsForAuthenticatable(Authenticatable authenticatable) {
         return Observable.concat(
                 authorizationTokenDao.getCredentialsForAuthenticatable(authenticatable),
                 emailPasswordCredentialsDao.getCredentialsForAuthenticatable(authenticatable));
@@ -73,11 +74,14 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
                 .flatMapCompletable((credentials) -> revokeCredentials(credentials));
     }
 
+    private Completable evictCredentials(AuthenticationCredentials credentials) {
+        return Completable.fromAction(() -> cacheManager.evictForGroup(authenticationCacheGroupName, credentials));
+    }
 
     public Completable revokeCredentials(AuthenticationCredentials credentials) {
         return Completable.mergeArray(
                 determineDao(credentials).delete(credentials),
-                Completable.fromAction(() -> cacheManager.evictForGroup(authenticationCacheGroupName, credentials))
+                evictCredentials(credentials)
         );
     }
 
