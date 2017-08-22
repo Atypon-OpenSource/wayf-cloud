@@ -50,6 +50,10 @@ public class UserDaoDbImpl implements UserDao {
     private String filterSql;
 
     @Inject
+    @Named("user.dao.db.admin-filter")
+    private String adminFilterSql;
+
+    @Inject
     @Named("user.dao.db.delete")
     private String deleteSql;
 
@@ -89,6 +93,15 @@ public class UserDaoDbImpl implements UserDao {
         return Observable.just(filter)
                 .compose((observable) -> DaoPolicies.applyObservable(observable))
                 .flatMap((_filter) -> dbExecutor.executeSelect(filterSql, _filter, User.class));
+    }
+
+    @Override
+    public Observable<User> adminFilter(UserQuery filter) {
+        LOG.debug("Filtering users against [{}]", filter);
+
+        return Observable.just(filter)
+                .compose((observable) -> DaoPolicies.applyObservable(observable))
+                .flatMap((_filter) -> dbExecutor.executeSelect(adminFilterSql, _filter, User.class));
     }
 
     @Override

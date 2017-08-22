@@ -41,6 +41,9 @@ public class AdminUserIntegrationTest extends BaseHttpTest {
     private static final String RESET_LOGIN_REQUEST_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "credentials/reset_login_request.json");
     private static final String LOGIN_AFTER_RESET_REQUEST_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "credentials/login_after_reset_request.json");
 
+    private static final String LIST_ADMIN_USER_RESPONSE_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "user/list_admin_user_response.json");
+    private static final String LIST_ADMIN_USER_NO_CRENDTIALS_RESPONSE_JSON = getFileAsString(BASE_ADMIN_USER_FILE_PATH + "user/list_admin_user_no_credentials_response.json");
+
     public AdminUserIntegrationTest() {
         super(HTTP_LOGGING_FILE);
     }
@@ -136,5 +139,26 @@ public class AdminUserIntegrationTest extends BaseHttpTest {
 
         publisherTestUtil.testCreatePublisherBadToken(adminToken1, CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_BAD_TOKEN_RESPONSE_JSON);
         publisherTestUtil.testCreatePublisher(adminToken2, CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_RESPONSE_JSON);
+    }
+
+    @Test
+    public void testListAdminUser() {
+        String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
+        Long userId = userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);
+
+    }
+
+    @Test
+    public void testListAdminUserCredentials() {
+        String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
+        Long userId = userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);
+        userTestUtil.testListAdminUsers(userId, LIST_ADMIN_USER_RESPONSE_JSON);
+    }
+
+    @Test
+    public void testListAdminUserNoCredentials() {
+        String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
+        Long userId = userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);
+        userTestUtil.testListAdminUsersNoCredentials(userId, LIST_ADMIN_USER_NO_CRENDTIALS_RESPONSE_JSON);
     }
 }

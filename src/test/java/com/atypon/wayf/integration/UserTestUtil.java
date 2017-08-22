@@ -199,4 +199,48 @@ public class UserTestUtil {
 
         assertJsonEquals(expectedResponse, response, responseGeneratedFields);
     }
+
+    public void testListAdminUsers(Long userId, String expectedResponse) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
+
+        String response =
+                requestFactory
+                        .request()
+                        .contentType(ContentType.JSON)
+                        .method(Method.GET)
+                        .headers(headers)
+                        .url("/1/users?view=ADMIN&ids=" + userId)
+                        .execute()
+                        .statusCode(200)
+                        .extract().response().asString();
+
+        String[] responseGeneratedFields = {
+                "$[*].id",
+                "$[*].createdDate"
+        };
+
+        assertNotNullPaths(response, responseGeneratedFields);
+        assertJsonEquals(expectedResponse, response, responseGeneratedFields);
+    }
+
+    public void testListAdminUsersNoCredentials(Long userId, String expectedResponse) {
+        String response =
+                requestFactory
+                        .request()
+                        .contentType(ContentType.JSON)
+                        .method(Method.GET)
+                        .url("/1/users?view=ADMIN&ids=" + userId)
+                        .execute()
+                        .statusCode(401)
+                        .extract().response().asString();
+
+        String[] responseGeneratedFields = {
+                "$.stacktrace"
+        };
+
+        assertNotNullPaths(response, responseGeneratedFields);
+        assertJsonEquals(expectedResponse, response, responseGeneratedFields);
+    }
+
 }

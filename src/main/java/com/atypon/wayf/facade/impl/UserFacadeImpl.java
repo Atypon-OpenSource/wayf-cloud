@@ -41,9 +41,6 @@ public class UserFacadeImpl implements UserFacade {
     private UserDao dao;
 
     @Inject
-    private CryptFacade cryptFacade;
-
-    @Inject
     private AuthenticationFacade authenticationFacade;
 
     @Inject
@@ -85,8 +82,15 @@ public class UserFacadeImpl implements UserFacade {
     public Observable<User> filter(UserQuery query) {
         LOG.debug("Filtering users for [{}]", query);
 
-        return dao.filter(query)
-                .compose((observable) -> FacadePolicies.applyObservable(observable));
+        boolean isAdminView = UserQuery.ADMIN_VIEW.equals(query.getView());
+
+        if (isAdminView) {
+            AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
+        }
+
+        return isAdminView?
+                dao.adminFilter(query).compose((observable) -> FacadePolicies.applyObservable(observable)) :
+                dao.filter(query).compose((observable) -> FacadePolicies.applyObservable(observable));
     }
 
     @Override

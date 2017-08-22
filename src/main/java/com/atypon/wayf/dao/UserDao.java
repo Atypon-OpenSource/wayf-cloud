@@ -28,4 +28,6 @@ public interface UserDao {
     Maybe<User> read(Long id);
     Completable delete(Long id);
     Observable<User> filter(UserQuery query);
+    Observable<User> adminFilter(UserQuery query);
+
 }
