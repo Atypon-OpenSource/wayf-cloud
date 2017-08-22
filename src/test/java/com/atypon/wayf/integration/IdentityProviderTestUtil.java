@@ -17,7 +17,7 @@
 package com.atypon.wayf.integration;
 
 import com.atypon.wayf.data.authentication.AuthorizationToken;
-import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
+import com.atypon.wayf.verticle.routing.LoggingHttpRequestFactory;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 
@@ -32,15 +32,16 @@ import static org.junit.Assert.assertTrue;
 
 public class IdentityProviderTestUtil {
 
-    private LoggingHttpRequest request;
+    private LoggingHttpRequestFactory requestFactory;
 
-    public IdentityProviderTestUtil(LoggingHttpRequest request) {
-        this.request = request;
+    public IdentityProviderTestUtil(LoggingHttpRequestFactory requestFactory) {
+        this.requestFactory = requestFactory;
     }
 
     public void readIdpById(Long idpId, String expectedResponseJson) {
         String readIdpResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
                         .url("/1/identityProvider/" + idpId)
@@ -67,7 +68,8 @@ public class IdentityProviderTestUtil {
         idsBuilder.setLength(idsBuilder.length() - 1);
 
         String readIdpsResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
                         .url("/1/identityProviders?ids=" + idsBuilder.toString())
@@ -88,7 +90,8 @@ public class IdentityProviderTestUtil {
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
         String addIdpResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .headers(headers)
                         .body(idpBodyJson)
@@ -110,7 +113,8 @@ public class IdentityProviderTestUtil {
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
         String addIdpResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .headers(headers)
                         .body(idpBodyJson)
@@ -151,7 +155,8 @@ public class IdentityProviderTestUtil {
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
         String removeIdpResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .headers(headers)
                         .method(Method.DELETE)
@@ -172,7 +177,8 @@ public class IdentityProviderTestUtil {
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
         String removeIdpResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .headers(headers)
                         .method(Method.DELETE)
@@ -189,7 +195,8 @@ public class IdentityProviderTestUtil {
         headers.put("Cookie", "deviceId=" + globalId);
 
         String removeIdpResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .headers(headers)
                         .method(Method.DELETE)

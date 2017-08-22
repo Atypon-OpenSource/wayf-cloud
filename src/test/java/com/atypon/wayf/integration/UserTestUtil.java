@@ -18,7 +18,7 @@ package com.atypon.wayf.integration;
 
 import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.data.authentication.AuthorizationTokenType;
-import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
+import com.atypon.wayf.verticle.routing.LoggingHttpRequestFactory;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 
@@ -29,17 +29,18 @@ import static com.atypon.wayf.integration.HttpTestUtil.*;
 import static org.junit.Assert.assertNotNull;
 
 public class UserTestUtil {
-    private LoggingHttpRequest request;
+    private LoggingHttpRequestFactory requestFactory;
 
-    public UserTestUtil(LoggingHttpRequest request) {
-        this.request = request;
+    public UserTestUtil(LoggingHttpRequestFactory requestFactory) {
+        this.requestFactory = requestFactory;
     }
 
     public void testCreateUserNoToken(String credentialsEmail, String requestJson, String expectedResponseJson) {
         requestJson = setField(requestJson, "$.passwordCredentials.emailAddress", credentialsEmail);
 
         String errorResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.POST)
                         .body(requestJson)
@@ -62,7 +63,8 @@ public class UserTestUtil {
         requestJson = setField(requestJson, "$.passwordCredentials.emailAddress", credentialsEmail);
 
         String createResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.POST)
                         .headers(headers)
@@ -89,7 +91,8 @@ public class UserTestUtil {
         requestJson = setField(requestJson, "$.emailAddress", credentialsEmail);
 
         String adminToken =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.PATCH)
                         .body(requestJson)
@@ -107,7 +110,8 @@ public class UserTestUtil {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
 
-        request
+        requestFactory
+                .request()
                 .contentType(ContentType.JSON)
                 .method(Method.DELETE)
                 .headers(headers)
@@ -117,9 +121,28 @@ public class UserTestUtil {
 
     }
 
+    public void deleteUserNoCredentials(Long userId, String expectedResponse) {
+        String response =
+                requestFactory
+                        .request()
+                        .contentType(ContentType.JSON)
+                        .method(Method.DELETE)
+                        .url("/1/user/" + userId)
+                        .execute()
+                        .statusCode(401)
+                        .extract().response().asString();
+
+        String[] responseGeneratedFields = {
+                "$.stacktrace"
+        };
+
+        assertJsonEquals(expectedResponse, response, responseGeneratedFields);
+    }
+
     public void readDeletedUser(Long userId, String expectedResponse) {
         String response =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
                         .url("/1/user/" + userId)
@@ -145,7 +168,8 @@ public class UserTestUtil {
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(authToken));
 
         String response =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.DELETE)
                         .headers(headers)

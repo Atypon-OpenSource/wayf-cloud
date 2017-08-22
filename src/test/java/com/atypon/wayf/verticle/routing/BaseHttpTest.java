@@ -20,27 +20,15 @@ import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.integration.*;
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.WayfVerticle;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
-import com.jayway.jsonpath.Predicate;
-import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.response.ExtractableResponse;
-import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.hamcrest.core.IsNull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -49,9 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.ServerSocket;
 import java.text.DateFormat;
-import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
@@ -77,7 +63,7 @@ public abstract class BaseHttpTest {
     protected UserTestUtil userTestUtil;
 
     public BaseHttpTest(String httpLoggingFilename) {
-        LoggingHttpRequest request = new LoggingHttpRequest(httpLoggingFilename);
+        LoggingHttpRequestFactory request = new LoggingHttpRequestFactory(httpLoggingFilename);
 
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
 

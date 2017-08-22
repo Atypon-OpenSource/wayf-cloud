@@ -19,7 +19,7 @@ package com.atypon.wayf.integration;
 import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
+import com.atypon.wayf.verticle.routing.LoggingHttpRequestFactory;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 
@@ -31,15 +31,16 @@ import static com.atypon.wayf.integration.HttpTestUtil.*;
 
 public class PublisherTestUtil {
 
-    private LoggingHttpRequest request;
+    private LoggingHttpRequestFactory requestFactory;
 
-    public PublisherTestUtil(LoggingHttpRequest request) {
-        this.request = request;
+    public PublisherTestUtil(LoggingHttpRequestFactory requestFactory) {
+        this.requestFactory = requestFactory;
     }
 
     public void testReadPublisher(Long publisherId, String expectedResponseJson) {
         String readResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
                         .url("/1/publisher/" + publisherId)
@@ -69,7 +70,8 @@ public class PublisherTestUtil {
         idsBuilder.setLength(idsBuilder.length() - 1);
 
         String readResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
                         .url("/1/publishers?ids=" + idsBuilder.toString())
@@ -97,7 +99,8 @@ public class PublisherTestUtil {
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(adminAuthToken));
 
         String createResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .body(requestBody)
                         .headers(headers)
@@ -143,7 +146,8 @@ public class PublisherTestUtil {
         headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
 
         String createResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .headers(headers)
                         .body(requestBody)
@@ -186,7 +190,8 @@ public class PublisherTestUtil {
 
     public void testCreatePublisherNoToken(String requestBody, String response) {
         String errorResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .body(requestBody)
                         .method(Method.POST)
@@ -210,7 +215,8 @@ public class PublisherTestUtil {
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(adminAuthToken));
 
         String errorResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .body(requestBody)
                         .headers(headers)

@@ -16,7 +16,7 @@
 
 package com.atypon.wayf.integration;
 
-import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
+import com.atypon.wayf.verticle.routing.LoggingHttpRequestFactory;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 
@@ -25,15 +25,16 @@ import static org.junit.Assert.assertEquals;
 
 public class PublisherRegistrationTestUtil {
 
-    private LoggingHttpRequest request;
+    private LoggingHttpRequestFactory requestFactory;
 
-    public PublisherRegistrationTestUtil(LoggingHttpRequest request) {
-        this.request = request;
+    public PublisherRegistrationTestUtil(LoggingHttpRequestFactory requestFactory) {
+        this.requestFactory = requestFactory;
     }
 
     public Long testPublisherRegistration(String requestJson, String expectedResponseJson) {
         String createResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.POST)
                         .url("/1/publisherRegistration")
@@ -60,7 +61,8 @@ public class PublisherRegistrationTestUtil {
 
     public String readRegistration(Long id, String expectedResponseJson) {
         String readResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
                         .url("/1/publisherRegistration/" + id + "?fields=CONTACT")
@@ -85,7 +87,8 @@ public class PublisherRegistrationTestUtil {
 
     public void updateRegistrationStatus(boolean isApproved, Long id, String body, String expectedResponseJson) {
         String updateResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.PATCH)
                         .url("/1/publisherRegistration/" + id)
@@ -117,7 +120,8 @@ public class PublisherRegistrationTestUtil {
 
     public void findPendingRegistrations(Long id, String expectedResponseJson) {
         String findResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
                         .url("/1/publisherRegistrations?statuses=PENDING&fields=CONTACT&limit=1")
