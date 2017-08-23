@@ -97,4 +97,9 @@ public class CachedAuthorizationToken extends AuthorizationToken {
                 .append(getValue())
                 .toHashCode();
     }
+
+    @Override
+    public String toString() {
+        return getType() + "-" + getValue();
+    }
 }

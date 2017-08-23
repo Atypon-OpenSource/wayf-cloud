@@ -92,4 +92,9 @@ public class CachedPasswordCredentials extends PasswordCredentials {
                 .append(getEmailAddress())
                 .toHashCode();
     }
+
+    @Override
+    public String toString() {
+        return getEmailAddress() + "-" + getPassword();
+    }
 }

@@ -39,6 +39,7 @@ import com.atypon.wayf.facade.impl.*;
 import com.google.common.cache.CacheBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
@@ -140,6 +141,7 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides @Named("samlEntity")
+    @Singleton
     public IdentityProviderDao provideSamlEntityDao(DbExecutor dbExecutor) throws Exception {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
@@ -154,6 +156,7 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides @Named("openAthensEntity")
+    @Singleton
     public IdentityProviderDao provideOpenAthensEntityDao(DbExecutor dbExecutor) throws Exception {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
@@ -169,6 +172,7 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides @Named("oauthEntity")
+    @Singleton
     public IdentityProviderDao provideOauthEntityDao(DbExecutor dbExecutor) throws Exception {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
@@ -184,6 +188,7 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides @Named("identityProviderDaoMap")
+    @Singleton
     public Map<IdentityProviderType, IdentityProviderDao> provideIdentityProviderDaoMap(
             @Named("samlEntity") IdentityProviderDao samlDao,
             @Named("openAthensEntity") IdentityProviderDao openAthensDao,
@@ -196,6 +201,7 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides @Named("beanFactoryMap")
+    @Singleton
     public Map<Class<?>, BeanFactory<?>> provideBeanFactoryMap(AuthenticatableBeanFactory authenticatableBeanFactory,
                                                                AuthenticationCredentialsBeanFactory credentialsBeanFactory) {
         Map<Class<?>, BeanFactory<?>> beanFactoryMap = new HashMap<>();
@@ -207,11 +213,13 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides
+    @Singleton
     public JedisPool getJedisPool(@Named("redis.host") String redisHost, @Named("redis.port") int redisPort) {
         return new JedisPool(new JedisPoolConfig(), redisHost, redisPort);
     }
 
     @Provides
+    @Singleton
     public NamedParameterJdbcTemplate getJdbcTemplate(
             @Named("jdbc.driver") String driver,
             @Named("jdbc.username") String username,
@@ -237,18 +245,21 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("jwtSecret")
+    @Singleton
     public String getJwtSecret() {
         return "shh_its_a_secret";
     }
 
     @Provides
     @Named("authenticationCacheGroup")
+    @Singleton
     public String getAuthenticationCacheGroupName() {
         return "AUTHENTICATION_CACHE_GROUP";
     }
 
     @Provides
     @Named("authenticatableRedisDao")
+    @Singleton
     public RedisDao<AuthenticationCredentials, AuthenticatedEntity> getAuthenticatableRedisDao(JedisPool jedisPool) {
         return new RedisDaoImpl<AuthenticationCredentials, AuthenticatedEntity>()
                 .setPrefix("AUTHENTICABLE")
@@ -260,6 +271,7 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("authenticatableCache")
+    @Singleton
     public LoadingCache<AuthenticationCredentials, AuthenticatedEntity> getLoadingCache(
             @Named("authenticatableRedisDao") RedisDao<AuthenticationCredentials, AuthenticatedEntity> authenticatableRedisDao,
             AuthenticationFacade authenticationFacade,
@@ -283,6 +295,7 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("publisherSaltRedisDao")
+    @Singleton
     public RedisDao<Long, String> getPublisherSaltRedisDao(JedisPool jedisPool) {
         return new RedisDaoImpl<String, AuthenticatedEntity>()
                 .setPrefix("PUBLISHER_SALT")
@@ -294,6 +307,7 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("publisherSaltRedisCache")
+    @Singleton
     public LoadingCache<Long, String> getLoadingCache(
             @Named("publisherSaltRedisDao") RedisDao<Long, String> publisherSaltRedisDao,
             PublisherDao publisherDao) {
@@ -306,6 +320,7 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("publisherSaltCache")
+    @Singleton
     public Cache<Long, String> getPublisherSaltLoadingCache(
             @Named("publisherSaltRedisCache") LoadingCache<Long, String> publisherSaltRedisCache) {
         LoadingCacheGuavaImpl<Long, String> l1Cache = new LoadingCacheGuavaImpl<>();
@@ -328,6 +343,7 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("passwordSaltRedisCache")
+    @Singleton
     public LoadingCache<String, String> getAdminSaltLoadingCache(
             @Named("passwordSaltRedisDao") RedisDao<String, String> adminSaltRedisDao,
             PasswordCredentialsDao credentialsDao) {
@@ -340,6 +356,7 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("passwordSaltCache")
+    @Singleton
     public Cache<String, String> getAdminSaltLoadingCache(
             @Named("passwordSaltRedisCache") LoadingCache<String, String> adminSaltRedisCache) {
         LoadingCacheGuavaImpl<String, String> l1Cache = new LoadingCacheGuavaImpl<>();

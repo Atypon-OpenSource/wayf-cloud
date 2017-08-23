@@ -97,6 +97,10 @@ public class AdminUserIntegrationTest extends BaseHttpTest {
 
         publisherTestUtil.testCreatePublisher(secondToken, CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_RESPONSE_JSON);
         publisherTestUtil.testCreatePublisherBadToken(firstToken, CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_BAD_TOKEN_RESPONSE_JSON);
+
+        userTestUtil.testMe(secondToken, CURRENT_USER_RESPONSE_JSON);
+        userTestUtil.testMeInvalidToken(firstToken, CURRENT_USER_INVALID_TOKEN_RESPONSE_JSON);
+
     }
 
     @Test

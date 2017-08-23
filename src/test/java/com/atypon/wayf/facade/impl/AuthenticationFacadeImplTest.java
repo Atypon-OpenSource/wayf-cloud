@@ -18,18 +18,18 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.CacheLoader;
 import com.atypon.wayf.cache.LoadingCache;
-import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthenticationCredentials;
 import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.facade.AuthorizationTokenFactory;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.RequestContext;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import io.reactivex.Maybe;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -40,32 +40,34 @@ import java.util.UUID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-@Ignore
 public class AuthenticationFacadeImplTest {
 
-    private AuthenticationFacadeTestImpl facade;
-
     @Inject
-    private AuthorizationTokenFactory authorizationTokenFactory;
+    @Named("authenticatableCache")
+    protected LoadingCache<AuthenticationCredentials, AuthenticatedEntity> persistence;
 
     @Before
     public void setUp() {
-        facade = new AuthenticationFacadeTestImpl();
-        Guice.createInjector(new WayfGuiceModule()).injectMembers(facade);
         Guice.createInjector(new WayfGuiceModule()).injectMembers(this);
 
         WayfReactivexConfig.initializePlugins();
         RequestContextAccessor.set(new RequestContext());
     }
 
+    @Ignore
     @Test
     public void testAllCacheLayers() {
-        Publisher testPublisher = new Publisher();
+        /*Publisher testPublisher = new Publisher();
         testPublisher.setId(1122L);
 
-        // Test Create
-        AuthorizationToken token = facade.createCredentials(authorizationTokenFactory.generateToken(testPublisher)).blockingGet();
-        assertNotNull(token);
+        String tokenValue = UUID.randomUUID().toString();
+
+        AuthorizationToken authorizationToken = new AuthorizationToken();
+        authorizationToken.setType(AuthorizationTokenType.API_TOKEN);
+        authorizationToken.setValue(tokenValue);
+
+        authorizationToken.setAuthenticatable(testPublisher);
+        persistence.
 
 
         // Test Read
@@ -93,38 +95,6 @@ public class AuthenticationFacadeImplTest {
         AuthenticatedEntity authenticatedFromL2 = facade.authenticate(token);
         assertNotNull(authenticatedFromL2);
         assertEquals(Publisher.class, authenticatedFromL2.getAuthenticatable().getClass());
-        assertEquals(testPublisher.getId(), authenticatedFromL2.getAuthenticatable().getId());
-    }
-
-    @Test
-    public void testParseJwtToken() {
-        String jwtTokenValue = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ";
-
-        String jwt = "Bearer " + jwtTokenValue;
-
-        AuthorizationToken token = authorizationTokenFactory.fromAuthorizationHeader(jwt);
-
-        assertNotNull(token);
-        assertEquals(AuthorizationTokenType.JWT, token.getType());
-        assertEquals(jwtTokenValue, token.getValue());
-    }
-
-    @Test
-    public void testParseApiToken() {
-        String apiTokenValue = UUID.randomUUID().toString();
-        String apiToken = "Token " + apiTokenValue;
-
-        AuthorizationToken token = authorizationTokenFactory.fromAuthorizationHeader(apiToken);
-
-        assertNotNull(token);
-        assertEquals(AuthorizationTokenType.API_TOKEN, token.getType());
-        assertEquals(apiTokenValue, token.getValue());
-    }
-
-    @Test(expected = ServiceException.class)
-    public void testBadToken() {
-        String badToken = "gobble-gook";
-
-        authorizationTokenFactory.fromAuthorizationHeader(badToken);
+        assertEquals(testPublisher.getId(), authenticatedFromL2.getAuthenticatable().getId());*/
     }
 }

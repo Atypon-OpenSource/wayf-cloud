@@ -57,7 +57,7 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
     public <C extends AuthenticationCredentials> Single<C> createCredentials(C credentials) {
         return determineDao(credentials).create(credentials)
                 .andThen(getCredentialsForAuthenticatable(credentials.getAuthenticatable()))
-                .flatMapCompletable((existingCredentials) -> evictCredentials(credentials))
+                .flatMapCompletable((existingCredentials) -> evictCredentials(existingCredentials))
                 .andThen(Single.just(credentials));
     }
 
@@ -75,7 +75,18 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
     }
 
     private Completable evictCredentials(AuthenticationCredentials credentials) {
-        return Completable.fromAction(() -> cacheManager.evictForGroup(authenticationCacheGroupName, credentials));
+
+        if (PasswordCredentials.class.isAssignableFrom(credentials.getClass())) {
+            credentials = new CachedPasswordCredentials((PasswordCredentials) credentials);
+        } else if (AuthorizationToken.class.isAssignableFrom(credentials.getClass())) {
+            credentials = new CachedAuthorizationToken((AuthorizationToken) credentials);
+        } else {
+            throw new ServiceException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Invalid credentials type");
+        }
+
+        final AuthenticationCredentials cachedCredentails = credentials;
+
+        return Completable.fromAction(() -> cacheManager.evictForGroup(authenticationCacheGroupName, cachedCredentails));
     }
 
     public Completable revokeCredentials(AuthenticationCredentials credentials) {

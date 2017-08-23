@@ -157,6 +157,7 @@ public class RedisDaoImpl<K, V> implements RedisDao<K, V> {
                 throw new ServiceException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e);
             }
 
+            LOG.debug("Found value [{}] in Redis for Key [{}]", value, key);
             return value;
         }).map((readValue) -> deserialize(readValue));
     }

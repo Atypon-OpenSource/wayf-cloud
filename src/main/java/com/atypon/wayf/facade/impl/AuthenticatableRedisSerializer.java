@@ -177,7 +177,7 @@ public class AuthenticatableRedisSerializer {
         emailPasswordCredentials.setEmailAddress(EmailPasswordCredentialsFields.EMAIL.getFieldName());
         emailPasswordCredentials.setPassword(credentials.getString(EmailPasswordCredentialsFields.PASSWORD.getFieldName()));
 
-        return emailPasswordCredentials;
+        return new CachedPasswordCredentials(emailPasswordCredentials);
     }
 
     private static AuthenticationCredentials deserializeAuthorizationToken(JSONObject credentials) {
@@ -191,7 +191,7 @@ public class AuthenticatableRedisSerializer {
             // Thrown if validUntil does not exist which is valid for publisher tokens
         }
 
-        return authorizationToken;
+        return new CachedAuthorizationToken(authorizationToken);
     }
 
 }
