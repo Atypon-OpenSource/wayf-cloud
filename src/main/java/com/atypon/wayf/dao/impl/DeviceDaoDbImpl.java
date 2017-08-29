@@ -51,10 +51,6 @@ public class DeviceDaoDbImpl implements DeviceDao {
     private String readSql;
 
     @Inject
-    @Named("device.dao.db.update")
-    private String updateSql;
-
-    @Inject
     @Named("device.dao.db.delete")
     private String deleteSql;
 
@@ -96,11 +92,6 @@ public class DeviceDaoDbImpl implements DeviceDao {
         return Single.just(query)
                 .compose((single) -> DaoPolicies.applySingle(single))
                 .flatMapMaybe((_query) -> dbExecutor.executeSelectFirst(readSql, _query, Device.class));
-    }
-
-    @Override
-    public Single<Device> update(Device device) {
-        return null;
     }
 
     @Override

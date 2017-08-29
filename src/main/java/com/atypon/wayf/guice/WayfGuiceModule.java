@@ -29,6 +29,7 @@ import com.atypon.wayf.data.identity.IdentityProviderType;
 import com.atypon.wayf.data.identity.OauthEntity;
 import com.atypon.wayf.data.identity.OpenAthensEntity;
 import com.atypon.wayf.data.identity.SamlEntity;
+import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
 import com.atypon.wayf.database.AuthenticatableBeanFactory;
 import com.atypon.wayf.database.BeanFactory;
 import com.atypon.wayf.database.DbExecutor;
@@ -85,6 +86,8 @@ public class WayfGuiceModule extends AbstractModule {
             properties.load(classLoader.getResourceAsStream("dao/device-identity-provider-blacklist-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/authentication-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/error-logger-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/publisher-registration-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/user-dao-db.properties"));
 
             Names.bindProperties(binder(), properties);
 
@@ -100,8 +103,13 @@ public class WayfGuiceModule extends AbstractModule {
             bind(DeviceFacade.class).to(DeviceFacadeImpl.class);
             bind(DeviceDao.class).to(DeviceDaoDbImpl.class);
 
+            bind(UserFacade.class).to(UserFacadeImpl.class);
+            bind(UserDao.class).to(UserDaoDbImpl.class);
+
             bind(PublisherFacade.class).to(PublisherFacadeImpl.class);
             bind(PublisherDao.class).to(PublisherDaoDbImpl.class);
+            bind(PublisherRegistrationDao.class).to(PublisherRegistrationDaoDbImpl.class);
+            bind(PublisherRegistrationFacade.class).to(PublisherRegistrationFacadeImpl.class);
 
             bind(IdentityProviderFacade.class).to(IdentityProviderFacadeImpl.class);
 

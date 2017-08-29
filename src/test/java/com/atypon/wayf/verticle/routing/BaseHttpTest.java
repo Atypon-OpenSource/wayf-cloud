@@ -17,10 +17,7 @@
 package com.atypon.wayf.verticle.routing;
 
 import com.atypon.wayf.guice.WayfGuiceModule;
-import com.atypon.wayf.integration.DeviceAccessTestUtil;
-import com.atypon.wayf.integration.DeviceTestUtil;
-import com.atypon.wayf.integration.IdentityProviderTestUtil;
-import com.atypon.wayf.integration.PublisherTestUtil;
+import com.atypon.wayf.integration.*;
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.WayfVerticle;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -76,6 +73,7 @@ public abstract class BaseHttpTest {
     protected DeviceTestUtil deviceTestUtil;
     protected DeviceAccessTestUtil deviceAccessTestUtil;
     protected IdentityProviderTestUtil identityProviderTestUtil;
+    protected PublisherRegistrationTestUtil publisherRegistrationTestUtil;
 
     public BaseHttpTest(String httpLoggingFilename) {
         LoggingHttpRequest request = new LoggingHttpRequest(httpLoggingFilename);
@@ -88,6 +86,7 @@ public abstract class BaseHttpTest {
         deviceTestUtil = new DeviceTestUtil(request);
         deviceAccessTestUtil = new DeviceAccessTestUtil(request);
         identityProviderTestUtil = new IdentityProviderTestUtil(request);
+        publisherRegistrationTestUtil = new PublisherRegistrationTestUtil(request);
     }
 
     @BeforeClass

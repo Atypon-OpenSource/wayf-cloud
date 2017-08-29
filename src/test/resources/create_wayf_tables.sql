@@ -151,9 +151,40 @@ CREATE TABLE `publisher` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
+DROP TABLE IF EXISTS `publisher_registration`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `publisher_registration` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `publisher_name` varchar(45) NOT NULL,
+  `status` varchar(15) NOT NULL,
+  `contact_id` int(11) NULL,
+  `application_date` timestamp NOT NULL,
+  `approval_date` timestamp NULL,
+  `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
 --
 -- Table structure for table `publisher_session`
 --
+
+DROP TABLE IF EXISTS `user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `first_name` varchar(50) NOT NULL,
+  `last_name` varchar(50) NOT NULL,
+  `email` varchar(75) NOT NULL,
+  `phone_number` varchar(25) NOT NULL,
+  `created_date` timestamp(4) NOT NULL DEFAULT CURRENT_TIMESTAMP(4),
+  `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS `device_access`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

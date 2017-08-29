@@ -190,7 +190,7 @@ public class IdentityProviderUsageFacadeImpl implements IdentityProviderUsageFac
                         idpIds.add(idpId);
                     }
                 )
-                .flatMapObservable((idpIds) -> idpIds.isEmpty()? Observable.empty() : identityProviderFacade.filter(new IdentityProviderQuery().setIds(idpIds)))
+                .flatMapObservable((idpIds) -> idpIds.isEmpty()? Observable.empty() : identityProviderFacade.filter(new IdentityProviderQuery().ids(idpIds)))
                 .collect(
                         () -> new HashMap<Long, IdentityProvider>(),
                         (inflatedIdpByIdpId, identityProvider) -> {

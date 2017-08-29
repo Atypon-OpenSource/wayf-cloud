@@ -2,11 +2,13 @@
   {
     "code" : "PUBLISHER_A",
     "name" : "Publisher A",
-    "status" : "ACTIVE"
+    "status" : "ACTIVE",
+    "contact":{}
   },
   {
     "code" : "PUBLISHER_B",
     "name" : "Publisher B",
-    "status" : "ACTIVE"
+    "status" : "ACTIVE",
+    "contact":{}
   }
 ]

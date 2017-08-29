@@ -75,7 +75,7 @@ public class PublisherDaoDbImpl implements PublisherDao {
 
     @Override
     public Maybe<Publisher> read(Long id) {
-        LOG.debug("Reading publisher with id [{}] in Neo4J", id);
+        LOG.debug("Reading publisher with id [{}] in DB", id);
 
         Publisher publisher = new Publisher();
         publisher.setId(id);
