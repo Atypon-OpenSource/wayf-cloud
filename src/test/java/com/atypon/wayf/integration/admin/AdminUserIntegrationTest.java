@@ -17,6 +17,7 @@
 package com.atypon.wayf.integration.admin;
 
 import com.atypon.wayf.verticle.routing.BaseHttpTest;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.UUID;
@@ -135,6 +136,7 @@ public class AdminUserIntegrationTest extends BaseHttpTest {
     }
 
     @Test
+    @Ignore
     public void testResetUserPassword() {
         String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
         Long userId = userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);

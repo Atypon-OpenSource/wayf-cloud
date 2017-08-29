@@ -20,6 +20,9 @@ import com.atypon.wayf.verticle.routing.LoggingHttpRequestFactory;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.atypon.wayf.integration.HttpTestUtil.*;
 import static org.junit.Assert.assertEquals;
 
@@ -60,11 +63,15 @@ public class PublisherRegistrationTestUtil {
     }
 
     public String readRegistration(Long id, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
+
         String readResponse =
                 requestFactory
                         .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
+                        .headers(headers)
                         .url("/1/publisherRegistration/" + id + "?fields=CONTACT")
                         .execute()
                         .statusCode(200)
@@ -86,11 +93,15 @@ public class PublisherRegistrationTestUtil {
     }
 
     public void updateRegistrationStatus(boolean isApproved, Long id, String body, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
+
         String updateResponse =
                 requestFactory
                         .request()
                         .contentType(ContentType.JSON)
                         .method(Method.PATCH)
+                        .headers(headers)
                         .url("/1/publisherRegistration/" + id)
                         .body(body)
                         .execute()
@@ -119,11 +130,15 @@ public class PublisherRegistrationTestUtil {
     }
 
     public void findPendingRegistrations(Long id, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
+
         String findResponse =
                 requestFactory
                         .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
+                        .headers(headers)
                         .url("/1/publisherRegistrations?statuses=PENDING&fields=CONTACT&limit=1")
                         .execute()
                         .statusCode(200)
