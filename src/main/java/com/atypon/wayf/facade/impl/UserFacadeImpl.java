@@ -17,11 +17,17 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.UserDao;
+import com.atypon.wayf.data.ServiceException;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.PasswordCredentials;
 import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.data.user.UserQuery;
-import com.atypon.wayf.facade.UserFacade;
+import com.atypon.wayf.facade.*;
 import com.atypon.wayf.reactivex.FacadePolicies;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
+import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import org.apache.http.HttpStatus;
@@ -34,12 +40,31 @@ public class UserFacadeImpl implements UserFacade {
     @Inject
     private UserDao dao;
 
+    @Inject
+    private AuthenticationFacade authenticationFacade;
+
+    @Inject
+    private PasswordCredentialsFacade passwordCredentialsFacade;
+
     @Override
     public Single<User> create(User user) {
         LOG.debug("Creating user [{}]", user);
 
         return dao.create(user)
-                .compose((single) -> FacadePolicies.applySingle(single));
+                .compose((single) -> FacadePolicies.applySingle(single))
+                .map((createdUser) -> {
+                        createdUser.setCredentials(user.getCredentials());
+                        return createdUser;
+                    }
+                )
+                .flatMap((createdUser) ->
+                        Maybe.zip(
+                                Maybe.just(createdUser),
+                                generateEmailCredentials(createdUser),
+
+                                (_user, credentials) -> _user
+                        ).toSingle(createdUser)
+                );
     }
 
     @Override
@@ -57,7 +82,39 @@ public class UserFacadeImpl implements UserFacade {
     public Observable<User> filter(UserQuery query) {
         LOG.debug("Filtering users for [{}]", query);
 
-        return dao.filter(query)
-                .compose((observable) -> FacadePolicies.applyObservable(observable));
+        boolean isAdminView = UserQuery.ADMIN_VIEW.equals(query.getView());
+
+        if (isAdminView) {
+            AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
+        }
+
+        return isAdminView?
+                dao.adminFilter(query).compose((observable) -> FacadePolicies.applyObservable(observable)) :
+                dao.filter(query).compose((observable) -> FacadePolicies.applyObservable(observable));
+    }
+
+    @Override
+    public Completable delete(Long id) {
+        User adminUser = AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
+
+        if (adminUser.getId().equals(id)) {
+            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "User may not delete themselves");
+        }
+
+        User userToDelete = new User();
+        userToDelete.setId(id);
+
+        return dao.delete(id)
+                .compose((completable) -> FacadePolicies.applyCompletable(completable))
+                .andThen(authenticationFacade.revokeCredentials(userToDelete));
+    }
+
+
+    private Maybe<PasswordCredentials> generateEmailCredentials(User user) {
+        if (user.getCredentials() != null) {
+            return passwordCredentialsFacade.generateEmailCredentials(user).toMaybe();
+        }
+
+        return Maybe.empty();
     }
 }

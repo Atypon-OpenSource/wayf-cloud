@@ -16,7 +16,8 @@
 
 package com.atypon.wayf.integration;
 
-import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.verticle.routing.LoggingHttpRequestFactory;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 
@@ -31,18 +32,19 @@ import static com.atypon.wayf.request.ResponseWriter.DATE_FORMAT;
 import static org.junit.Assert.assertTrue;
 
 public class DeviceAccessTestUtil {
-    private LoggingHttpRequest request;
+    private LoggingHttpRequestFactory requestFactory;
 
-    public DeviceAccessTestUtil(LoggingHttpRequest request) {
-        this.request = request;
+    public DeviceAccessTestUtil(LoggingHttpRequestFactory requestFactory) {
+        this.requestFactory = requestFactory;
     }
 
-    public void testDeviceHistoryError(int statusCode, String localId, String publisherToken, String expectedHistoryJson) {
+    public void testDeviceHistoryError(int statusCode, String localId, AuthorizationToken publisherToken, String expectedHistoryJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
         String historyResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .headers(headers)
                         .url("/1/device/" + localId + "/history")
@@ -59,12 +61,13 @@ public class DeviceAccessTestUtil {
     }
 
 
-    public String testDeviceHistory(String localId, String publisherToken, String expectedHistoryJson) {
+    public String testDeviceHistory(String localId, AuthorizationToken publisherToken, String expectedHistoryJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
 
         String historyResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .headers(headers)
                         .url("/1/device/" + localId + "/history")
@@ -107,7 +110,8 @@ public class DeviceAccessTestUtil {
         headers.put("Cookie", "deviceId=" + globalId);
 
         String latestActivityResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .headers(headers)
                         .url("/1/mydevice/activity?limit=1&type=ADD_IDP")
@@ -135,7 +139,8 @@ public class DeviceAccessTestUtil {
         headers.put("Cookie", "deviceId=" + globalId);
 
         String activityResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .headers(headers)
                         .url("/1/mydevice/activity?limit=30")
@@ -163,7 +168,8 @@ public class DeviceAccessTestUtil {
         headers.put("Cookie", "deviceId=" + globalId);
 
         String historyResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .headers(headers)
                         .url("/1/mydevice/history")

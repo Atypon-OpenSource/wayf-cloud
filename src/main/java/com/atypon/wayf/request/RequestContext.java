@@ -16,8 +16,8 @@
 
 package com.atypon.wayf.request;
 
-import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +42,7 @@ public class RequestContext {
     private String requestUri;
     private Map<String, List<String>> headers;
 
-    private Authenticatable authenticated;
+    private AuthenticatedEntity authenticated;
 
     private Boolean hasAnotherDbPage = Boolean.FALSE;
 
@@ -148,11 +148,11 @@ public class RequestContext {
         return this;
     }
 
-    public Authenticatable getAuthenticated() {
+    public AuthenticatedEntity getAuthenticated() {
         return authenticated;
     }
 
-    public RequestContext setAuthenticated(Authenticatable authenticated) {
+    public RequestContext setAuthenticated(AuthenticatedEntity authenticated) {
         this.authenticated = authenticated;
         return this;
     }

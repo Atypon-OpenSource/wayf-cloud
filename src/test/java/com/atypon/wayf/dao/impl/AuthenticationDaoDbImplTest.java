@@ -16,7 +16,9 @@
 
 package com.atypon.wayf.dao.impl;
 
-import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
@@ -34,7 +36,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class AuthenticationDaoDbImplTest {
     @Inject
-    private AuthenticationDaoDbImpl dao;
+    private AuthorizationTokenDaoDbImpl dao;
 
     @Before
     public void setUp() {
@@ -46,17 +48,22 @@ public class AuthenticationDaoDbImplTest {
 
     @Test
     public void testCreateAndAuthenticate() {
-        String token = UUID.randomUUID().toString();
+        AuthorizationToken token = new AuthorizationToken();
+        token.setType(AuthorizationTokenType.API_TOKEN);
+        token.setValue(UUID.randomUUID().toString());
 
         Publisher publisher = new Publisher();
         publisher.setId(123L);
+        publisher.setToken(token);
 
-        dao.create(token, publisher).blockingGet();
+        token.setAuthenticatable(publisher);
+        dao.create(token).blockingGet();
 
-        Authenticatable authenticatable = dao.authenticate(token).blockingGet();
-        assertNotNull(authenticatable);
+        AuthenticatedEntity authenticated = dao.authenticate(token).blockingGet();
+        assertNotNull(authenticated);
 
-        assertEquals(Publisher.class, authenticatable.getClass());
-        assertEquals(publisher.getId(), authenticatable.getId());
+        assertEquals(AuthenticatedEntity.class, authenticated.getClass());
+        assertEquals(publisher.getId(), authenticated.getAuthenticatable().getId());
+        assertEquals(token.getValue(), ((AuthorizationToken) authenticated.getCredentials()).getValue());
     }
 }

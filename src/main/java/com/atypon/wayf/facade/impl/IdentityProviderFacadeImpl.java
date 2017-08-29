@@ -17,7 +17,7 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.IdentityProviderDao;
-import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceQuery;
@@ -128,7 +128,7 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
                 (resolvedIdentityProvider, device) ->
                         new DeviceAccess.Builder()
                                 .device(device)
-                                .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
+                                .publisher(AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated()))
                                 .identityProvider(resolvedIdentityProvider)
                                 .type(DeviceAccessType.ADD_IDP)
                                 .build()
@@ -157,7 +157,7 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     @Override
     public Completable blockIdentityProviderForDevice(Device device, Long idpId) {
         final Publisher publisher = RequestContextAccessor.get().getAuthenticated() != null?
-                Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()) : null;
+                AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated()) : null;
 
         return read(idpId)
                 .map((identityProvider) ->

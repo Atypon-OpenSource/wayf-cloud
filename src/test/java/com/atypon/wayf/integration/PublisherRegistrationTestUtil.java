@@ -16,24 +16,28 @@
 
 package com.atypon.wayf.integration;
 
-import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
+import com.atypon.wayf.verticle.routing.LoggingHttpRequestFactory;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.atypon.wayf.integration.HttpTestUtil.*;
 import static org.junit.Assert.assertEquals;
 
 public class PublisherRegistrationTestUtil {
 
-    private LoggingHttpRequest request;
+    private LoggingHttpRequestFactory requestFactory;
 
-    public PublisherRegistrationTestUtil(LoggingHttpRequest request) {
-        this.request = request;
+    public PublisherRegistrationTestUtil(LoggingHttpRequestFactory requestFactory) {
+        this.requestFactory = requestFactory;
     }
 
     public Long testPublisherRegistration(String requestJson, String expectedResponseJson) {
         String createResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.POST)
                         .url("/1/publisherRegistration")
@@ -59,10 +63,15 @@ public class PublisherRegistrationTestUtil {
     }
 
     public String readRegistration(Long id, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
+
         String readResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
+                        .headers(headers)
                         .url("/1/publisherRegistration/" + id + "?fields=CONTACT")
                         .execute()
                         .statusCode(200)
@@ -84,10 +93,15 @@ public class PublisherRegistrationTestUtil {
     }
 
     public void updateRegistrationStatus(boolean isApproved, Long id, String body, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
+
         String updateResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.PATCH)
+                        .headers(headers)
                         .url("/1/publisherRegistration/" + id)
                         .body(body)
                         .execute()
@@ -116,10 +130,15 @@ public class PublisherRegistrationTestUtil {
     }
 
     public void findPendingRegistrations(Long id, String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
+
         String findResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
+                        .headers(headers)
                         .url("/1/publisherRegistrations?statuses=PENDING&fields=CONTACT&limit=1")
                         .execute()
                         .statusCode(200)

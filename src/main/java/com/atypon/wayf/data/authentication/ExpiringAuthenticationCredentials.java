@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.dao;
+package com.atypon.wayf.data.authentication;
 
-import com.atypon.wayf.data.Authenticatable;
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
+import com.atypon.wayf.data.authentication.AuthenticationCredentials;
 
-public interface AuthenticationDao {
+import java.util.Date;
 
-    Completable create(String token, Authenticatable authenticatable);
-    Maybe<Authenticatable> authenticate(String token);
+public interface ExpiringAuthenticationCredentials extends AuthenticationCredentials {
+
+    Date getValidUntil();
+    void setValidUntil(Date validUntil);
 }

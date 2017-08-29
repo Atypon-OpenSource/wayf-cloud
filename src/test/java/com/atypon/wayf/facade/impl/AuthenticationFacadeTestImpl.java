@@ -17,37 +17,39 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.LoadingCache;
-import com.atypon.wayf.dao.AuthenticationDao;
-import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.dao.AuthenticationCredentialsDao;
+import com.atypon.wayf.dao.impl.AuthorizationTokenDaoDbImpl;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthenticationCredentials;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-public class AuthenticationFacadeTestImpl extends AuthenticatableFacadeImpl {
-    private LoadingCache<String, Authenticatable> redisCache;
+public class AuthenticationFacadeTestImpl extends AuthenticationFacadeImpl {
+    private LoadingCache<AuthenticationCredentials, AuthenticatedEntity> redisCache;
 
-    public void setL1Cache(LoadingCache<String, Authenticatable> l1Cache) {
-        super.cache = l1Cache;
+    public void setL1Cache(LoadingCache<AuthenticationCredentials, AuthenticatedEntity> l1Cache) {
+        super.persistence = l1Cache;
     }
 
-    public LoadingCache<String, Authenticatable> getL1Cache() {
-        return cache;
+    public LoadingCache<AuthenticationCredentials, AuthenticatedEntity> getL1Cache() {
+        return persistence;
     }
 
-    public AuthenticationDao getDbDao() {
-        return dbDao;
-    }
-
-    @Inject
-    public void setDbDao(AuthenticationDao dao) {
-        super.dbDao = dao;
+    public AuthenticationCredentialsDao getDbDao() {
+        return authorizationTokenDao;
     }
 
     @Inject
-    public void setRedisDao(@Named("authenticatableRedisCache") LoadingCache<String, Authenticatable> redisCache) {
+    public void setDbDao(AuthorizationTokenDaoDbImpl dao) {
+        super.authorizationTokenDao = dao;
+    }
+
+    @Inject
+    public void setRedisDao(@Named("authenticatableRedisCache") LoadingCache<AuthenticationCredentials, AuthenticatedEntity> redisCache) {
         this.redisCache = redisCache;
     }
 
-    public LoadingCache<String, Authenticatable> getRedisCache() {
+    public LoadingCache<AuthenticationCredentials, AuthenticatedEntity> getRedisCache() {
         return redisCache;
     }
 }

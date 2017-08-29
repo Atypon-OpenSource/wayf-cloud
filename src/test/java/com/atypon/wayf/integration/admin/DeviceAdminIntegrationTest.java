@@ -20,7 +20,6 @@ import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.integration.HttpTestUtil;
 import com.atypon.wayf.verticle.routing.BaseHttpTest;
 import com.google.common.collect.Lists;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;

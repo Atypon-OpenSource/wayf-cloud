@@ -18,6 +18,7 @@ package com.atypon.wayf.dao;
 
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 
 public interface RedisDao<K, V> {
     String getPrefix();

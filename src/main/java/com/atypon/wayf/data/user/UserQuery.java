@@ -19,7 +19,10 @@ package com.atypon.wayf.data.user;
 import java.util.Collection;
 
 public class UserQuery {
+    public static final String ADMIN_VIEW = "ADMIN";
+
     Long[] ids;
+    String view;
 
     public Long[] getIds() {
         return ids;
@@ -32,5 +35,22 @@ public class UserQuery {
     public UserQuery ids(Collection<Long> ids) {
         this.ids = ids.toArray(new Long[0]);
         return this;
+    }
+
+    /**
+     * Database use only
+     * @return
+     */
+    public boolean isNullIds() {
+        return ids == null;
+    }
+
+
+    public String getView() {
+        return view;
+    }
+
+    public void setView(String view) {
+        this.view = view;
     }
 }

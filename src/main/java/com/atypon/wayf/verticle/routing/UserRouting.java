@@ -16,19 +16,28 @@
 
 package com.atypon.wayf.verticle.routing;
 
+import com.atypon.wayf.data.ServiceException;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.PasswordCredentials;
 import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.data.user.UserQuery;
-import com.atypon.wayf.facade.UserFacade;
+import com.atypon.wayf.facade.*;
 import com.atypon.wayf.request.RequestParamMapper;
 import com.atypon.wayf.request.RequestReader;
 import com.atypon.wayf.verticle.WayfRequestHandlerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.impl.CookieImpl;
+import org.apache.http.HttpStatus;
+import org.apache.http.auth.AUTH;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,8 +49,12 @@ public class UserRouting implements RoutingProvider {
     private static final String USER_ID_PARAM_NAME = "id";
     private static final String USER_ID_PARAM = ":" + USER_ID_PARAM_NAME;
 
-    private static final String READ_USER = USER_BASE_URL + "/" +  USER_ID_PARAM;
+    private static final String READ_USER = USER_BASE_URL + "/" + USER_ID_PARAM;
     private static final String FILTER_USERS = USER_BASE_URL + "s";
+    private static final String LOGIN_URL = USER_BASE_URL + "/credentials";
+    private static final String CHANGE_PASSWORD_URL = USER_BASE_URL + "/" + USER_ID_PARAM + "/credentials";
+    private static final String DELETE_USER = USER_BASE_URL + "/" + USER_ID_PARAM;
+    private static final String ME_URL = "/1/me";
 
     private static final String USER_ID_ARG_DESCRIPTION = "User ID";
 
@@ -49,15 +62,40 @@ public class UserRouting implements RoutingProvider {
     private UserFacade userFacade;
 
     @Inject
+    private PasswordCredentialsFacade passwordCredentialsFacade;
+
+    @Inject
     private WayfRequestHandlerFactory handlerFactory;
+
+    @Inject
+    private AuthorizationTokenFactory authorizationTokenFactory;
+
+    @Inject
+    private AuthenticationFacade authenticationFacade;
+
+    @Inject
+    @Named("wayf.domain")
+    private String wayfDomain;
 
     public UserRouting() {
     }
 
     public void addRoutings(Router router) {
         router.route(USER_BASE_URL + "*").handler(BodyHandler.create());
+        router.post(USER_BASE_URL).handler(handlerFactory.single((rc) -> createUser(rc)));
         router.get(READ_USER).handler(handlerFactory.single((rc) -> readUser(rc)));
         router.get(FILTER_USERS).handler(handlerFactory.observable((rc) -> filterUsers(rc)));
+        router.post(LOGIN_URL).handler(handlerFactory.single((rc) -> login(rc)));
+        router.get(ME_URL).handler(handlerFactory.single((rc) -> getCurrentUser(rc)));
+        router.delete(DELETE_USER).handler(handlerFactory.completable((rc) -> deleteUser(rc)));
+        router.put(CHANGE_PASSWORD_URL).handler(handlerFactory.completable((rc) -> resetPassword(rc)));
+    }
+
+    public Single<User> createUser(RoutingContext routingContext) {
+        LOG.debug("Received read User request");
+
+        return RequestReader.readRequestBody(routingContext, User.class)
+                .flatMap((user) -> userFacade.create(user));
     }
 
     public Single<User> readUser(RoutingContext routingContext) {
@@ -75,5 +113,48 @@ public class UserRouting implements RoutingProvider {
         RequestParamMapper.mapParams(routingContext, userQuery);
 
         return userFacade.filter(userQuery);
+    }
+
+    public Single<AuthorizationToken> login(RoutingContext routingContext) {
+        return RequestReader.readRequestBody(routingContext, PasswordCredentials.class)
+                .flatMap((credentials) -> passwordCredentialsFacade.generateSessionToken(credentials))
+                .map((authorizationToken) ->
+                        {
+                            Cookie cookie = new CookieImpl("adminToken", authorizationToken.getValue())
+                                    .setDomain(wayfDomain)
+                                    .setMaxAge(Math.toIntExact(authorizationToken.getValidUntil().getTime() / 1000L))
+                                    .setPath("/");
+
+                            routingContext.addCookie(cookie);
+
+                            return authorizationToken;
+                        }
+                );
+    }
+
+    public Completable deleteUser(RoutingContext routingContext) {
+        Long userId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, USER_ID_PARAM_NAME, USER_ID_ARG_DESCRIPTION));
+
+        return userFacade.delete(userId);
+    }
+
+    public Completable resetPassword(RoutingContext routingContext) {
+        Long userId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, USER_ID_PARAM_NAME, USER_ID_ARG_DESCRIPTION));
+
+        return RequestReader.readRequestBody(routingContext, PasswordCredentials.class)
+                .flatMapCompletable((passwordCredentials) -> passwordCredentialsFacade.resetPassword(userId, passwordCredentials));
+    }
+
+    public Single<User> getCurrentUser(RoutingContext routingContext) {
+        String authorizationHeader = RequestReader.getHeaderValue(routingContext, RequestReader.AUTHORIZATION_HEADER);
+
+        if (authorizationHeader == null) {
+            throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "No authorization token provided");
+        }
+
+        AuthorizationToken token = authorizationTokenFactory.fromAuthorizationHeader(authorizationHeader);
+
+        return Single.just((User) authenticationFacade.authenticate(token).getAuthenticatable())
+                .flatMap((user) -> userFacade.read(user.getId()));
     }
 }

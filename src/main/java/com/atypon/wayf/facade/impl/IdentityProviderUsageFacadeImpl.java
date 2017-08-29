@@ -16,7 +16,7 @@
 
 package com.atypon.wayf.facade.impl;
 
-import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessQuery;
@@ -24,7 +24,6 @@ import com.atypon.wayf.data.device.access.DeviceAccessType;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
-import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.Lists;
@@ -85,7 +84,7 @@ public class IdentityProviderUsageFacadeImpl implements IdentityProviderUsageFac
                                 // Log this access
                                 deviceAccessFacade.create(new DeviceAccess.Builder()
                                         .device(device)
-                                        .publisher(Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated()))
+                                        .publisher(AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated()))
                                         .type(DeviceAccessType.READ_IDP_HISTORY)
                                         .build()).subscribeOn(Schedulers.io()),
 

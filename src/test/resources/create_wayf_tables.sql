@@ -102,18 +102,33 @@ CREATE TABLE `device_idp_blacklist` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
 
-DROP TABLE IF EXISTS `api_token`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `api_token` (
+DROP TABLE IF EXISTS `authorization_token`;
+CREATE TABLE `authorization_token` (
+  `authenticatable` VARCHAR(50) NOT NULL,
+  `authenticatable_type` varchar(25) NOT NULL,
+  `authenticatable_id` int(11) NOT NULL,
+  `token_type` varchar(30) DEFAULT NULL,
+  `token_value` varchar(50) DEFAULT NULL,
+  `valid_until` timestamp NULL DEFAULT NULL,
+  `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`authenticatable`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `email_password_credentials`;
+CREATE TABLE `email_password_credentials` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `authenticatable_type` varchar(25) NOT NULL,
   `authenticatable_id` int(11) NOT NULL,
-  `token` varchar(50) NOT NULL,
+  `salt` varchar(30) NOT NULL,
+  `email` varchar(50) NOT NULL,
+  `password` varchar(100) NOT NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email_UNIQUE` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS `publisher_local_id_device_xref`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -233,3 +248,13 @@ CREATE TABLE `error_log` (
   PRIMARY KEY (`id`),
 UNIQUE KEY `id_UNIQUE` (`id`)
 );
+
+
+INSERT INTO wayf.user (first_name, last_name, email, phone_number, created_date)
+	VALUES ('Default', 'Admin', 'test@atypon.com', '+1 (585) 555-5555', CURRENT_TIMESTAMP);
+
+INSERT INTO wayf.email_password_credentials (authenticatable_type, authenticatable_id, salt, email, password, created_date)
+	VALUES ('USER', 1, '$2a$10$s0.WBFOZzUJi8MMp8r8yWO', 'test@atypon.com', '$2a$10$s0.WBFOZzUJi8MMp8r8yWOg.IoN84sQWIjFnpns1KBugITDfe2Hw2', CURRENT_TIMESTAMP);
+
+INSERT INTO wayf.authorization_token (authenticatable, authenticatable_type, authenticatable_id, token_type, token_value, created_date)
+  VALUES ('USER-1', 'USER', 1, 'API_TOKEN', 'DEFAULT_PLEASE_CHANGE', CURRENT_TIMESTAMP);

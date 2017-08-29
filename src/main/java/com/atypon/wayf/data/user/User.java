@@ -16,9 +16,15 @@
 
 package com.atypon.wayf.data.user;
 
+import com.atypon.wayf.data.authentication.Authenticatable;
+import com.atypon.wayf.data.authentication.AuthenticatableType;
+import com.atypon.wayf.data.authentication.PasswordCredentials;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Date;
 
-public class User {
+public class User implements Authenticatable {
     private Long id;
 
     private String firstName;
@@ -27,18 +33,28 @@ public class User {
 
     private String phoneNumber;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private PasswordCredentials credentials;
+
     private Date createdDate;
     private Date modifiedDate;
 
     public User() {
     }
 
+    @Override
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    @Override
+    @JsonIgnore
+    public AuthenticatableType getAuthenticatableType() {
+        return AuthenticatableType.USER;
     }
 
     public String getFirstName() {
@@ -71,6 +87,14 @@ public class User {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public PasswordCredentials getCredentials() {
+        return credentials;
+    }
+
+    public void setCredentials(PasswordCredentials credentials) {
+        this.credentials = credentials;
     }
 
     public Date getCreatedDate() {

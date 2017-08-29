@@ -14,31 +14,9 @@
  * limitations under the License.
  */
 
-package com.atypon.wayf.data;
+package com.atypon.wayf.data.authentication;
 
-public class AuthorizationToken {
-
-    private AuthorizationTokenType type;
-    private String value;
-
-    public AuthorizationToken() {
-    }
-
-    public AuthorizationTokenType getType() {
-        return type;
-    }
-
-    public AuthorizationToken setType(AuthorizationTokenType type) {
-        this.type = type;
-        return this;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public AuthorizationToken setValue(String value) {
-        this.value = value;
-        return this;
-    }
+public enum AuthenticatableType {
+    PUBLISHER,
+    USER;
 }

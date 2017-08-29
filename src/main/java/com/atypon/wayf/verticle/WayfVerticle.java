@@ -97,7 +97,7 @@ public class WayfVerticle extends AbstractVerticle {
                 .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
                 .exposedHeaders(Sets.newHashSet("X-Device-Id"))
                 .allowedHeader("Access-Control-Request-Method")
-                .allowedHeader("Access-Control-Allow-Credentials")
+                .allowedHeader("Access-Control-Allow-AuthenticationCredentials")
                 .allowedHeader("Access-Control-Allow-Origin")
                 .allowedHeader("Access-Control-Allow-Headers")
                 .allowedHeader("Content-Type")

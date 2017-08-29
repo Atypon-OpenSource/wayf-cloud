@@ -16,26 +16,31 @@
 
 package com.atypon.wayf.integration;
 
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
+import com.atypon.wayf.verticle.routing.LoggingHttpRequestFactory;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.atypon.wayf.integration.HttpTestUtil.*;
 
 public class PublisherTestUtil {
 
-    private LoggingHttpRequest request;
+    private LoggingHttpRequestFactory requestFactory;
 
-    public PublisherTestUtil(LoggingHttpRequest request) {
-        this.request = request;
+    public PublisherTestUtil(LoggingHttpRequestFactory requestFactory) {
+        this.requestFactory = requestFactory;
     }
 
     public void testReadPublisher(Long publisherId, String expectedResponseJson) {
         String readResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
                         .url("/1/publisher/" + publisherId)
@@ -65,7 +70,8 @@ public class PublisherTestUtil {
         idsBuilder.setLength(idsBuilder.length() - 1);
 
         String readResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
                         .url("/1/publishers?ids=" + idsBuilder.toString())
@@ -84,10 +90,66 @@ public class PublisherTestUtil {
         assertJsonEquals(expectedResponseJson, readResponse, readResponseGeneratedFields);
     }
 
-    public Publisher testCreatePublisher(String requestBody, String response) {
+    public Publisher testCreatePublisher(String adminToken, String requestBody, String response) {
+        AuthorizationToken adminAuthToken = new AuthorizationToken();
+        adminAuthToken.setValue(adminToken);
+        adminAuthToken.setType(AuthorizationTokenType.API_TOKEN);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(adminAuthToken));
+
         String createResponse =
-                request
+                requestFactory
+                        .request()
                         .contentType(ContentType.JSON)
+                        .body(requestBody)
+                        .headers(headers)
+                        .method(Method.POST)
+                        .url("/1/publisher")
+                        .execute()
+                        .statusCode(200)
+                        .extract().response().asString();
+
+        String[] createResponseGeneratedFields = {
+                "$.id",
+                "$.code",
+                "$.token.value",
+                "$.contact.id",
+                "$.contact.createdDate",
+                "$.widgetLocation",
+                "$.createdDate"
+        };
+
+        assertNotNullPaths(createResponse, createResponseGeneratedFields);
+
+        Long id = Long.valueOf(readField(createResponse, "$.id"));
+        String authorizationTokenType = readField(createResponse, "$.token.type");
+        String authorizationTokenValue = readField(createResponse, "$.token.value");
+        String code = readField(createResponse, "$.code");
+
+        assertJsonEquals(response, createResponse, createResponseGeneratedFields);
+
+        Publisher publisher = new Publisher();
+        publisher.setId(id);
+        publisher.setCode(code);
+
+        AuthorizationToken token = new AuthorizationToken();
+        token.setType(AuthorizationTokenType.valueOf(authorizationTokenType));
+        token.setValue(authorizationTokenValue);
+        publisher.setToken(token);
+
+        return publisher;
+    }
+
+    public Publisher testCreatePublisher(String requestBody, String response) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
+
+        String createResponse =
+                requestFactory
+                        .request()
+                        .contentType(ContentType.JSON)
+                        .headers(headers)
                         .body(requestBody)
                         .method(Method.POST)
                         .url("/1/publisher")
@@ -98,7 +160,7 @@ public class PublisherTestUtil {
         String[] createResponseGeneratedFields = {
                 "$.id",
                 "$.code",
-                "$.token",
+                "$.token.value",
                 "$.contact.id",
                 "$.contact.createdDate",
                 "$.widgetLocation",
@@ -108,7 +170,8 @@ public class PublisherTestUtil {
         assertNotNullPaths(createResponse, createResponseGeneratedFields);
 
         Long id = Long.valueOf(readField(createResponse, "$.id"));
-        String token = readField(createResponse, "$.token");
+        String authorizationTokenType = readField(createResponse, "$.token.type");
+        String authorizationTokenValue = readField(createResponse, "$.token.value");
         String code = readField(createResponse, "$.code");
 
         assertJsonEquals(response, createResponse, createResponseGeneratedFields);
@@ -116,8 +179,57 @@ public class PublisherTestUtil {
         Publisher publisher = new Publisher();
         publisher.setId(id);
         publisher.setCode(code);
+
+        AuthorizationToken token = new AuthorizationToken();
+        token.setType(AuthorizationTokenType.valueOf(authorizationTokenType));
+        token.setValue(authorizationTokenValue);
         publisher.setToken(token);
 
         return publisher;
+    }
+
+    public void testCreatePublisherNoToken(String requestBody, String response) {
+        String errorResponse =
+                requestFactory
+                        .request()
+                        .contentType(ContentType.JSON)
+                        .body(requestBody)
+                        .method(Method.POST)
+                        .url("/1/publisher")
+                        .execute()
+                        .statusCode(401)
+                        .extract().response().asString();
+
+        String[] errorResponseGeneratedFields = {
+                "$.stacktrace"
+        };
+        assertJsonEquals(response, errorResponse, errorResponseGeneratedFields);
+    }
+
+    public void testCreatePublisherBadToken(String adminToken, String requestBody, String response) {
+        AuthorizationToken adminAuthToken = new AuthorizationToken();
+        adminAuthToken.setValue(adminToken);
+        adminAuthToken.setType(AuthorizationTokenType.API_TOKEN);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(adminAuthToken));
+
+        String errorResponse =
+                requestFactory
+                        .request()
+                        .contentType(ContentType.JSON)
+                        .body(requestBody)
+                        .headers(headers)
+                        .method(Method.POST)
+                        .url("/1/publisher")
+                        .execute()
+                        .statusCode(401)
+                        .extract().response().asString();
+
+        String[] errorResponseGeneratedFields = {
+                "$.stacktrace"
+        };
+
+        assertJsonEquals(response, errorResponse, errorResponseGeneratedFields);
     }
 }
