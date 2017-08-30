@@ -258,6 +258,13 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides
+    @Named("passwordSaltCacheGroup")
+    @Singleton
+    public String getPasswordSaltCacheGroupName() {
+        return "PASSWORD_SALT_CACHE_GROUP";
+    }
+
+    @Provides
     @Named("authenticatableRedisDao")
     @Singleton
     public RedisDao<AuthenticationCredentials, AuthenticatedEntity> getAuthenticatableRedisDao(JedisPool jedisPool) {
@@ -342,26 +349,23 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides
-    @Named("passwordSaltRedisCache")
-    @Singleton
-    public LoadingCache<String, String> getAdminSaltLoadingCache(
-            @Named("passwordSaltRedisDao") RedisDao<String, String> adminSaltRedisDao,
-            PasswordCredentialsDao credentialsDao) {
-        LoadingCacheRedisImpl<String, String> l2Cache = new LoadingCacheRedisImpl<>();
-        l2Cache.setRedisDao(adminSaltRedisDao);
-        l2Cache.setCacheLoader((email) -> credentialsDao.getSaltForEmail(email));
-
-        return l2Cache;
-    }
-
-    @Provides
     @Named("passwordSaltCache")
     @Singleton
     public Cache<String, String> getAdminSaltLoadingCache(
-            @Named("passwordSaltRedisCache") LoadingCache<String, String> adminSaltRedisCache) {
+            CacheManager cacheManager,
+            PasswordCredentialsFacade passwordCredentialsFacade,
+            @Named("passwordSaltRedisDao") RedisDao<String, String> passwordSaltRedisDao,
+            @Named("passwordSaltCacheGroup") String passwordSaltCacheGroup) {
+
+        LoadingCacheRedisImpl<String, String> l2Cache = new LoadingCacheRedisImpl<>();
+        l2Cache.setRedisDao(passwordSaltRedisDao);
+        l2Cache.setCacheLoader((email) -> passwordCredentialsFacade.getSaltForEmail(email).toMaybe());
+
         LoadingCacheGuavaImpl<String, String> l1Cache = new LoadingCacheGuavaImpl<>();
         l1Cache.setGuavaCache(CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build());
-        l1Cache.setCacheLoader((key) -> adminSaltRedisCache.get(key));
+        l1Cache.setCacheLoader((key) -> l2Cache.get(key));
+
+        cacheManager.registerCacheGroup(passwordSaltCacheGroup, l1Cache, l2Cache);
 
         return l1Cache;
     }

@@ -17,6 +17,7 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.Cache;
+import com.atypon.wayf.cache.CacheManager;
 import com.atypon.wayf.dao.PasswordCredentialsDao;
 import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.authentication.AuthenticatedEntity;
@@ -54,7 +55,15 @@ public class PasswordCredentialsFacadeImpl implements PasswordCredentialsFacade 
     @Inject
     private AuthorizationTokenFactory authorizationTokenFactory;
 
-    private Single<String> getSaltForEmail(String email) {
+    @Inject
+    @Named("passwordSaltCacheGroup")
+    private String passwordSaltCacheGroup;
+
+    @Inject
+    private CacheManager cacheManager;
+
+    @Override
+    public Single<String> getSaltForEmail(String email) {
         return FacadePolicies.singleOrException(credentialsDao.getSaltForEmail(email), HttpStatus.SC_BAD_REQUEST, "Invalid email address");
     }
 
@@ -70,8 +79,13 @@ public class PasswordCredentialsFacadeImpl implements PasswordCredentialsFacade 
                         .filter((userCredentials) -> PasswordCredentials.class.isAssignableFrom(userCredentials.getClass())),
                     HttpStatus.SC_INTERNAL_SERVER_ERROR,
                     "Could not determine user's login credentials")
+
+                // Update the password to the new value
                 .flatMap((passwordCredentials) -> {
-                        credentials.setEmailAddress(((PasswordCredentials)passwordCredentials).getEmailAddress()); // Copy over the email address
+                        // Invalidate the salt caches
+                        cacheManager.evictForGroup(passwordSaltCacheGroup, ((PasswordCredentials) passwordCredentials).getEmailAddress());
+
+                        credentials.setEmailAddress(((PasswordCredentials) passwordCredentials).getEmailAddress()); // Copy over the email address
                         user.setCredentials(credentials);
 
                         return authenticationFacade.revokeCredentials(user) // Revoke all existing credentials

@@ -136,7 +136,6 @@ public class AdminUserIntegrationTest extends BaseHttpTest {
     }
 
     @Test
-    @Ignore
     public void testResetUserPassword() {
         String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
         Long userId = userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);
@@ -144,6 +143,7 @@ public class AdminUserIntegrationTest extends BaseHttpTest {
         String adminToken1 = userTestUtil.testLogin(credentialsEmail, LOGIN_REQUEST_JSON);
 
         userTestUtil.resetLogin(userId, RESET_LOGIN_REQUEST_JSON);
+
 
         String adminToken2 = userTestUtil.testLogin(credentialsEmail, LOGIN_AFTER_RESET_REQUEST_JSON);
 

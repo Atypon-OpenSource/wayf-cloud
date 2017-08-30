@@ -139,6 +139,8 @@ public class UserRouting implements RoutingProvider {
     }
 
     public Completable resetPassword(RoutingContext routingContext) {
+        LOG.debug("Resetting user password");
+
         Long userId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, USER_ID_PARAM_NAME, USER_ID_ARG_DESCRIPTION));
 
         return RequestReader.readRequestBody(routingContext, PasswordCredentials.class)

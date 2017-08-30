@@ -23,6 +23,8 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 
 public interface PasswordCredentialsFacade {
+    Single<String> getSaltForEmail(String email);
+
     Completable resetPassword(Long userId, PasswordCredentials credentials);
     Single<AuthorizationToken> generateSessionToken(PasswordCredentials credentials);
 
