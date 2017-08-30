@@ -102,19 +102,12 @@ public class WayfVerticle extends AbstractVerticle {
                 .allowedHeader("Access-Control-Allow-Headers")
                 .allowedHeader("Content-Type")
                 .allowedHeader("Authorization");
-/*
-        router.optionsWithRegex(".*").handler((routingContext) -> {
-            handler.handle(routingContext);
-            String requestOrigin = RequestReader.getHeaderValue(routingContext, "Origin");
-
-            LOG.debug("Request origin [{}]", requestOrigin);
-
-            routingContext.response().putHeader("Access-Control-Allow-Origin", requestOrigin).end();
-        });*/
 
         router.route().handler(handler);
         router.route().handler(CookieHandler.create());
+
         LOG.debug("Adding routes");
+
         routingProviders.forEach((routingProvider) -> routingProvider.addRoutings(router));
 
         LOG.debug("Adding default error handler to routes");

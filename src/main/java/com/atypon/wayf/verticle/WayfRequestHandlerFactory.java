@@ -89,6 +89,8 @@ public class WayfRequestHandlerFactory {
         }
 
         public void handle(RoutingContext event) {
+            LOG.debug("Received request on URI [{}]", event.request().absoluteURI());
+
             RequestContextAccessor.set(requestContextFactory.fromRoutingContext(event));
             authenticate();
 
@@ -115,6 +117,8 @@ public class WayfRequestHandlerFactory {
         }
 
         public void handle(RoutingContext event) {
+            LOG.debug("Received request on URI [{}]", event.request().absoluteURI());
+
             RequestContextAccessor.set(requestContextFactory.fromRoutingContext(event));
             authenticate();
 
@@ -141,6 +145,8 @@ public class WayfRequestHandlerFactory {
         }
 
         public void handle(RoutingContext event) {
+            LOG.debug("Received request on URI [{}]", event.request().absoluteURI());
+
             RequestContextAccessor.set(requestContextFactory.fromRoutingContext(event));
             authenticate();
 
@@ -168,6 +174,8 @@ public class WayfRequestHandlerFactory {
         }
 
         public void handle(RoutingContext event) {
+            LOG.debug("Received request on URI [{}]", event.request().absoluteURI());
+
             RequestContextAccessor.set(requestContextFactory.fromRoutingContext(event));
             authenticate();
 
