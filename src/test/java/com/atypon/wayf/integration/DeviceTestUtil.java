@@ -16,7 +16,8 @@
 
 package com.atypon.wayf.integration;
 
-import com.atypon.wayf.verticle.routing.LoggingHttpRequest;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.verticle.routing.LoggingHttpRequestFactory;
 import io.restassured.http.Cookie;
 import io.restassured.http.Method;
 import io.restassured.response.ExtractableResponse;
@@ -28,10 +29,10 @@ import static com.atypon.wayf.integration.HttpTestUtil.assertJsonEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class DeviceTestUtil {
-    private LoggingHttpRequest request;
+    private LoggingHttpRequestFactory requestFactory;
 
-    public DeviceTestUtil(LoggingHttpRequest request) {
-        this.request = request;
+    public DeviceTestUtil(LoggingHttpRequestFactory requestFactory) {
+        this.requestFactory = requestFactory;
     }
 
     public String relateDeviceToPublisherError(int statusCode, String localId, String publisherCode, String globalId, String expectedResponseJson) {
@@ -45,7 +46,8 @@ public class DeviceTestUtil {
             cookie = new Cookie.Builder("deviceId", globalId).setDomain("test-origin.com").build();
         }
 
-        ExtractableResponse relateResponse = request
+        ExtractableResponse relateResponse = requestFactory
+                .request()
                 .headers(headers)
                 .url("/1/device/" + localId)
                 .method(Method.PATCH)
@@ -67,12 +69,13 @@ public class DeviceTestUtil {
         return deviceIdHeader;
     }
 
-    public void registerLocalId(String localId, String publisherToken) {
+    public void registerLocalId(String localId, AuthorizationToken publisherToken) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
         headers.put("User-Agent", "Test-Agent");
 
-        ExtractableResponse relateResponse = request
+        ExtractableResponse relateResponse = requestFactory
+                .request()
                 .headers(headers)
                 .url("/1/device/" + localId)
                 .method(Method.POST)
@@ -92,7 +95,8 @@ public class DeviceTestUtil {
             cookie = new Cookie.Builder("deviceId", globalId).setDomain("test-origin.com").build();
         }
 
-        ExtractableResponse relateResponse = request
+        ExtractableResponse relateResponse = requestFactory
+                .request()
                 .headers(headers)
                 .url("/1/device/" + localId)
                 .method(Method.PATCH)
@@ -116,12 +120,13 @@ public class DeviceTestUtil {
         return deviceIdHeader;
     }
 
-    public void deviceQueryBadPublisherToken(String localId, String publisherToken, String expectedResponseJson) {
+    public void deviceQueryBadPublisherToken(String localId, AuthorizationToken publisherToken, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
         headers.put("User-Agent", "Test-Agent");
 
-        ExtractableResponse relateBadTokenResponse = request
+        ExtractableResponse relateBadTokenResponse = requestFactory
+                .request()
                 .headers(headers)
                 .url("/1/device/" + localId)
                 .method(Method.PATCH)
@@ -140,7 +145,8 @@ public class DeviceTestUtil {
         Map<String, String> headers = new HashMap<>();
         headers.put("Cookie", "deviceId=" + globalId);
 
-        ExtractableResponse relateResponse = request
+        ExtractableResponse relateResponse = requestFactory
+                .request()
                 .headers(headers)
                 .url("/1/mydevice/")
                 .method(Method.GET)
@@ -171,7 +177,8 @@ public class DeviceTestUtil {
         builder.setLength(builder.length() - 1);
 
 
-        ExtractableResponse relateResponse = request
+        ExtractableResponse relateResponse = requestFactory
+                .request()
                 .headers(headers)
                 .url("/1/devices?globalIds=" + builder.toString())
                 .method(Method.GET)
@@ -205,7 +212,8 @@ public class DeviceTestUtil {
             fieldsParam = "?fields=" + builder.toString();
         }
 
-        ExtractableResponse relateResponse = request
+        ExtractableResponse relateResponse = requestFactory
+                .request()
                 .headers(headers)
                 .url("/1/device/" + globalId + fieldsParam)
                 .method(Method.GET)

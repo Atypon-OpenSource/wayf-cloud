@@ -16,7 +16,7 @@
 
 package com.atypon.wayf.verticle.routing;
 
-import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.device.Device;
 import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
@@ -67,7 +67,7 @@ public class IdentityProviderUsageRouting implements RoutingProvider {
 
         String localId = RequestReader.readRequiredPathParameter(routingContext, LOCAL_ID_PARAM_NAME, LOCAL_ID_ARG_DESCRIPTION);
 
-        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+        Publisher publisher = AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated());
         String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
 
         return identityProviderUsageFacade.buildRecentHistory(hashedLocalId);

@@ -17,12 +17,13 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.impl.ErrorLoggerDaoMockImpl;
-import com.atypon.wayf.data.AuthorizationToken;
-import com.atypon.wayf.data.AuthorizationTokenType;
-import com.atypon.wayf.data.ErrorLogEntry;
-import com.atypon.wayf.data.ServiceException;
+import com.atypon.wayf.data.*;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.ErrorLoggerFacade;
+import com.atypon.wayf.integration.AuthorizationTokenTestUtil;
 import com.atypon.wayf.request.RequestContext;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.Lists;
@@ -61,15 +62,23 @@ public class ErrorLoggerFacadeTest {
         int statusCode = 500;
         String errorMessage = "Test error message";
         String url = "localhost:8080/error";
-        String token = "testToken";
+        String tokenValue = "testToken";
         String forwardedFor = "127.0.0.1";
         String globalId = "test-global-id";
         String httpMethod = HttpMethod.POST.toString();
         String requestBody = "{ \"body\" : \"end\" }";
         String userAgent = "test-user-agent";
 
+        AuthorizationToken token = new AuthorizationToken();
+        token.setType(AuthorizationTokenType.API_TOKEN);
+        token.setValue(tokenValue);
+
+        AuthenticatedEntity authenticatedEntity = new AuthenticatedEntity();
+        authenticatedEntity.setAuthenticatable(authenticatable);
+        authenticatedEntity.setCredentials(token);
+
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put("Authentication", Lists.newArrayList(token));
+        headers.put("Authentication", Lists.newArrayList(AuthorizationTokenTestUtil.generateApiTokenHeaderValue(token)));
         headers.put("X-Forwarded-For", Lists.newArrayList(forwardedFor));
         headers.put("X-Device-Id", Lists.newArrayList(globalId));
         headers.put("User-Agent", Lists.newArrayList(userAgent));
@@ -80,8 +89,8 @@ public class ErrorLoggerFacadeTest {
                 .setRequestUrl(url)
                 .setHeaders(headers)
                 .setDeviceId(globalId)
-                .setAuthorizationToken(new AuthorizationToken().setType(AuthorizationTokenType.API_TOKEN).setValue(token))
-                .setAuthenticated(authenticatable)
+                .setAuthorizationToken(token)
+                .setAuthenticated(authenticatedEntity)
                 .setHttpMethod(httpMethod)
                 .setUserAgent(userAgent)
                 .setRequestBody(requestBody);
@@ -92,7 +101,7 @@ public class ErrorLoggerFacadeTest {
 
         ErrorLogEntry loggedError = mockDao.getLastLoggedError();
 
-        assertEquals(authenticatable.getType() + "-" + authenticatable.getId(), loggedError.getAuthenticatedParty());
+        assertEquals(authenticatable.getClass().getSimpleName() + "-" + authenticatable.getId(), loggedError.getAuthenticatedParty());
         assertEquals(errorMessage, loggedError.getExceptionMessage());
         assertEquals(statusCode, loggedError.getResponseCode());
         assertEquals(url, loggedError.getRequestUrl());

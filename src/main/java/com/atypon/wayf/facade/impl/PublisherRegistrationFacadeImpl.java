@@ -18,6 +18,7 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.PublisherRegistrationDao;
 import com.atypon.wayf.data.InflationPolicy;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistrationQuery;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistrationStatus;
@@ -26,6 +27,7 @@ import com.atypon.wayf.data.user.UserQuery;
 import com.atypon.wayf.facade.PublisherRegistrationFacade;
 import com.atypon.wayf.facade.UserFacade;
 import com.atypon.wayf.reactivex.FacadePolicies;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -79,6 +81,8 @@ public class PublisherRegistrationFacadeImpl implements PublisherRegistrationFac
 
     @Override
     public Single<PublisherRegistration> read(PublisherRegistrationQuery query) {
+        AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
+
         LOG.debug("Reading publisher registration with query [{}]", query);
 
         return FacadePolicies.singleOrException(
@@ -104,6 +108,8 @@ public class PublisherRegistrationFacadeImpl implements PublisherRegistrationFac
 
     @Override
     public Single<PublisherRegistration> updateStatus(PublisherRegistration publisherRegistration) {
+        AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
+
         LOG.debug("Creating publisher registration [{}]", publisherRegistration);
 
         if (publisherRegistration.getStatus() == PublisherRegistrationStatus.APPROVED) {
@@ -116,6 +122,8 @@ public class PublisherRegistrationFacadeImpl implements PublisherRegistrationFac
 
     @Override
     public Observable<PublisherRegistration> filter(PublisherRegistrationQuery query) {
+        AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
+
         LOG.debug("Filtering publisher registrations for [{}]", query);
 
         return publisherRegistrationDao.filter(query)

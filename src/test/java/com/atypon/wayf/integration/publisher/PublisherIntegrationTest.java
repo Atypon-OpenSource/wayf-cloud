@@ -16,6 +16,8 @@
 
 package com.atypon.wayf.integration.publisher;
 
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.integration.HttpTestUtil;
 import com.atypon.wayf.request.ResponseWriter;
@@ -289,7 +291,10 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
         // Try to relate device to publisher with a bad publisher token
-        String badToken = "obviously-bad-token";
+        AuthorizationToken badToken = new AuthorizationToken();
+        badToken.setType(AuthorizationTokenType.API_TOKEN);
+        badToken.setValue("obviously-bad-token");
+
         deviceTestUtil.deviceQueryBadPublisherToken(publisherALocalId, badToken, ERROR_401_RESPONSE_JSON);
 
         deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());

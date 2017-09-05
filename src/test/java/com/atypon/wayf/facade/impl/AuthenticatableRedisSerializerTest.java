@@ -16,6 +16,9 @@
 
 package com.atypon.wayf.facade.impl;
 
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
 import org.junit.Test;
 
@@ -28,10 +31,20 @@ public class AuthenticatableRedisSerializerTest {
         Publisher publisher = new Publisher();
         publisher.setId(123L);
 
-        String serializedPublisher = AuthenticatableRedisSerializer.serialize(publisher);
-        Publisher deserializedPublisher = (Publisher) AuthenticatableRedisSerializer.deserialize(serializedPublisher);
+        AuthorizationToken token = new AuthorizationToken();
+        token.setValue("ab123");
+        token.setType(AuthorizationTokenType.API_TOKEN);
 
-        assertEquals(publisher.getId(), deserializedPublisher.getId());
+        AuthenticatedEntity authenticatedEntity = new AuthenticatedEntity();
+        authenticatedEntity.setCredentials(token);
+        authenticatedEntity.setAuthenticatable(publisher);
+
+        String serializedAuthenticatedEntity = AuthenticatableRedisSerializer.serialize(authenticatedEntity);
+        AuthenticatedEntity deserializedAuthenticatedEntity = AuthenticatableRedisSerializer.deserialize(serializedAuthenticatedEntity);
+
+        assertEquals(authenticatedEntity.getAuthenticatable().getId(), deserializedAuthenticatedEntity.getAuthenticatable().getId());
+        assertEquals(((AuthorizationToken) authenticatedEntity.getCredentials()).getType(), ((AuthorizationToken) deserializedAuthenticatedEntity.getCredentials()).getType());
+        assertEquals(((AuthorizationToken) authenticatedEntity.getCredentials()).getValue(), ((AuthorizationToken) deserializedAuthenticatedEntity.getCredentials()).getValue());
 
     }
 }

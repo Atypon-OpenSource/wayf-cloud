@@ -19,7 +19,10 @@ package com.atypon.wayf.cache;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 
+
 public interface Cache<K, V> {
+    void setName(String name);
+    String getName();
     Maybe<V> get(K key);
     Completable put(K key, V value);
     Completable invalidate(K... key);

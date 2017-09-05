@@ -22,6 +22,7 @@ import com.atypon.wayf.cache.Deserializer;
 import com.atypon.wayf.cache.Serializer;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,6 +157,7 @@ public class RedisDaoImpl<K, V> implements RedisDao<K, V> {
                 throw new ServiceException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e);
             }
 
+            LOG.debug("Found value [{}] in Redis for Key [{}]", value, key);
             return value;
         }).map((readValue) -> deserialize(readValue));
     }

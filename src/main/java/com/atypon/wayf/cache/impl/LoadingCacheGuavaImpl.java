@@ -17,6 +17,8 @@
 package com.atypon.wayf.cache.impl;
 
 import com.atypon.wayf.cache.CacheLoader;
+import com.atypon.wayf.cache.Deserializer;
+import com.atypon.wayf.cache.Serializer;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
@@ -28,11 +30,21 @@ import org.slf4j.LoggerFactory;
 public class LoadingCacheGuavaImpl<K, V> implements com.atypon.wayf.cache.LoadingCache<K, V> {
     private static final Logger LOG  = LoggerFactory.getLogger(LoadingCacheGuavaImpl.class);
 
+    private String name;
     private Cache<K, V> guavaCache;
     private CacheLoader<K, V> cacheLoader;
 
     public LoadingCacheGuavaImpl() {
         guavaCache = CacheBuilder.newBuilder().build();
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setGuavaCache(Cache<K, V> guavaCache) {
@@ -50,7 +62,7 @@ public class LoadingCacheGuavaImpl<K, V> implements com.atypon.wayf.cache.Loadin
 
     @Override
     public Maybe<V> get(K key) {
-        LOG.debug("Reading from cache [{}]", key);
+        LOG.debug("Reading from persistence [{}]", key);
 
         return Maybe.fromCallable(() -> guavaCache.getIfPresent(key))
                 .switchIfEmpty(load(key));

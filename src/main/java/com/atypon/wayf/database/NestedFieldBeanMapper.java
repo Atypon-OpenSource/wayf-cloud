@@ -72,7 +72,7 @@ class NestedFieldBeanMapper {
                 if (key.contains(DELIMITER)) {
                     String[] pathFields = key.split(REGEX_DELIMITER);
 
-                    handleNestedValue(bean, pathFields, 0, value);
+                    handleNestedValue(row, bean, pathFields, 0, value);
                 } else {
                     enumConverterUtilsBean.setProperty(bean, key, value);
                 }
@@ -84,7 +84,7 @@ class NestedFieldBeanMapper {
         }
     }
 
-    private Object handleNestedValue(Object bean, String[] path, int index, Object value) throws Exception {
+    private Object handleNestedValue(Map<String, Object> row, Object bean, String[] path, int index, Object value) throws Exception {
         LOG.debug("Handling nested value for bean[{}] path[{}] index[{}] value[{}]", bean, path, index, value);
 
         String fieldName = path[index];
@@ -101,12 +101,18 @@ class NestedFieldBeanMapper {
             Object childBean = enumConverterUtilsBean.getPropertyUtils().getProperty(bean, fieldName);
 
             if (childBean == null) {
-                childBean = enumConverterUtilsBean.getPropertyUtils().getPropertyType(bean, fieldName).newInstance();
+                Class<?> type = enumConverterUtilsBean.getPropertyUtils().getPropertyDescriptor(bean, fieldName).getPropertyType();
+
+                if (beanFactoryMap.get(type) != null) {
+                    childBean = beanFactoryMap.get(type).createInstance(row);
+                } else {
+                    childBean = type.newInstance();
+                }
             }
 
             LOG.debug("Recursing for childBean bean[{}] field[{}]", childBean, fieldName);
 
-            enumConverterUtilsBean.setProperty(bean, fieldName, handleNestedValue(childBean, path, ++index, value));
+            enumConverterUtilsBean.setProperty(bean, fieldName, handleNestedValue(row, childBean, path, ++index, value));
         }
 
         return bean;

@@ -17,20 +17,21 @@
 package com.atypon.wayf.guice;
 
 import com.atypon.wayf.cache.Cache;
+import com.atypon.wayf.cache.CacheManager;
 import com.atypon.wayf.cache.LoadingCache;
+import com.atypon.wayf.cache.impl.CacheManagerImpl;
 import com.atypon.wayf.cache.impl.LoadingCacheGuavaImpl;
 import com.atypon.wayf.cache.impl.LoadingCacheRedisImpl;
 import com.atypon.wayf.dao.*;
 import com.atypon.wayf.dao.impl.*;
-import com.atypon.wayf.data.Authenticatable;
-import com.atypon.wayf.data.InflationPolicyParser;
-import com.atypon.wayf.data.InflationPolicyParserQueryParamImpl;
+import com.atypon.wayf.data.*;
+import com.atypon.wayf.data.authentication.*;
 import com.atypon.wayf.data.identity.IdentityProviderType;
 import com.atypon.wayf.data.identity.OauthEntity;
 import com.atypon.wayf.data.identity.OpenAthensEntity;
 import com.atypon.wayf.data.identity.SamlEntity;
-import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
 import com.atypon.wayf.database.AuthenticatableBeanFactory;
+import com.atypon.wayf.database.AuthenticationCredentialsBeanFactory;
 import com.atypon.wayf.database.BeanFactory;
 import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.facade.*;
@@ -38,6 +39,7 @@ import com.atypon.wayf.facade.impl.*;
 import com.google.common.cache.CacheBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
@@ -84,19 +86,30 @@ public class WayfGuiceModule extends AbstractModule {
             properties.load(classLoader.getResourceAsStream("dao/open-athens-entity-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/oauth-entity-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/device-identity-provider-blacklist-dao-db.properties"));
-            properties.load(classLoader.getResourceAsStream("dao/authentication-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/authorization-token-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/error-logger-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/publisher-registration-dao-db.properties"));
             properties.load(classLoader.getResourceAsStream("dao/user-dao-db.properties"));
+            properties.load(classLoader.getResourceAsStream("dao/password-credentials-dao-db.properties"));
 
             Names.bindProperties(binder(), properties);
 
             bind(DeviceIdentityProviderBlacklistFacade.class).to(DeviceIdentityProviderBlacklistFacadeImpl.class);
             bind(IdentityProviderUsageFacade.class).to(IdentityProviderUsageFacadeImpl.class);
 
-            bind(AuthenticationDao.class).to(AuthenticationDaoDbImpl.class);
-            bind(AuthenticationFacade.class).to(AuthenticatableFacadeImpl.class);
+            bind(CryptFacade.class).to(CryptFacadeBcryptImpl.class);
 
+            bind(CacheManager.class).to(CacheManagerImpl.class);
+
+            bind(PasswordCredentialsFacade.class).to(PasswordCredentialsFacadeImpl.class);
+            bind(PasswordCredentialsDao.class).to(PasswordCredentialsDaoDbImpl.class);
+
+            bind(AuthorizationTokenFacade.class).to(AuthorizationTokenFacadeImpl.class);
+            bind(AuthorizationTokenFactory.class).to(AuthorizationTokenFactoryImpl.class);
+            bind(new TypeLiteral<AuthenticationCredentialsDao<PasswordCredentials>>(){}).to(PasswordCredentialsDaoDbImpl.class);
+            bind(new TypeLiteral<AuthenticationCredentialsDao<AuthorizationToken>>(){}).to(AuthorizationTokenDaoDbImpl.class);
+
+            bind(AuthenticationFacade.class).to(AuthenticationFacadeImpl.class);
             bind(DeviceAccessFacade.class).to(DeviceAccessFacadeImpl.class);
             bind(DeviceAccessDao.class).to(DeviceAccessDaoDbImpl.class);
 
@@ -128,6 +141,7 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides @Named("samlEntity")
+    @Singleton
     public IdentityProviderDao provideSamlEntityDao(DbExecutor dbExecutor) throws Exception {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
@@ -142,6 +156,7 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides @Named("openAthensEntity")
+    @Singleton
     public IdentityProviderDao provideOpenAthensEntityDao(DbExecutor dbExecutor) throws Exception {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
@@ -157,6 +172,7 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides @Named("oauthEntity")
+    @Singleton
     public IdentityProviderDao provideOauthEntityDao(DbExecutor dbExecutor) throws Exception {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
@@ -172,6 +188,7 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides @Named("identityProviderDaoMap")
+    @Singleton
     public Map<IdentityProviderType, IdentityProviderDao> provideIdentityProviderDaoMap(
             @Named("samlEntity") IdentityProviderDao samlDao,
             @Named("openAthensEntity") IdentityProviderDao openAthensDao,
@@ -184,20 +201,25 @@ public class WayfGuiceModule extends AbstractModule {
     }
 
     @Provides @Named("beanFactoryMap")
-    public Map<Class<?>, BeanFactory<?>> provideBeanFactoryMap(AuthenticatableBeanFactory authenticatableBeanFactory) {
+    @Singleton
+    public Map<Class<?>, BeanFactory<?>> provideBeanFactoryMap(AuthenticatableBeanFactory authenticatableBeanFactory,
+                                                               AuthenticationCredentialsBeanFactory credentialsBeanFactory) {
         Map<Class<?>, BeanFactory<?>> beanFactoryMap = new HashMap<>();
 
         beanFactoryMap.put(Authenticatable.class, authenticatableBeanFactory);
+        beanFactoryMap.put(AuthenticationCredentials.class, credentialsBeanFactory);
 
         return beanFactoryMap;
     }
 
     @Provides
+    @Singleton
     public JedisPool getJedisPool(@Named("redis.host") String redisHost, @Named("redis.port") int redisPort) {
         return new JedisPool(new JedisPoolConfig(), redisHost, redisPort);
     }
 
     @Provides
+    @Singleton
     public NamedParameterJdbcTemplate getJdbcTemplate(
             @Named("jdbc.driver") String driver,
             @Named("jdbc.username") String username,
@@ -223,49 +245,66 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("jwtSecret")
+    @Singleton
     public String getJwtSecret() {
         return "shh_its_a_secret";
     }
 
     @Provides
+    @Named("authenticationCacheGroup")
+    @Singleton
+    public String getAuthenticationCacheGroupName() {
+        return "AUTHENTICATION_CACHE_GROUP";
+    }
+
+    @Provides
+    @Named("passwordSaltCacheGroup")
+    @Singleton
+    public String getPasswordSaltCacheGroupName() {
+        return "PASSWORD_SALT_CACHE_GROUP";
+    }
+
+    @Provides
     @Named("authenticatableRedisDao")
-    public RedisDao<String, Authenticatable> getAuthenticatableRedisDao(JedisPool jedisPool) {
-        return new RedisDaoImpl<String, Authenticatable>()
+    @Singleton
+    public RedisDao<AuthenticationCredentials, AuthenticatedEntity> getAuthenticatableRedisDao(JedisPool jedisPool) {
+        return new RedisDaoImpl<AuthenticationCredentials, AuthenticatedEntity>()
                 .setPrefix("AUTHENTICABLE")
                 .setPool(jedisPool)
                 .setTtlSeconds(172800)
                 .setDeserializer((json) -> AuthenticatableRedisSerializer.deserialize((String) json))
-                .setSerializer((authenticatable) -> AuthenticatableRedisSerializer.serialize((Authenticatable) authenticatable));
-    }
-
-
-    @Provides
-    @Named("authenticatableRedisCache")
-    public LoadingCache<String, Authenticatable> getLoadingCache(
-            @Named("authenticatableRedisDao") RedisDao<String, Authenticatable> authenticatableRedisDao,
-            AuthenticationDao authenticationDao) {
-        LoadingCacheRedisImpl<String, Authenticatable> l2Cache = new LoadingCacheRedisImpl<>();
-        l2Cache.setRedisDao(authenticatableRedisDao);
-        l2Cache.setCacheLoader((key) -> authenticationDao.authenticate(key));
-
-        return l2Cache;
+                .setSerializer((authenticatable) -> AuthenticatableRedisSerializer.serialize((AuthenticatedEntity) authenticatable));
     }
 
     @Provides
     @Named("authenticatableCache")
-    public LoadingCache<String, Authenticatable> getLoadingCache(
-            @Named("authenticatableRedisCache") LoadingCache<String, Authenticatable> authenticatableRedisCache) {
-        LoadingCacheGuavaImpl<String, Authenticatable> l1Cache = new LoadingCacheGuavaImpl<>();
+    @Singleton
+    public LoadingCache<AuthenticationCredentials, AuthenticatedEntity> getLoadingCache(
+            @Named("authenticatableRedisDao") RedisDao<AuthenticationCredentials, AuthenticatedEntity> authenticatableRedisDao,
+            AuthenticationFacade authenticationFacade,
+            CacheManager cacheManager,
+            @Named("authenticationCacheGroup") String authenticationCacheGroupName
+    ) {
+        LoadingCacheRedisImpl<AuthenticationCredentials, AuthenticatedEntity> l2Cache = new LoadingCacheRedisImpl<>();
+        l2Cache.setRedisDao(authenticatableRedisDao);
+        l2Cache.setCacheLoader((key) -> authenticationFacade.determineDao(key).authenticate(key));
+        l2Cache.setName("AUTHENTICATION_REDIS_CACHE");
+
+        LoadingCacheGuavaImpl<AuthenticationCredentials, AuthenticatedEntity> l1Cache = new LoadingCacheGuavaImpl<>();
         l1Cache.setGuavaCache(CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build());
-        l1Cache.setCacheLoader((key) -> authenticatableRedisCache.get(key));
+        l1Cache.setCacheLoader((key) -> l2Cache.get(key));
+        l2Cache.setName("AUTHENTICATION_GUAVA_CACHE");
+
+        cacheManager.registerCacheGroup(authenticationCacheGroupName, l1Cache, l2Cache);
 
         return l1Cache;
     }
 
     @Provides
     @Named("publisherSaltRedisDao")
+    @Singleton
     public RedisDao<Long, String> getPublisherSaltRedisDao(JedisPool jedisPool) {
-        return new RedisDaoImpl<String, Authenticatable>()
+        return new RedisDaoImpl<String, AuthenticatedEntity>()
                 .setPrefix("PUBLISHER_SALT")
                 .setPool(jedisPool)
                 .setTtlSeconds(172800)
@@ -275,6 +314,7 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("publisherSaltRedisCache")
+    @Singleton
     public LoadingCache<Long, String> getLoadingCache(
             @Named("publisherSaltRedisDao") RedisDao<Long, String> publisherSaltRedisDao,
             PublisherDao publisherDao) {
@@ -287,11 +327,45 @@ public class WayfGuiceModule extends AbstractModule {
 
     @Provides
     @Named("publisherSaltCache")
+    @Singleton
     public Cache<Long, String> getPublisherSaltLoadingCache(
             @Named("publisherSaltRedisCache") LoadingCache<Long, String> publisherSaltRedisCache) {
         LoadingCacheGuavaImpl<Long, String> l1Cache = new LoadingCacheGuavaImpl<>();
         l1Cache.setGuavaCache(CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build());
         l1Cache.setCacheLoader((key) -> publisherSaltRedisCache.get(key));
+
+        return l1Cache;
+    }
+
+    @Provides
+    @Named("passwordSaltRedisDao")
+    public RedisDao<String, String> getAdminSaltRedisDao(JedisPool jedisPool) {
+        return new RedisDaoImpl<String, AuthenticatedEntity>()
+                .setPrefix("ADMIN_SALT")
+                .setPool(jedisPool)
+                .setTtlSeconds(172800)
+                .setDeserializer((salt) -> salt)
+                .setSerializer((salt) -> salt);
+    }
+
+    @Provides
+    @Named("passwordSaltCache")
+    @Singleton
+    public Cache<String, String> getAdminSaltLoadingCache(
+            CacheManager cacheManager,
+            PasswordCredentialsFacade passwordCredentialsFacade,
+            @Named("passwordSaltRedisDao") RedisDao<String, String> passwordSaltRedisDao,
+            @Named("passwordSaltCacheGroup") String passwordSaltCacheGroup) {
+
+        LoadingCacheRedisImpl<String, String> l2Cache = new LoadingCacheRedisImpl<>();
+        l2Cache.setRedisDao(passwordSaltRedisDao);
+        l2Cache.setCacheLoader((email) -> passwordCredentialsFacade.getSaltForEmail(email).toMaybe());
+
+        LoadingCacheGuavaImpl<String, String> l1Cache = new LoadingCacheGuavaImpl<>();
+        l1Cache.setGuavaCache(CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build());
+        l1Cache.setCacheLoader((key) -> l2Cache.get(key));
+
+        cacheManager.registerCacheGroup(passwordSaltCacheGroup, l1Cache, l2Cache);
 
         return l1Cache;
     }

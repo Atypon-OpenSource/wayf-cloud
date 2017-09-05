@@ -16,7 +16,9 @@
 
 package com.atypon.wayf.data.publisher;
 
-import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.authentication.Authenticatable;
+import com.atypon.wayf.data.authentication.AuthenticatableType;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
 import com.atypon.wayf.data.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -29,7 +31,7 @@ public class Publisher implements Authenticatable {
 
     private PublisherRegistration registration;
 
-    private String token;
+    private AuthorizationToken token;
     private String salt;
     private String widgetLocation;
 
@@ -68,14 +70,6 @@ public class Publisher implements Authenticatable {
         this.registration = registration;
     }
 
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
     @JsonIgnore
     public String getSalt() {
         return salt;
@@ -83,6 +77,20 @@ public class Publisher implements Authenticatable {
 
     public void setSalt(String salt) {
         this.salt = salt;
+    }
+
+    @Override
+    @JsonIgnore
+    public AuthenticatableType getAuthenticatableType() {
+        return AuthenticatableType.PUBLISHER;
+    }
+
+    public AuthorizationToken getToken() {
+        return token;
+    }
+
+    public void setToken(AuthorizationToken token) {
+        this.token = token;
     }
 
     public String getWidgetLocation() {
@@ -131,15 +139,5 @@ public class Publisher implements Authenticatable {
 
     public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
-    }
-
-    @Override
-    public Type getType() {
-        return Type.PUBLISHER;
-    }
-
-    @Override
-    public void setType(Type type) {
-
     }
 }

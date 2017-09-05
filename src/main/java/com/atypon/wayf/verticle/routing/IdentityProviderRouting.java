@@ -16,7 +16,7 @@
 
 package com.atypon.wayf.verticle.routing;
 
-import com.atypon.wayf.data.Authenticatable;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import com.atypon.wayf.data.publisher.Publisher;
@@ -36,9 +36,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Singleton
 public class IdentityProviderRouting implements RoutingProvider {
@@ -109,7 +106,7 @@ public class IdentityProviderRouting implements RoutingProvider {
         String localId = RequestReader.readRequiredPathParameter(routingContext, LOCAL_ID_PARAM_NAME, LOCAL_ID_ARG_DESCRIPTION);
         IdentityProvider body = RequestReader.readRequestBody(routingContext, IdentityProvider.class).blockingGet();
 
-        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+        Publisher publisher = AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated());
         String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
 
         return identityProviderFacade.recordIdentityProviderUse(hashedLocalId, body);
@@ -120,7 +117,7 @@ public class IdentityProviderRouting implements RoutingProvider {
 
         String localId = RequestReader.readRequiredPathParameter(routingContext, LOCAL_ID_PARAM_NAME, LOCAL_ID_ARG_DESCRIPTION);
 
-        Publisher publisher = Authenticatable.asPublisher(RequestContextAccessor.get().getAuthenticated());
+        Publisher publisher = AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated());
         String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
 
         Long idpId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, IDP_ID_PARAM_NAME, IDP_ID_ARG_DESCRIPTION));

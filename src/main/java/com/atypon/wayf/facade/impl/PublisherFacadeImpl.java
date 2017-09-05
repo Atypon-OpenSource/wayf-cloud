@@ -18,24 +18,22 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.Cache;
 import com.atypon.wayf.dao.PublisherDao;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.data.publisher.PublisherQuery;
 import com.atypon.wayf.data.publisher.PublisherStatus;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistrationStatus;
+import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.reactivex.FacadePolicies;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import org.apache.http.HttpStatus;
-import org.mindrot.jbcrypt.BCrypt;
-
-import java.security.SecureRandom;
 
 import static com.atypon.wayf.reactivex.FacadePolicies.singleOrException;
 
@@ -44,9 +42,6 @@ public class PublisherFacadeImpl implements PublisherFacade {
 
     @Inject
     private PublisherDao publisherDao;
-
-    @Inject
-    private AuthenticationFacade authenticationFacade;
 
     @Inject
     private ClientJsFacade clientJsFacade;
@@ -58,6 +53,15 @@ public class PublisherFacadeImpl implements PublisherFacade {
     private UserFacade userFacade;
 
     @Inject
+    private CryptFacade cryptFacade;
+
+    @Inject
+    private AuthenticationFacade authenticationFacade;
+
+    @Inject
+    private AuthorizationTokenFactory authorizationTokenFactory;
+
+    @Inject
     @Named("publisherSaltCache")
     private Cache<Long, String> saltCache;
 
@@ -67,7 +71,10 @@ public class PublisherFacadeImpl implements PublisherFacade {
     @Override
     public Single<Publisher> create(Publisher publisher) {
         publisher.setStatus(PublisherStatus.ACTIVE);
-        publisher.setSalt(generateSalt());
+        publisher.setSalt(cryptFacade.generateSalt());
+
+
+        User admin = AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
 
         return userFacade.create(publisher.getContact()) // Create the contact user
                 .flatMap((contact) -> {
@@ -81,7 +88,8 @@ public class PublisherFacadeImpl implements PublisherFacade {
 
                         Single.zip(
                                 // Create an authorization token for the newly created publisher
-                                authenticationFacade.createToken(createdPublisher).compose(single -> FacadePolicies.applySingle(single)),
+                                authenticationFacade.createCredentials(authorizationTokenFactory.generateToken(createdPublisher))
+                                        .compose(single -> FacadePolicies.applySingle(single)),
 
                                 // Generate the publisher specific Javascript widget
                                 clientJsFacade.generateWidgetForPublisher(createdPublisher).compose(single -> FacadePolicies.applySingle(single)),
@@ -116,15 +124,6 @@ public class PublisherFacadeImpl implements PublisherFacade {
         query.setCodes(publisherCode);
 
         return singleOrException(filter(query), HttpStatus.SC_BAD_REQUEST, "Could not find publisher for code [{}]", publisherCode);
-    }
-
-    private String generateSalt() {
-        SecureRandom random = new SecureRandom();
-
-        byte bytes[] = new byte[20];
-        random.nextBytes(bytes);
-
-        return BCrypt.gensalt(10, random);
     }
 
     private Single<PublisherRegistration> handleRegistrationApproval(Publisher publisher) {

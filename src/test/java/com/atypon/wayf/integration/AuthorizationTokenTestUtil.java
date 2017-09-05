@@ -16,27 +16,24 @@
 
 package com.atypon.wayf.integration;
 
-import com.atypon.wayf.data.AuthorizationTokenType;
+import com.atypon.wayf.data.authentication.AuthorizationToken;
+import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
-import javax.xml.bind.DatatypeConverter;
-import java.util.Date;
-
 public class AuthorizationTokenTestUtil {
     private static final String SECRET_JWT_KEY = "shh_its_a_secret";
+    private static final String DEFAULT_ADMIN_TOKEN = "DEFAULT_PLEASE_CHANGE";
 
-    public static String generateApiTokenHeaderValue(String apiKey) {
-        return AuthorizationTokenType.API_TOKEN.getPrefix() + " " + apiKey;
+    public static String generateDefaultApiTokenHeaderValue() {
+        return AuthorizationTokenType.API_TOKEN.getPrefix() + " " + DEFAULT_ADMIN_TOKEN;
+    }
+
+    public static String generateApiTokenHeaderValue(AuthorizationToken authorizationToken) {
+        return authorizationToken.getType().getPrefix() + " " + authorizationToken.getValue();
     }
 
     public static String generateJwtTokenHeaderValue(String publisherCode) {
-        long nowMillis = System.currentTimeMillis();
-        Date now = new Date(nowMillis);
-
-        //We will sign our JWT with our ApiKey secret
-        byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(SECRET_JWT_KEY);
-
         Algorithm algorithm = null;
 
         try {
