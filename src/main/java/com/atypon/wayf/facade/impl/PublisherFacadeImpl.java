@@ -83,7 +83,8 @@ public class PublisherFacadeImpl implements PublisherFacade {
                     publisher.setContact(contact);
 
                     // Generate the publisher specific Javascript widget
-                    publisher.setWidgetLocation(clientJsFacade.generateWidgetForPublisher(publisher).compose(FacadePolicies::applySingle).blockingGet());
+                    clientJsFacade.generateWidgetForPublisher(publisher).subscribe(publisher::setWidgetLocation);
+
 
                     // Create the publisher
                     return publisherDao.create(publisher);
@@ -127,8 +128,9 @@ public class PublisherFacadeImpl implements PublisherFacade {
             if (!isAdminView) {
                 publisher.setWidgetLocation(null);
             } else {
-                publisher.setToken((AuthorizationToken) authenticationFacade.getCredentialsForAuthenticatable(publisher)
-                        .takeWhile(token -> token instanceof AuthorizationToken).blockingFirst());
+                authenticationFacade.getCredentialsForAuthenticatable(publisher).filter(token -> token instanceof AuthorizationToken).
+                        singleOrError().onErrorReturnItem(new AuthorizationToken()).subscribe(credentials -> publisher.setToken((AuthorizationToken)credentials));
+
             }
             return Observable.just(publisher);
         });
