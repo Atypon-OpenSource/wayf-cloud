@@ -28,6 +28,7 @@ public class DeviceReadIntegrationTest extends BaseHttpTest {
     private static final String SHALLOW_READ_RESPONSE = getFileAsString(BASE_DEVICE_FILE_PATH + "/shallow_read_response.json");
     private static final String SHALLOW_FILTER_RESPONSE = getFileAsString(BASE_DEVICE_FILE_PATH + "/shallow_filter_response.json");
     private static final String FULL_READ_RESPONSE = getFileAsString(BASE_DEVICE_FILE_PATH + "/full_read_response.json");
+    private static final String CREATE_RESPONSE = getFileAsString(BASE_DEVICE_FILE_PATH + "/create_new_global_id.json");
 
     private String globalId;
 
@@ -69,4 +70,9 @@ public class DeviceReadIntegrationTest extends BaseHttpTest {
         deviceTestUtil.readDevice(globalId,fields, FULL_READ_RESPONSE);
     }
 
+
+    @Test
+    public void createGlobalId() {
+        deviceTestUtil.createDevice(CREATE_RESPONSE);
+    }
 }
