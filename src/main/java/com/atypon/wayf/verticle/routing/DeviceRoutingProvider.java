@@ -190,11 +190,9 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
         LOG.debug("Request origin [{}]", requestOrigin);
 
-        if (requestOrigin == null || requestOrigin.isEmpty()) {
-            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Origin header is required");
+        if (requestOrigin != null && !requestOrigin.isEmpty()) {
+            rc.response().putHeader("Access-Control-Allow-Origin", requestOrigin);
         }
-
-        rc.response().putHeader("Access-Control-Allow-Origin", requestOrigin);
 
         rc.addCookie(cookie);
         device.setGlobalId(null);

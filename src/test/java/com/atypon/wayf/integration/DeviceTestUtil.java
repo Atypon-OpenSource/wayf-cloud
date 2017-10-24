@@ -247,10 +247,13 @@ public class DeviceTestUtil {
         assertJsonEquals(expectedResponseJson, deviceBody, relateResponseGeneratedFields);
     }
 
-    public void createDevice(String expectedResponseJson) {
+    public void createDevice(String expectedResponseJson, String origin) {
         Map<String, String> headers = new HashMap<>();
         headers.put("User-Agent", "Test-Agent");
-        headers.put("Origin", "test-origin.com");
+
+        if(origin != null){
+            headers.put("Origin", origin);
+        }
 
 
         ExtractableResponse relateResponse = requestFactory
@@ -265,6 +268,11 @@ public class DeviceTestUtil {
         String deviceIdHeader = relateResponse.cookie("deviceId");
         assertNotNull(deviceIdHeader);
 
+        if(origin != null){
+            String accessControlHeader = relateResponse.header("Access-Control-Allow-Origin");
+            assertNotNull(accessControlHeader);
+        }
+
         String deviceBody = relateResponse.response().body().asString();
 
         String[] relateResponseGeneratedFields = {
@@ -275,26 +283,5 @@ public class DeviceTestUtil {
 
     }
 
-    public void createDeviceError(String expectedResponseJson) {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("User-Agent", "Test-Agent");
 
-        ExtractableResponse relateResponse = requestFactory
-                .request()
-                .headers(headers)
-                .url("/1/device/")
-                .method(Method.POST)
-                .execute()
-                .statusCode(400)
-                .extract();
-
-
-        String deviceBody = relateResponse.response().body().asString();
-
-        String[] errorResponseGeneratedFields = {
-                "$.stacktrace"
-        };
-
-        assertJsonEquals(expectedResponseJson, deviceBody, errorResponseGeneratedFields);
-    }
 }
