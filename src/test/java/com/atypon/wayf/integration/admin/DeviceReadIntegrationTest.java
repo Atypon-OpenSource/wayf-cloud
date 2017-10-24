@@ -73,6 +73,7 @@ public class DeviceReadIntegrationTest extends BaseHttpTest {
 
     @Test
     public void createGlobalId() {
-        deviceTestUtil.createDevice(CREATE_RESPONSE);
+        deviceTestUtil.createDevice(CREATE_RESPONSE, null);
+        deviceTestUtil.createDevice(CREATE_RESPONSE, "test-origin.com");
     }
 }

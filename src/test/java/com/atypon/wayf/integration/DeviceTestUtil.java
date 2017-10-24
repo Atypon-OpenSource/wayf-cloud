@@ -247,9 +247,13 @@ public class DeviceTestUtil {
         assertJsonEquals(expectedResponseJson, deviceBody, relateResponseGeneratedFields);
     }
 
-    public void createDevice(String expectedResponseJson) {
+    public void createDevice(String expectedResponseJson, String origin) {
         Map<String, String> headers = new HashMap<>();
         headers.put("User-Agent", "Test-Agent");
+
+        if(origin != null){
+            headers.put("Origin", origin);
+        }
 
 
         ExtractableResponse relateResponse = requestFactory
@@ -261,14 +265,23 @@ public class DeviceTestUtil {
                 .statusCode(200)
                 .extract();
 
+        String deviceIdHeader = relateResponse.cookie("deviceId");
+        assertNotNull(deviceIdHeader);
+
+        if(origin != null){
+            String accessControlHeader = relateResponse.header("Access-Control-Allow-Origin");
+            assertNotNull(accessControlHeader);
+        }
+
         String deviceBody = relateResponse.response().body().asString();
 
         String[] relateResponseGeneratedFields = {
                 "$.id",
-                "$.globalId",
                 "$.createdDate"
         };
         assertJsonEquals(expectedResponseJson, deviceBody, relateResponseGeneratedFields);
 
     }
+
+
 }
