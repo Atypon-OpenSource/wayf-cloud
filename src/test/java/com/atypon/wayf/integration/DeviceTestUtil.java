@@ -274,4 +274,27 @@ public class DeviceTestUtil {
         assertJsonEquals(expectedResponseJson, deviceBody, relateResponseGeneratedFields);
 
     }
+
+    public void createDeviceError(String expectedResponseJson) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("User-Agent", "Test-Agent");
+
+        ExtractableResponse relateResponse = requestFactory
+                .request()
+                .headers(headers)
+                .url("/1/device/")
+                .method(Method.POST)
+                .execute()
+                .statusCode(400)
+                .extract();
+
+
+        String deviceBody = relateResponse.response().body().asString();
+
+        String[] errorResponseGeneratedFields = {
+                "$.stacktrace"
+        };
+
+        assertJsonEquals(expectedResponseJson, deviceBody, errorResponseGeneratedFields);
+    }
 }
