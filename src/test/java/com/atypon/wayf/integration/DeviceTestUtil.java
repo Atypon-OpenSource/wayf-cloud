@@ -112,6 +112,7 @@ public class DeviceTestUtil {
 
         String[] relateResponseGeneratedFields = {
                 "$.id",
+                "$.globalId",
                 "$.createdDate"
         };
 
@@ -250,6 +251,7 @@ public class DeviceTestUtil {
     public void createDevice(String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("User-Agent", "Test-Agent");
+        headers.put("Origin", "test-origin.com");
 
 
         ExtractableResponse relateResponse = requestFactory
@@ -260,6 +262,9 @@ public class DeviceTestUtil {
                 .execute()
                 .statusCode(200)
                 .extract();
+
+        String deviceIdHeader = relateResponse.cookie("deviceId");
+        assertNotNull(deviceIdHeader);
 
         String deviceBody = relateResponse.response().body().asString();
 
