@@ -197,6 +197,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
         rc.response().putHeader("Access-Control-Allow-Origin", requestOrigin);
 
         rc.addCookie(cookie);
+        device.setGlobalId(null);
 
         return device;
     }

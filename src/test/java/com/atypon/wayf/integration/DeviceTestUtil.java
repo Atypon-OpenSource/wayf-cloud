@@ -112,7 +112,6 @@ public class DeviceTestUtil {
 
         String[] relateResponseGeneratedFields = {
                 "$.id",
-                "$.globalId",
                 "$.createdDate"
         };
 
@@ -270,7 +269,6 @@ public class DeviceTestUtil {
 
         String[] relateResponseGeneratedFields = {
                 "$.id",
-                "$.globalId",
                 "$.createdDate"
         };
         assertJsonEquals(expectedResponseJson, deviceBody, relateResponseGeneratedFields);
