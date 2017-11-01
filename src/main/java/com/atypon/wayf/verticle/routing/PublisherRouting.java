@@ -45,7 +45,7 @@ public class PublisherRouting implements RoutingProvider {
     private static final String CREATE_PUBLISHER = PUBLISHER_BASE_URL;
     private static final String READ_PUBLISHER = PUBLISHER_BASE_URL + "/" + PUBLISHER_ID_PARAM;
     private static final String FILTER_PUBLISHERS = PUBLISHER_BASE_URL + "s";
-    private static final String REMOVE_PUBLISHER = PUBLISHER_BASE_URL + "/remove/" + PUBLISHER_ID_PARAM;
+    private static final String DELETE_PUBLISHER = PUBLISHER_BASE_URL + "/" + PUBLISHER_ID_PARAM;
     private static final String PUBLISHER_ID_ARG_DESCRIPTION = "Publisher ID";
 
     @Inject
@@ -62,7 +62,7 @@ public class PublisherRouting implements RoutingProvider {
         router.post(CREATE_PUBLISHER).handler(handlerFactory.single((rc) -> createPublisher(rc)));
         router.get(READ_PUBLISHER).handler(handlerFactory.single((rc) -> readPublisher(rc)));
         router.get(FILTER_PUBLISHERS).handler(handlerFactory.observable((rc) -> filterPublishers(rc)));
-        router.get(REMOVE_PUBLISHER).handler(handlerFactory.completable((rc) -> removePublisher(rc)));
+        router.delete(DELETE_PUBLISHER).handler(handlerFactory.completable((rc) -> removePublisher(rc)));
 
     }
 

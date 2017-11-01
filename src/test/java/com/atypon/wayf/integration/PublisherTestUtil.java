@@ -90,6 +90,58 @@ public class PublisherTestUtil {
         assertJsonEquals(expectedResponseJson, readResponse, readResponseGeneratedFields);
     }
 
+    public void readDeletedPublisher(Long publisherId, String expectedResponse) {
+        String response =
+                requestFactory
+                        .request()
+                        .contentType(ContentType.JSON)
+                        .method(Method.GET)
+                        .url("/1/publisher/" + publisherId)
+                        .execute()
+                        .statusCode(404)
+                        .extract().response().asString();
+
+        String[] responseGeneratedFields = {
+                "$.message",
+                "$.stacktrace"
+        };
+
+        assertJsonEquals(expectedResponse, response, responseGeneratedFields);
+    }
+
+    public void testDeletePublisher(Long publisherID){
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateDefaultApiTokenHeaderValue());
+
+        requestFactory
+                .request()
+                .contentType(ContentType.JSON)
+                .method(Method.DELETE)
+                .headers(headers)
+                .url("/1/publisher/" + publisherID)
+                .execute()
+                .statusCode(200).extract().response();
+    }
+
+
+    public void testDeletePublisherNoCredentials(Long publisherID, String expectedResponse) {
+        String response =
+                requestFactory
+                        .request()
+                        .contentType(ContentType.JSON)
+                        .method(Method.DELETE)
+                        .url("/1/publisher/" + publisherID)
+                        .execute()
+                        .statusCode(401)
+                        .extract().response().asString();
+
+        String[] responseGeneratedFields = {
+                "$.stacktrace"
+        };
+
+        assertJsonEquals(expectedResponse, response, responseGeneratedFields);
+    }
+
     public Publisher testCreatePublisher(String adminToken, String requestBody, String response) {
         AuthorizationToken adminAuthToken = new AuthorizationToken();
         adminAuthToken.setValue(adminToken);

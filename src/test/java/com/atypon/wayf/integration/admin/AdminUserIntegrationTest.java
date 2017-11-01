@@ -16,8 +16,8 @@
 
 package com.atypon.wayf.integration.admin;
 
+import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.verticle.routing.BaseHttpTest;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.UUID;
@@ -115,6 +115,31 @@ public class AdminUserIntegrationTest extends BaseHttpTest {
         userTestUtil.readDeletedUser(userId, "{}");
 
         publisherTestUtil.testCreatePublisherBadToken(adminToken, CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_BAD_TOKEN_RESPONSE_JSON);
+    }
+
+    @Test
+    public void testDeletePublisher(){
+        String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
+        userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);
+
+        String adminToken = userTestUtil.testLogin(credentialsEmail, LOGIN_REQUEST_JSON);
+
+        Publisher publisher = publisherTestUtil.testCreatePublisher(adminToken, CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_RESPONSE_JSON);
+
+        publisherTestUtil.testDeletePublisher(publisher.getId());
+        publisherTestUtil.readDeletedPublisher(publisher.getId(),"{}");
+    }
+
+    @Test
+    public void testDeletePublisherNoCredentials(){
+        String credentialsEmail = UUID.randomUUID().toString() + "@atypon.com";
+        userTestUtil.testCreateUser(credentialsEmail, CREATE_ADMIN_REQUEST_JSON, CREATE_ADMIN_RESPONSE_JSON);
+
+        String adminToken = userTestUtil.testLogin(credentialsEmail, LOGIN_REQUEST_JSON);
+
+        Publisher publisher = publisherTestUtil.testCreatePublisher(adminToken, CREATE_PUBLISHER_REQUEST_JSON, CREATE_PUBLISHER_RESPONSE_JSON);
+
+        publisherTestUtil.testDeletePublisherNoCredentials(publisher.getId(),DELETE_USER_NO_CREDENTIALS_RESPONSE_JSON);
     }
 
     @Test
