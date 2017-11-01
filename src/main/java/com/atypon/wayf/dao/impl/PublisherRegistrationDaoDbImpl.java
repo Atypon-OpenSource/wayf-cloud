@@ -29,10 +29,13 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.HashMap;
+import java.util.Map;
 
 @Singleton
 public class PublisherRegistrationDaoDbImpl implements PublisherRegistrationDao {
     private static final Logger LOG = LoggerFactory.getLogger(PublisherRegistrationDaoDbImpl.class);
+    private static final String CONTACT_ID = "contactId";
 
     @Inject
     @Named("publisher-registration.dao.db.create")
@@ -45,6 +48,10 @@ public class PublisherRegistrationDaoDbImpl implements PublisherRegistrationDao 
     @Inject
     @Named("publisher-registration.dao.db.update")
     private String updateSql;
+
+    @Inject
+    @Named("publisher-registration.dao.db.delete")
+    private String deleteSql;
 
     @Inject
     @Named("publisher-registration.dao.db.filter")
@@ -93,5 +100,14 @@ public class PublisherRegistrationDaoDbImpl implements PublisherRegistrationDao 
         return Observable.just(filter)
                 .compose((observable) -> DaoPolicies.applyObservable(observable))
                 .flatMap((_filter) -> dbExecutor.executeSelect(filterSql, _filter, PublisherRegistration.class));
+    }
+
+    @Override
+    public Single<Long> delete(Long contactID) {
+        Map<String, Object> arguments = new HashMap<>();
+
+        arguments.put(CONTACT_ID, contactID);
+
+        return dbExecutor.executeUpdate(deleteSql, arguments);
     }
 }

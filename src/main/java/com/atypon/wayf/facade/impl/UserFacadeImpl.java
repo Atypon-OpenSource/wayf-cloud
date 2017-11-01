@@ -53,9 +53,9 @@ public class UserFacadeImpl implements UserFacade {
         return dao.create(user)
                 .compose((single) -> FacadePolicies.applySingle(single))
                 .map((createdUser) -> {
-                        createdUser.setCredentials(user.getCredentials());
-                        return createdUser;
-                    }
+                            createdUser.setCredentials(user.getCredentials());
+                            return createdUser;
+                        }
                 )
                 .flatMap((createdUser) ->
                         Maybe.zip(
@@ -88,9 +88,19 @@ public class UserFacadeImpl implements UserFacade {
             AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
         }
 
-        return isAdminView?
+        return isAdminView ?
                 dao.adminFilter(query).compose((observable) -> FacadePolicies.applyObservable(observable)) :
                 dao.filter(query).compose((observable) -> FacadePolicies.applyObservable(observable));
+    }
+
+    @Override
+    public Completable deleteWithoutAuthenticate(Long id) {
+        User userToDelete = new User();
+        userToDelete.setId(id);
+
+        return dao.delete(id)
+                .compose((completable) -> FacadePolicies.applyCompletable(completable))
+                .andThen(authenticationFacade.revokeCredentials(userToDelete));
     }
 
     @Override
