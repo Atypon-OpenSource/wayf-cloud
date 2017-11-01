@@ -79,10 +79,6 @@ public class PublisherFacadeImpl implements PublisherFacade {
 
         User adminUser = AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
 
-        if (adminUser.getId().equals(publisher.getContact().getId())) {
-            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "User may not delete themselves");
-        }
-
         return publisherDao.delete(publisherId)
                 .compose((completable) -> FacadePolicies.applyCompletable(completable))
                 .andThen(registrationFacade.delete(publisher.getContact().getId()))
