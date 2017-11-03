@@ -182,7 +182,6 @@ public class DeviceRoutingProvider implements RoutingProvider {
         String globalId = device.getGlobalId();
 
         Cookie cookie = new CookieImpl(RequestReader.DEVICE_ID, globalId)
-                .setDomain(wayfDomain)
                 .setMaxAge(158132000l)
                 .setPath("/");
 
