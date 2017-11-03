@@ -183,7 +183,6 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
         Cookie cookie = new CookieImpl(RequestReader.DEVICE_ID, globalId)
                 .setMaxAge(158132000l)
-                .setPath("/");
 
         String requestOrigin = RequestReader.getHeaderValue(rc, "Origin");
 
