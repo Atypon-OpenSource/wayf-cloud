@@ -72,18 +72,14 @@ public class PublisherFacadeImpl implements PublisherFacade {
 
     @Override
     public Completable delete(Long publisherId) {
-
-
         Publisher publisher = singleOrException(publisherDao.read(publisherId),
                 HttpStatus.SC_INTERNAL_SERVER_ERROR, "Could not find Publisher for id [{}]", publisherId).blockingGet();
-
-        User adminUser = AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
-
+        AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
         return publisherDao.delete(publisherId)
                 .compose((completable) -> FacadePolicies.applyCompletable(completable))
                 .andThen(registrationFacade.delete(publisher.getContact().getId()))
                 .compose((completable) -> FacadePolicies.applyCompletable(completable))
-                .andThen(userFacade.deleteWithoutAuthenticate(publisher.getContact().getId()));
+                .andThen(userFacade.delete(publisher.getContact().getId()));
     }
 
     @Override

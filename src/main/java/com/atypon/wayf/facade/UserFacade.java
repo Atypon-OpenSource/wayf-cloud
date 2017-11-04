@@ -30,7 +30,5 @@ public interface UserFacade {
 
     Completable delete(Long id);
 
-    Completable deleteWithoutAuthenticate(Long id);
-
     Observable<User> filter(UserQuery query);
 }

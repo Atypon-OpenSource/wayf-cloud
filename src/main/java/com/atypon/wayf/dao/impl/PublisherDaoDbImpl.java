@@ -103,8 +103,8 @@ public class PublisherDaoDbImpl implements PublisherDao {
     @Override
     public Completable delete(Long publisherId) {
 
-        Map<String, Object> arguments = new HashMap<>();
-        arguments.put(PUBLISHER_ID, publisherId);
-        return dbExecutor.executeUpdate(deleteSql, arguments).toCompletable();
+        Publisher publisher = new Publisher();
+        publisher.setId(publisherId);
+        return dbExecutor.executeUpdate(deleteSql, publisher).toCompletable();
     }
 }

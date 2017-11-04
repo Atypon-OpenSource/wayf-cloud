@@ -19,6 +19,7 @@ package com.atypon.wayf.dao.impl;
 import com.atypon.wayf.dao.PublisherRegistrationDao;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistrationQuery;
+import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.reactivex.DaoPolicies;
 import com.google.inject.Inject;
@@ -104,10 +105,10 @@ public class PublisherRegistrationDaoDbImpl implements PublisherRegistrationDao 
 
     @Override
     public Single<Long> delete(Long contactID) {
-        Map<String, Object> arguments = new HashMap<>();
-
-        arguments.put(CONTACT_ID, contactID);
-
-        return dbExecutor.executeUpdate(deleteSql, arguments);
+        PublisherRegistration publisherRegistration = new PublisherRegistration();
+        User user = new User();
+        user.setId(contactID);
+        publisherRegistration.setContact(user);
+        return dbExecutor.executeUpdate(deleteSql, publisherRegistration);
     }
 }
