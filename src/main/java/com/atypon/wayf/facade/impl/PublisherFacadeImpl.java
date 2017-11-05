@@ -18,6 +18,7 @@ package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.cache.Cache;
 import com.atypon.wayf.dao.PublisherDao;
+import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.data.publisher.Publisher;
@@ -32,6 +33,7 @@ import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import org.apache.http.HttpStatus;
@@ -67,6 +69,18 @@ public class PublisherFacadeImpl implements PublisherFacade {
     private Cache<Long, String> saltCache;
 
     public PublisherFacadeImpl() {
+    }
+
+    @Override
+    public Completable delete(Long publisherId) {
+        Publisher publisher = singleOrException(publisherDao.read(publisherId),
+                HttpStatus.SC_INTERNAL_SERVER_ERROR, "Could not find Publisher for id [{}]", publisherId).blockingGet();
+        AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
+        return publisherDao.delete(publisherId)
+                .compose((completable) -> FacadePolicies.applyCompletable(completable))
+                .andThen(registrationFacade.delete(publisher.getContact().getId()))
+                .compose((completable) -> FacadePolicies.applyCompletable(completable))
+                .andThen(userFacade.delete(publisher.getContact().getId()));
     }
 
     @Override
