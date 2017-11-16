@@ -79,7 +79,7 @@ public class PublisherFacadeImpl implements PublisherFacade {
                 .compose((completable) -> FacadePolicies.applyCompletable(completable))
                 .andThen(registrationFacade.delete(publisher.getContact().getId()))
                 .compose((completable) -> FacadePolicies.applyCompletable(completable))
-                .andThen(userFacade.delete(publisher.getContact().getId()));
+                .andThen(userFacade.delete(publisher.getContact() != null ? publisher.getContact().getId() : null));
     }
 
     @Override
