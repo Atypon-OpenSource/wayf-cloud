@@ -134,6 +134,9 @@ public class PublisherRegistrationFacadeImpl implements PublisherRegistrationFac
     }
 
     public Completable delete(Long contactID) {
+        if (contactID == null) {
+            return Completable.complete();
+        }
         return publisherRegistrationDao.delete(contactID).toCompletable();
 
     }

@@ -78,9 +78,9 @@ public class PublisherFacadeImpl implements PublisherFacade {
         AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
         return publisherDao.delete(publisherId)
                 .compose((completable) -> FacadePolicies.applyCompletable(completable))
-                .andThen(registrationFacade.delete(publisher.getContact().getId()))
+                .andThen(registrationFacade.delete(publisher.getContact() != null ? publisher.getContact().getId() : null))
                 .compose((completable) -> FacadePolicies.applyCompletable(completable))
-                .andThen(userFacade.delete(publisher.getContact().getId()));
+                .andThen(userFacade.delete(publisher.getContact() != null ? publisher.getContact().getId() : null));
     }
 
     @Override
