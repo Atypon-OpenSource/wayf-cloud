@@ -28,6 +28,7 @@ import com.atypon.wayf.data.device.access.DeviceAccessQuery;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.*;
+import com.atypon.wayf.reactivex.FacadePolicies;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
@@ -188,5 +189,15 @@ public class DeviceFacadeImpl implements DeviceFacade {
     @Override
     public String encryptLocalId(Long publisherId, String localId) {
         return cryptFacade.encrypt(publisherFacade.getPublishersSalt(publisherId), localId);
+    }
+
+    @Override
+    public Completable deleteDevice(Long deviceId){
+        if(deviceId == null)
+            return Completable.complete();
+        return deviceDao.delete(deviceId)
+                .compose((completable) -> FacadePolicies.applyCompletable(completable))
+                .andThen(deviceAccessFacade.delete(deviceId))
+                .compose((completable) -> FacadePolicies.applyCompletable(completable));
     }
 }
