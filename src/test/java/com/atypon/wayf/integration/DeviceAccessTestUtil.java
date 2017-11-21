@@ -125,7 +125,19 @@ public class DeviceAccessTestUtil {
                 "$[*].device.id",
                 "$[*].identityProvider.id",
                 "$[*].identityProvider.type",
+                "$[*].identityProvider.name",
+                "$[*].identityProvider.createdDate",
+                "$[*].identityProvider.provider",
+                "$[*].identityProvider.scope",
+                "$[*].identityProvider.organizationId",
+                "$[*].identityProvider.entityId",
+                "$[*].identityProvider.federationId",
                 "$[*].publisher.id",
+                "$[*].publisher.status",
+                "$[*].publisher.code",
+                "$[*].publisher.name",
+                "$[*].publisher.contact",
+                "$[*].publisher.createdDate",
                 "$[*].createdDate"
         };
 
@@ -154,7 +166,19 @@ public class DeviceAccessTestUtil {
                 "$[*].device.id",
                 "$[*].identityProvider.id",
                 "$[*].identityProvider.type",
+                "$[*].identityProvider.name",
+                "$[*].identityProvider.createdDate",
+                "$[*].identityProvider.provider",
+                "$[*].identityProvider.entityId",
+                "$[*].identityProvider.scope",
+                "$[*].identityProvider.organizationId",
+                "$[*].identityProvider.federationId",
                 "$[*].publisher.id",
+                "$[*].publisher.status",
+                "$[*].publisher.code",
+                "$[*].publisher.name",
+                "$[*].publisher.contact",
+                "$[*].publisher.createdDate",
                 "$[*].createdDate"
         };
 
