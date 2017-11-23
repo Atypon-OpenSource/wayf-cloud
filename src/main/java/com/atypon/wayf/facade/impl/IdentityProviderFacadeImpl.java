@@ -24,27 +24,26 @@ import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessType;
 import com.atypon.wayf.data.identity.*;
+import com.atypon.wayf.data.identity.external.IdPExternalId;
+import com.atypon.wayf.data.identity.external.IdpExternalIdQuery;
 import com.atypon.wayf.data.publisher.Publisher;
-import com.atypon.wayf.facade.DeviceAccessFacade;
-import com.atypon.wayf.facade.DeviceFacade;
-import com.atypon.wayf.facade.DeviceIdentityProviderBlacklistFacade;
-import com.atypon.wayf.facade.IdentityProviderFacade;
+import com.atypon.wayf.facade.*;
+import com.atypon.wayf.reactivex.FacadePolicies;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.reactivex.Completable;
+
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 import static com.atypon.wayf.reactivex.FacadePolicies.singleOrException;
 
@@ -63,6 +62,9 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     private DeviceAccessFacade deviceAccessFacade;
 
     @Inject
+    private IdpExternalIdFacade externalIdFacade;
+
+    @Inject
     private DeviceIdentityProviderBlacklistFacade blacklistFacade;
 
     public IdentityProviderFacadeImpl() {
@@ -77,6 +79,20 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
         }
 
         return dao.create(identityProvider);
+    }
+
+    @Override
+    public Single<IdentityProvider> resolveIdpExternalIds(IdentityProvider identityProvider, List<IdPExternalId> externalIds) {
+        if (externalIds != null && !externalIds.isEmpty()) {
+            List<IdPExternalId> persistedExtIds = new ArrayList<>();
+            Observable.fromIterable(externalIds).
+                    subscribe((externalId) -> {
+                        externalId.setIdentityProvider(identityProvider);
+                        externalIdFacade.getOrCreateExternalId(externalId).subscribe((Consumer<IdPExternalId>) persistedExtIds::add);
+                    });
+            identityProvider.setExternalIds(persistedExtIds);
+        }
+       return Single.just(identityProvider);
     }
 
     @Override
@@ -124,23 +140,32 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
                 // Read the device by the local ID passed in and authenticated publisher
                 deviceFacade.readByLocalId(localId),
 
-                // Once the device and IdentityProvider have create a DeviceAccess object to contain both items
-                (resolvedIdentityProvider, device) ->
-                        new DeviceAccess.Builder()
-                                .device(device)
-                                .publisher(AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated()))
-                                .identityProvider(resolvedIdentityProvider)
-                                .type(DeviceAccessType.ADD_IDP)
-                                .build()
-            ).flatMap((deviceAccess) ->
-                // Run some tasks and return the IDP when they complete
-                Completable.mergeArray(
-                        // Remove the IDP from the blacklist if it was on it
-                        blacklistFacade.remove(deviceAccess.getDevice(), deviceAccess.getIdentityProvider()).subscribeOn(Schedulers.io()),
+                Single.just(identityProvider.getExternalIds() == null ? new ArrayList<IdPExternalId>() : identityProvider.getExternalIds()),
 
-                        // Log the device access
-                        deviceAccessFacade.create(deviceAccess).toCompletable().subscribeOn(Schedulers.io())
-                ).toSingleDefault(deviceAccess.getIdentityProvider())
+                // Once the device and IdentityProvider have create a DeviceAccess object to contain both items
+                (resolvedIdentityProvider, device, externalIds) -> {
+
+//                    resolvedIdentityProvider.setExternalIds(externalIds);
+                    resolveIdpExternalIds(resolvedIdentityProvider, externalIds);
+                    return new DeviceAccess.Builder()
+                            .device(device)
+                            .publisher(AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated()))
+                            .identityProvider(resolvedIdentityProvider)
+                            .type(DeviceAccessType.ADD_IDP)
+                            .build();
+
+                }
+        ).flatMap((deviceAccess) ->
+                        // Run some tasks and return the IDP when they complete
+                        Completable.mergeArray(
+                                // Remove the IDP from the blacklist if it was on it
+                                blacklistFacade.remove(deviceAccess.getDevice(), deviceAccess.getIdentityProvider()).subscribeOn(Schedulers.io()),
+
+                                // Log the device access
+                                deviceAccessFacade.create(deviceAccess).toCompletable().subscribeOn(Schedulers.io())
+//                        Completable.fromObservable(resolveIdpExternalIds(deviceAccess.getIdentityProvider(), deviceAccess.getIdentityProvider().getExternalIds())).subscribeOn(Schedulers.io())
+
+                        ).toSingleDefault(deviceAccess.getIdentityProvider())
         );
     }
 
@@ -156,7 +181,7 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
     @Override
     public Completable blockIdentityProviderForDevice(Device device, Long idpId) {
-        final Publisher publisher = RequestContextAccessor.get().getAuthenticated() != null?
+        final Publisher publisher = RequestContextAccessor.get().getAuthenticated() != null ?
                 AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated()) : null;
 
         return read(idpId)
@@ -168,12 +193,12 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
                                 .type(DeviceAccessType.REMOVE_IDP)
                                 .build()
 
-        ).flatMapCompletable((deviceAccess) ->
-                Completable.mergeArray(
-                        blacklistFacade.add(deviceAccess.getDevice(), deviceAccess.getIdentityProvider()).subscribeOn(Schedulers.io()),
-                        deviceAccessFacade.create(deviceAccess).toCompletable().subscribeOn(Schedulers.io())
-                )
-        );
+                ).flatMapCompletable((deviceAccess) ->
+                        Completable.mergeArray(
+                                blacklistFacade.add(deviceAccess.getDevice(), deviceAccess.getIdentityProvider()).subscribeOn(Schedulers.io()),
+                                deviceAccessFacade.create(deviceAccess).toCompletable().subscribeOn(Schedulers.io())
+                        )
+                );
     }
 
     @Override
@@ -211,7 +236,7 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
             throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "In order to resolve an OpenAthens Entity, 'organizationId' is required");
         }
 
-        IdentityProviderQuery query  = new IdentityProviderQuery()
+        IdentityProviderQuery query = new IdentityProviderQuery()
                 .setType(IdentityProviderType.OPEN_ATHENS)
                 .setOrganizationId(openAthensEntity.getOrganizationId());
 

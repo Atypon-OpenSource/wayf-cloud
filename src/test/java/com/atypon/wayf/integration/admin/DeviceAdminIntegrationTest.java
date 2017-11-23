@@ -64,6 +64,12 @@ public class DeviceAdminIntegrationTest extends BaseHttpTest {
     private static final String HISTORY_AFTER_DELETE_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/history/history_after_delete_response.json");
 
     private static final String MYDEVICE_RESPONSE_JSON = getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/device/mydevice_response.json");
+    private static final String CREATE_SAML_IDP_WITHOUT_EXTERNAL_ID_REQUEST =  getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/identity_provider/external_id/saml_without_external_id_request.json");
+    private static final String CREATE_SAML_IDP_WITHOUT_EXTERNAL_ID_RESPONSE=  getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/identity_provider/external_id/saml_without_external_id_response.json");
+    private static final String CREATE_SAML_IDP_WITH_EXTERNAL_ID_REQUEST =  getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/identity_provider/external_id/saml_with_external_id_request.json");
+    private static final String CREATE_SAML_IDP_WITH_EXTERNAL_ID_RESPONSE =  getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/identity_provider/external_id/saml_with_external_id_response.json");
+    private static final String FILTER_EXTERNAL_ID_FOR_IDP_RESPONSE=  getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/identity_provider/external_id/filter_external_id_for_idp_response.json");
+    private static final String FILTER_EXTERNAL_ID_FOR_IDP_WITH_PROVIDER_NAME_RESPONSE=  getFileAsString(BASE_DEVICE_ADMIN_FILE_PATH + "/identity_provider/external_id/filter_external_id_for_idp_wiht_provider_name_response.json");
 
 
     private Publisher publisherA;
@@ -115,6 +121,14 @@ public class DeviceAdminIntegrationTest extends BaseHttpTest {
 
         // Add back the SAML identity to the device
         identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(5, publisherBLocalId, publisherB.getToken(), CREATE_SAML_IDP_REQUEST_JSON, CREATE_SAML_IDP_RESPONSE_JSON);
+
+
+
+        Long idpId = identityProviderTestUtil.addIdpToDevice(publisherALocalId, publisherA.getToken(), CREATE_SAML_IDP_WITHOUT_EXTERNAL_ID_REQUEST, CREATE_SAML_IDP_WITHOUT_EXTERNAL_ID_RESPONSE);
+        identityProviderTestUtil.addIdpExternalId(idpId, CREATE_SAML_IDP_WITH_EXTERNAL_ID_REQUEST, CREATE_SAML_IDP_WITH_EXTERNAL_ID_RESPONSE);
+        identityProviderTestUtil.readIdpExternalIdByIdpId(idpId, FILTER_EXTERNAL_ID_FOR_IDP_RESPONSE);
+        String provider = "redlink";
+        identityProviderTestUtil.readIdpExternalIdByIdpIdAndExternalProvider(idpId, provider, FILTER_EXTERNAL_ID_FOR_IDP_WITH_PROVIDER_NAME_RESPONSE);
     }
 
     @Test

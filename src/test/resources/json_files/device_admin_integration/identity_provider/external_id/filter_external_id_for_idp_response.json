@@ -1,0 +1,12 @@
+{
+  "externalIds": [
+    {
+      "provider": "redlink",
+      "id": "test"
+    },
+    {
+      "provider": "isni",
+      "id": "test2"
+    }
+  ]
+}
