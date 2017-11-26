@@ -193,8 +193,6 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
     @Override
     public Completable deleteDevice(Long deviceId){
-        if(deviceId == null)
-            return Completable.complete();
         return deviceDao.delete(deviceId)
                 .compose((completable) -> FacadePolicies.applyCompletable(completable))
                 .andThen(deviceAccessFacade.delete(deviceId))
