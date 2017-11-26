@@ -76,4 +76,9 @@ public class DeviceReadIntegrationTest extends BaseHttpTest {
         deviceTestUtil.createDevice(CREATE_RESPONSE, null);
         deviceTestUtil.createDevice(CREATE_RESPONSE, "test-origin.com");
     }
+
+    @Test
+    public void DeletePublisher(){
+        deviceTestUtil.CreateAndDeleteDevice();
+    }
 }

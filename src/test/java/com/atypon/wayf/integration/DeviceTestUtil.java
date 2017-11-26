@@ -283,5 +283,33 @@ public class DeviceTestUtil {
 
     }
 
+    public void CreateAndDeleteDevice() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("User-Agent", "Test-Agent");
+
+        ExtractableResponse relateResponse = requestFactory
+                .request()
+                .headers(headers)
+                .url("/1/device/")
+                .method(Method.POST)
+                .execute()
+                .statusCode(200)
+                .extract();
+
+        String deviceIdHeader = relateResponse.cookie("deviceId");
+        assertNotNull(deviceIdHeader);
+
+        headers.clear();
+        headers.put("Cookie", "deviceId=" + deviceIdHeader);
+        requestFactory
+                .request()
+                .headers(headers)
+                .url("/1/device/")
+                .method(Method.DELETE)
+                .execute()
+                .statusCode(200)
+                .extract().response();
+    }
+
 
 }
