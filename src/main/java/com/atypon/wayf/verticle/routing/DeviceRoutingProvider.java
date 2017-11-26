@@ -102,7 +102,6 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
     public Completable deleteDevice(RoutingContext routingContext){
         Device device = readMyDevice(routingContext).blockingGet();
-        routingContext.addCookie(new CookieImpl("deviceId","").setMaxAge(0).setPath("/"));
         return deviceFacade.deleteDevice(device.getId());
     }
 
