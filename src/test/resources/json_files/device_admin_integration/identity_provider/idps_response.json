@@ -2,7 +2,17 @@
   {
     "name":"SAML Entity 2",
     "entityId":"sample-saml-entity-id-2",
-    "federationId":"sample-saml-federation-id-2"
+    "federationId":"sample-saml-federation-id-2",
+    "externalIds": [
+      {
+        "id": "test2",
+        "provider": "isni"
+      },
+      {
+        "id": "test",
+        "provider": "redlink"
+      }
+    ]
   },
   {
     "name":"Open Athens Entity 2",

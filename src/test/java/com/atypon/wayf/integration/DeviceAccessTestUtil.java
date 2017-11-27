@@ -85,6 +85,7 @@ public class DeviceAccessTestUtil {
         String[] addDeviceHistoryGeneratedFields = {
                 "$[*].lastActiveDate",
                 "$[*].idp.id",
+                "$[*].idp.externalIds",
                 "$[*].idp.createdDate"
         };
 
@@ -129,6 +130,7 @@ public class DeviceAccessTestUtil {
                 "$[*].identityProvider.createdDate",
                 "$[*].identityProvider.provider",
                 "$[*].identityProvider.scope",
+                "$[*].identityProvider.externalIds",
                 "$[*].identityProvider.organizationId",
                 "$[*].identityProvider.entityId",
                 "$[*].identityProvider.federationId",
@@ -171,6 +173,7 @@ public class DeviceAccessTestUtil {
                 "$[*].identityProvider.provider",
                 "$[*].identityProvider.entityId",
                 "$[*].identityProvider.scope",
+                "$[*].identityProvider.externalIds",
                 "$[*].identityProvider.organizationId",
                 "$[*].identityProvider.federationId",
                 "$[*].publisher.id",

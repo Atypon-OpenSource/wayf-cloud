@@ -28,7 +28,6 @@ import com.atypon.wayf.data.identity.external.IdPExternalId;
 import com.atypon.wayf.data.identity.external.IdpExternalIdQuery;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.*;
-import com.atypon.wayf.reactivex.FacadePolicies;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -83,16 +82,18 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
     @Override
     public Single<IdentityProvider> resolveIdpExternalIds(IdentityProvider identityProvider, List<IdPExternalId> externalIds) {
-        if (externalIds != null && !externalIds.isEmpty()) {
-            List<IdPExternalId> persistedExtIds = new ArrayList<>();
+        //update the external id's only if the identity provider doesn't have ones before
+        if ((identityProvider.getExternalIds() == null || identityProvider.getExternalIds().isEmpty()) && externalIds != null && !externalIds.isEmpty()) {
+            List<IdPExternalId> persistedExtIds = new LinkedList<>();
             Observable.fromIterable(externalIds).
                     subscribe((externalId) -> {
                         externalId.setIdentityProvider(identityProvider);
-                        externalIdFacade.getOrCreateExternalId(externalId).subscribe((Consumer<IdPExternalId>) persistedExtIds::add);
+                        externalIdFacade.getOrCreateExternalId(externalId).doOnError(e -> LOG.error(e.getLocalizedMessage())).subscribe((Consumer<IdPExternalId>) persistedExtIds::add);
                     });
-            identityProvider.setExternalIds(persistedExtIds);
+            persistedExtIds.sort(Comparator.comparing(IdPExternalId::getProvider));
+            identityProvider.setExternalIds(persistedExtIds.isEmpty() ? null : persistedExtIds);
         }
-       return Single.just(identityProvider);
+        return Single.just(identityProvider);
     }
 
     @Override
@@ -101,7 +102,15 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
         // Loop through the DAOs and try to read the ID from each. Return the first entry found
         return singleOrException(Observable.fromIterable(daos)
-                .flatMapMaybe((dao) -> dao.read(id)), HttpStatus.SC_BAD_REQUEST, "Invalid IdentityProvider ID");
+                .flatMapMaybe((dao) -> dao.read(id)), HttpStatus.SC_BAD_REQUEST, "Invalid IdentityProvider ID").
+                flatMap(identityProvider -> externalIdFacade.
+                        filter(new IdpExternalIdQuery().setIdpId(identityProvider.getId())).
+                        collectInto(new LinkedList<IdPExternalId>(), LinkedList::add).
+                        map(list -> {
+                            identityProvider.setExternalIds(list.isEmpty() ? null : list);
+                            return identityProvider;
+                        })
+                );
     }
 
     @Override
@@ -211,9 +220,15 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
             return Observable.fromIterable(daos)
                     .flatMap((dao) -> dao.filter(query))
-                    .collectInto(new LinkedList<IdentityProvider>(), (idpList, idp) -> idpList.add(idp))
+                    .flatMap(identityProvider -> externalIdFacade.filter(new IdpExternalIdQuery().setIdpId(identityProvider.getId())).
+                            collectInto(new LinkedList<IdPExternalId>(), LinkedList::add).
+                            map(list -> {
+                                identityProvider.setExternalIds(list.isEmpty() ? null : list);
+                                return identityProvider;
+                            }).toObservable())
+                    .collectInto(new LinkedList<IdentityProvider>(), LinkedList::add)
                     .flatMapObservable(idpList -> {
-                        Collections.sort(idpList, (a, b) -> a.getCreatedDate().compareTo(b.getCreatedDate()));
+                        idpList.sort(Comparator.comparing(IdentityProvider::getCreatedDate));
                         return Observable.fromIterable(idpList);
                     });
         }

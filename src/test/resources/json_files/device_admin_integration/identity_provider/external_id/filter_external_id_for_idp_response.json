@@ -1,12 +1,10 @@
-{
-  "externalIds": [
-    {
-      "provider": "redlink",
-      "id": "test"
-    },
-    {
-      "provider": "isni",
-      "id": "test2"
-    }
-  ]
-}
+[
+  {
+    "id": "test2",
+    "provider": "isni"
+  },
+  {
+    "id": "test",
+    "provider": "redlink"
+  }
+]

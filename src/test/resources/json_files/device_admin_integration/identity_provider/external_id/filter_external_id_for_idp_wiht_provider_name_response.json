@@ -1,8 +1,6 @@
-{
-  "externalIds": [
-    {
-      "provider": "redlink",
-      "id": "test"
-    }
-  ]
-}
+[
+  {
+    "id": "test",
+    "provider": "redlink"
+  }
+]
