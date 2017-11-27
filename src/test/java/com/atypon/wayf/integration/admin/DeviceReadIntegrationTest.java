@@ -19,6 +19,7 @@ package com.atypon.wayf.integration.admin;
 import com.atypon.wayf.integration.publisher.PublisherIntegrationTest;
 import com.atypon.wayf.verticle.routing.BaseHttpTest;
 import org.junit.Test;
+import java.util.UUID;
 
 public class DeviceReadIntegrationTest extends BaseHttpTest {
     private static final String HTTP_LOGGING_FILE = "device_integration_test";
@@ -29,6 +30,7 @@ public class DeviceReadIntegrationTest extends BaseHttpTest {
     private static final String SHALLOW_FILTER_RESPONSE = getFileAsString(BASE_DEVICE_FILE_PATH + "/shallow_filter_response.json");
     private static final String FULL_READ_RESPONSE = getFileAsString(BASE_DEVICE_FILE_PATH + "/full_read_response.json");
     private static final String CREATE_RESPONSE = getFileAsString(BASE_DEVICE_FILE_PATH + "/create_new_global_id.json");
+    private static final String ERROR_404_BAD_GLOBAL_ID_RESPONSE_JSON = getFileAsString(BASE_DEVICE_FILE_PATH + "/404_bad_global_id.json");
 
     private String globalId;
 
@@ -75,5 +77,15 @@ public class DeviceReadIntegrationTest extends BaseHttpTest {
     public void createGlobalId() {
         deviceTestUtil.createDevice(CREATE_RESPONSE, null);
         deviceTestUtil.createDevice(CREATE_RESPONSE, "test-origin.com");
+    }
+
+    @Test
+    public void deleteDevice(){
+        deviceTestUtil.CreateAndDeleteDevice();
+    }
+
+    @Test
+    public void deleteDeviceWithWrongId() {
+        deviceTestUtil.deleteDeviceWithWrongId(UUID.randomUUID().toString(), ERROR_404_BAD_GLOBAL_ID_RESPONSE_JSON);
     }
 }

@@ -61,6 +61,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
     private static final String FILTER_DEVICE = "/1/devices";
     private static final String ADD_DEVICE_PUBLISHER_RELATIONSHIP = "/1/device/:localId";
     private static final String CREATE_GLOBAL_ID = "/1/device/";
+    private static final String DELETE_GLOBAL_ID = CREATE_GLOBAL_ID;
 
     @Inject
     private ResponseWriter responseWriter;
@@ -96,6 +97,12 @@ public class DeviceRoutingProvider implements RoutingProvider {
         router.post(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.completable((rc) -> registerLocalId(rc)));
         router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.cookieSingle((rc) -> createPublisherDeviceRelationship(rc)));
         router.post(CREATE_GLOBAL_ID).handler(handlerFactory.cookieSingle(rc -> createGlobalId(rc)));
+        router.delete(DELETE_GLOBAL_ID).handler(handlerFactory.completable((rc)-> deleteDevice(rc)));
+    }
+
+    public Completable deleteDevice(RoutingContext routingContext){
+        Device device = readMyDevice(routingContext).blockingGet();
+        return deviceFacade.deleteDevice(device.getId());
     }
 
     public Single<Device> createGlobalId(RoutingContext rc) {
@@ -122,7 +129,9 @@ public class DeviceRoutingProvider implements RoutingProvider {
         String deviceId = RequestReader.getCookieValue(routingContext, RequestReader.DEVICE_ID);
         query.setGlobalId(deviceId);
 
-        return deviceFacade.read(query);
+        Observable<Device> device = deviceFacade.filter(query);
+        return device.isEmpty().blockingGet() ? createGlobalId(routingContext) : device.singleOrError();
+
     }
 
     public Observable<Device> filterDevice(RoutingContext routingContext) {
