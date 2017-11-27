@@ -154,7 +154,6 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
                 // Once the device and IdentityProvider have create a DeviceAccess object to contain both items
                 (resolvedIdentityProvider, device, externalIds) -> {
 
-//                    resolvedIdentityProvider.setExternalIds(externalIds);
                     resolveIdpExternalIds(resolvedIdentityProvider, externalIds);
                     return new DeviceAccess.Builder()
                             .device(device)
@@ -172,7 +171,6 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
 
                                 // Log the device access
                                 deviceAccessFacade.create(deviceAccess).toCompletable().subscribeOn(Schedulers.io())
-//                        Completable.fromObservable(resolveIdpExternalIds(deviceAccess.getIdentityProvider(), deviceAccess.getIdentityProvider().getExternalIds())).subscribeOn(Schedulers.io())
 
                         ).toSingleDefault(deviceAccess.getIdentityProvider())
         );

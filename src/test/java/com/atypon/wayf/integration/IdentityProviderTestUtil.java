@@ -144,7 +144,7 @@ public class IdentityProviderTestUtil {
         }
 
         for (int i = 0; i < count - 1; i++) {
-            assertEquals(ids[i], ids[i+1]);
+            assertEquals(ids[i], ids[i + 1]);
         }
 
         return ids[0];
@@ -220,7 +220,7 @@ public class IdentityProviderTestUtil {
                         .headers(headers)
                         .body(idpBodyJson)
                         .method(Method.POST)
-                        .url("/1/identityProvider/external/"+idpId)
+                        .url("/1/identityProvider/external/" + idpId)
                         .execute()
                         .statusCode(200)
                         .extract().response().asString();
@@ -242,7 +242,7 @@ public class IdentityProviderTestUtil {
                         .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
-                        .url("/1/identityProvider/external/"+idpId)
+                        .url("/1/identityProvider/external/" + idpId)
                         .execute()
                         .statusCode(200)
                         .extract().response().asString();
@@ -253,6 +253,7 @@ public class IdentityProviderTestUtil {
 
         assertJsonEquals(expectedResponseJson, getIdpExternalIdResponse, getIdpExternalIdResponseGeneratedFields);
     }
+
     public void readIdpExternalIdByIdpIdAndExternalProvider(Long idpId, String provider, String expectedResponseJson) {
 
         String getIdpExternalIdResponse =
@@ -260,7 +261,7 @@ public class IdentityProviderTestUtil {
                         .request()
                         .contentType(ContentType.JSON)
                         .method(Method.GET)
-                        .url("/1/identityProvider/external/"+idpId+"?provider="+provider)
+                        .url("/1/identityProvider/external/" + idpId + "?provider=" + provider +  "&limit=" + 1 + "&offset=0")
                         .execute()
                         .statusCode(200)
                         .extract().response().asString();

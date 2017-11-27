@@ -167,11 +167,12 @@ public class IdentityProviderRouting implements RoutingProvider {
 
         Long identityProviderId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, IDP_ID_PARAM_NAME, IDP_ID_ARG_DESCRIPTION));
         IdpExternalIdQuery query = new IdpExternalIdQuery().setIdpId(identityProviderId);
+        RequestParamMapper.mapParams(routingContext, query);
         String provider = RequestReader.getQueryValue(routingContext, "provider");
         if (provider != null) {
             query.setProvider(provider);
         }
 
-       return externalIdFacade.filter(query);
+        return externalIdFacade.filter(query);
     }
 }

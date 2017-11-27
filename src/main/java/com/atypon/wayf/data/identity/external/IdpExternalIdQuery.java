@@ -6,11 +6,9 @@ import java.util.Collection;
 
 public class IdpExternalIdQuery {
 
-    public static final String IDENTITY_PROVIDER = "identityProvider";
 
     private Long id;
     private String externalId;
-    private InflationPolicy inflationPolicy;
     private String provider;
     private Long idpId;
     private Integer limit;
@@ -47,14 +45,6 @@ public class IdpExternalIdQuery {
         return this;
     }
 
-    public InflationPolicy getInflationPolicy() {
-        return inflationPolicy;
-    }
-
-    public IdpExternalIdQuery setInflationPolicy(InflationPolicy inflationPolicy) {
-        this.inflationPolicy = inflationPolicy;
-        return this;
-    }
 
     public Long getIdpId() {
         return idpId;

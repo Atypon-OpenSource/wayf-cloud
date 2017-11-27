@@ -76,27 +76,7 @@ public class IdpExternalIdFacadeImpl implements IdpExternalIdFacade {
                 "Could not determine a unique External Id from input");
     }
 
-    private Completable populate(List<IdPExternalId> idPExternalIds, IdpExternalIdQuery query) {
-        return inflateIdentityProviders(idPExternalIds, query).compose(FacadePolicies::applyCompletable);
 
-    }
-
-    private Completable inflateIdentityProviders(Iterable<IdPExternalId> idPExternalIds, IdpExternalIdQuery query) {
-        if (query.getInflationPolicy() == null || !query.getInflationPolicy().hasChildField(IdpExternalIdQuery.IDENTITY_PROVIDER)) {
-            return Completable.complete();
-        }
-
-        Multimap<Long, IdPExternalId> externalIdsByIdpId = HashMultimap.create();
-
-        return Observable.fromIterable(idPExternalIds)
-                .filter((idPExternalId -> idPExternalId.getIdentityProvider() != null))
-                .collectInto(externalIdsByIdpId, (map, idPExternalId) -> map.put(idPExternalId.getIdentityProvider().getId(), idPExternalId))
-                .flatMapObservable((map) -> map.keySet().isEmpty() ? Observable.empty() : identityProviderFacade.filter(new IdentityProviderQuery().ids(map.keySet())))
-                .flatMapCompletable((identityProvider ->
-                        Observable.fromIterable(externalIdsByIdpId.get(identityProvider.getId()))
-                                .flatMapCompletable((idPExternalId ->
-                                        Completable.fromAction(() -> idPExternalId.setIdentityProvider(identityProvider))))));
-    }
 
 
     private void validate(IdPExternalId idPExternalId) {
