@@ -1,5 +1,20 @@
 [
   {
+    "entityId": "sample-saml-entity-id-2",
+    "federationId": "sample-saml-federation-id-2",
+    "name": "SAML Entity 2",
+    "externalIds": [
+      {
+        "id": "test2",
+        "provider": "ISNI"
+      },
+      {
+        "id": "test",
+        "provider": "REDLINK"
+      }
+    ]
+  },
+  {
     "entityId": "sample-open-athens-2-entity-id",
     "scope": "sample-scope-2",
     "organizationId": "1234567",
@@ -13,21 +28,6 @@
       {
         "id": "test",
         "provider": "RINGGOLD"
-      }
-    ]
-  },
-  {
-    "entityId": "sample-saml-entity-id-2",
-    "federationId": "sample-saml-federation-id-2",
-    "name": "SAML Entity 2",
-    "externalIds": [
-      {
-        "id": "test2",
-        "provider": "ISNI"
-      },
-      {
-        "id": "test",
-        "provider": "REDLINK"
       }
     ]
   }

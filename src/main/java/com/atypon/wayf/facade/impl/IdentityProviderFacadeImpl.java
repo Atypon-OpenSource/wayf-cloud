@@ -213,17 +213,14 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
             result = Observable.fromIterable(daos)
                     .flatMap((dao) -> dao.filter(query))
                     .collectInto(new LinkedList<IdentityProvider>(), LinkedList::add)
-                    .flatMapObservable(idpList -> {
-                        idpList.sort(Comparator.comparing(IdentityProvider::getId));
-                        return Observable.fromIterable(idpList);
-                    });
+                    .flatMapObservable(Observable::fromIterable);
         }
         return result.flatMap(idp -> externalIdFacade.filter(new IdpExternalIdQuery().setIdpId(idp.getId())).
                 collectInto(new LinkedList<IdPExternalId>(), LinkedList::add).
                 map(list -> {
                     idp.setExternalIds(list.isEmpty() ? null : list);
                     return idp;
-                }).toObservable());
+                }).toObservable()).sorted(Comparator.comparing(IdentityProvider::getId));
     }
 
     private Observable<IdentityProvider> resolveOauth(OauthEntity oauthEntity) {
