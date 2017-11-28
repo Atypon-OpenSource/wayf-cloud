@@ -1,10 +1,10 @@
 [
   {
     "id": "test2",
-    "provider": "isni"
+    "provider": "ISNI"
   },
   {
     "id": "test",
-    "provider": "redlink"
+    "provider": "REDLINK"
   }
 ]

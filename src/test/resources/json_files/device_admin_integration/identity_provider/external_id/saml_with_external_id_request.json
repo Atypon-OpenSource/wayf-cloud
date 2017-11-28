@@ -5,16 +5,12 @@
   "name" : "SAML Entity 2",
   "externalIds": [
     {
-      "provider": "redlink",
+      "provider": "REDLINK",
       "id": "test"
     },
     {
-      "provider": "isni",
+      "provider": "ISNI",
       "id": "test2"
-    },
-    {
-      "id": "test3",
-      "provider": "invalid"
     }
   ]
 }

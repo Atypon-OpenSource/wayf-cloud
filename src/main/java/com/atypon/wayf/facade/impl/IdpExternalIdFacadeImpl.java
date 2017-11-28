@@ -1,8 +1,6 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.IdPExternalIdDao;
-import com.atypon.wayf.data.ServiceException;
-import com.atypon.wayf.data.identity.IdentityProviderQuery;
 import com.atypon.wayf.data.identity.external.IdPExternalId;
 import com.atypon.wayf.data.identity.external.IdpExternalIdQuery;
 import com.atypon.wayf.facade.IdentityProviderFacade;
@@ -26,16 +24,7 @@ import static com.atypon.wayf.reactivex.FacadePolicies.singleOrException;
 
 public class IdpExternalIdFacadeImpl implements IdpExternalIdFacade {
 
-    private static final Set<String> STATIC_ALLOWED_PROVIDERS;
     private static Logger LOG = LoggerFactory.getLogger(IdpExternalIdFacadeImpl.class);
-
-    static {
-        STATIC_ALLOWED_PROVIDERS = new HashSet<>();
-        STATIC_ALLOWED_PROVIDERS.add("ISNI");
-        STATIC_ALLOWED_PROVIDERS.add("REDLINK");
-        STATIC_ALLOWED_PROVIDERS.add("RINGGOLD");
-    }
-
 
     @Inject
     private IdentityProviderFacade identityProviderFacade;
@@ -47,12 +36,9 @@ public class IdpExternalIdFacadeImpl implements IdpExternalIdFacade {
 
     }
 
-
     @Override
     public Single<IdPExternalId> create(IdPExternalId externalId) {
         LOG.debug("Creating External Id [{}]", externalId);
-
-        validate(externalId);
 
         return idPExternalIdDao.create(externalId);
     }
@@ -77,12 +63,5 @@ public class IdpExternalIdFacadeImpl implements IdpExternalIdFacade {
     }
 
 
-
-
-    private void validate(IdPExternalId idPExternalId) {
-        if (!STATIC_ALLOWED_PROVIDERS.contains(idPExternalId.getProvider().toUpperCase())) {
-            throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Not valid provider");
-        }
-    }
 
 }

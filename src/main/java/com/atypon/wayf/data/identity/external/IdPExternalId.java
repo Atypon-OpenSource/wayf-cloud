@@ -25,7 +25,7 @@ public class IdPExternalId {
 
     @JsonProperty("id")
     private String externalId;
-    private String provider;
+    private ExternalProvider provider;
 
     public Long getId() {
         return id;
@@ -53,11 +53,11 @@ public class IdPExternalId {
         this.externalId = externalId;
     }
 
-    public String getProvider() {
+    public ExternalProvider getProvider() {
         return provider;
     }
 
-    public void setProvider(String provider) {
+    public void setProvider(ExternalProvider provider) {
         this.provider = provider;
     }
 

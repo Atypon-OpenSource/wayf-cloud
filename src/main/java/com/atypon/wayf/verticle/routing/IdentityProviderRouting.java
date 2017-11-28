@@ -19,6 +19,7 @@ package com.atypon.wayf.verticle.routing;
 import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.identity.IdentityProvider;
 import com.atypon.wayf.data.identity.IdentityProviderQuery;
+import com.atypon.wayf.data.identity.external.ExternalProvider;
 import com.atypon.wayf.data.identity.external.IdPExternalId;
 import com.atypon.wayf.data.identity.external.IdpExternalIdQuery;
 import com.atypon.wayf.data.publisher.Publisher;
@@ -170,7 +171,7 @@ public class IdentityProviderRouting implements RoutingProvider {
         RequestParamMapper.mapParams(routingContext, query);
         String provider = RequestReader.getQueryValue(routingContext, "provider");
         if (provider != null) {
-            query.setProvider(provider);
+            query.setProvider(ExternalProvider.valueOf(provider.toUpperCase()));
         }
 
         return externalIdFacade.filter(query);

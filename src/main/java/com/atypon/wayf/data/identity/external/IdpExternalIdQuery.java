@@ -9,7 +9,7 @@ public class IdpExternalIdQuery {
 
     private Long id;
     private String externalId;
-    private String provider;
+    private ExternalProvider provider;
     private Long idpId;
     private Integer limit;
     private Integer offset;
@@ -18,11 +18,11 @@ public class IdpExternalIdQuery {
 
     }
 
-    public String getProvider() {
+    public ExternalProvider getProvider() {
         return provider;
     }
 
-    public IdpExternalIdQuery setProvider(String provider) {
+    public IdpExternalIdQuery setProvider(ExternalProvider provider) {
         this.provider = provider;
         return this;
     }
