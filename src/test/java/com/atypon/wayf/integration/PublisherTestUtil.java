@@ -19,6 +19,7 @@ package com.atypon.wayf.integration;
 import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.data.authentication.AuthorizationTokenType;
 import com.atypon.wayf.data.publisher.Publisher;
+import com.atypon.wayf.data.user.User;
 import com.atypon.wayf.verticle.routing.LoggingHttpRequestFactory;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
@@ -178,12 +179,16 @@ public class PublisherTestUtil {
         String authorizationTokenType = readField(createResponse, "$.token.type");
         String authorizationTokenValue = readField(createResponse, "$.token.value");
         String code = readField(createResponse, "$.code");
-
+        Long userId = Long.valueOf(readField(createResponse, "$.contact.id"));
         assertJsonEquals(response, createResponse, createResponseGeneratedFields);
 
         Publisher publisher = new Publisher();
         publisher.setId(id);
         publisher.setCode(code);
+
+        User user = new User();
+        user.setId(userId);
+        publisher.setContact(user);
 
         AuthorizationToken token = new AuthorizationToken();
         token.setType(AuthorizationTokenType.valueOf(authorizationTokenType));
