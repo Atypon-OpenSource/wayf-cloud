@@ -310,25 +310,4 @@ public class DeviceTestUtil {
                 .statusCode(200)
                 .extract().response();
     }
-
-    public void deleteDeviceWithWrongId(String globalId, String expectedResponseJson) {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Cookie", "deviceId=" + globalId);
-        ExtractableResponse relateResponse = requestFactory
-                .request()
-                .headers(headers)
-                .url("/1/device/")
-                .method(Method.DELETE)
-                .execute()
-                .statusCode(404)
-                .extract();
-
-        String responseBody = relateResponse.response().body().asString();
-
-        String[] relateResponseGeneratedFields = {
-                "$.stacktrace",
-        };
-        assertJsonEquals(expectedResponseJson, responseBody, relateResponseGeneratedFields);
-    }
-
 }

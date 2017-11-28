@@ -83,9 +83,4 @@ public class DeviceReadIntegrationTest extends BaseHttpTest {
     public void deleteDevice(){
         deviceTestUtil.CreateAndDeleteDevice();
     }
-
-    @Test
-    public void deleteDeviceWithWrongId() {
-        deviceTestUtil.deleteDeviceWithWrongId(UUID.randomUUID().toString(), ERROR_404_BAD_GLOBAL_ID_RESPONSE_JSON);
-    }
 }
