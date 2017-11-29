@@ -250,6 +250,17 @@ CREATE TABLE `error_log` (
 UNIQUE KEY `id_UNIQUE` (`id`)
 );
 
+DROP TABLE IF EXISTS `idp_external_id`;
+
+CREATE TABLE `idp_external_id` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `idp_id` int (11) NOT NULL,
+  `provider` VARCHAR(45) NOT NULL,
+  `external_id` VARCHAR(250) NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idp_external_UNIQUE` (`idp_id`, `provider`)
+);
+
 
 INSERT INTO wayf.user (first_name, last_name, email, phone_number, created_date)
 	VALUES ('Default', 'Admin', 'test@atypon.com', '+1 (585) 555-5555', CURRENT_TIMESTAMP);
