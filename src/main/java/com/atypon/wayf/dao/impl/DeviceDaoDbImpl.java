@@ -102,9 +102,7 @@ public class DeviceDaoDbImpl implements DeviceDao {
     public Completable delete(Long id) {
         Device device = new Device();
         device.setId(id);
-        return dbExecutor.executeUpdate(deleteSql, device)
-                .toCompletable()
-                .andThen(dbExecutor.executeUpdate(deletePublisherLocalIdXrefSql, device))
+        return dbExecutor.executeUpdate(deletePublisherLocalIdXrefSql, device)
                 .toCompletable();
     }
 
