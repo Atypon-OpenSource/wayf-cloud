@@ -61,7 +61,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
     private static final String FILTER_DEVICE = "/1/devices";
     private static final String ADD_DEVICE_PUBLISHER_RELATIONSHIP = "/1/device/:localId";
     private static final String CREATE_GLOBAL_ID = "/1/device/";
-    private static final String DELETE_GLOBAL_ID = CREATE_GLOBAL_ID;
+    private static final String DELETE_GLOBAL_ID = "/1/mydevice/";
 
     @Inject
     private ResponseWriter responseWriter;
@@ -97,12 +97,12 @@ public class DeviceRoutingProvider implements RoutingProvider {
         router.post(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.completable((rc) -> registerLocalId(rc)));
         router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.cookieSingle((rc) -> createPublisherDeviceRelationship(rc)));
         router.post(CREATE_GLOBAL_ID).handler(handlerFactory.cookieSingle(rc -> createGlobalId(rc)));
-        router.delete(DELETE_GLOBAL_ID).handler(handlerFactory.completable((rc)-> deleteDevice(rc)));
+        router.delete(DELETE_GLOBAL_ID).handler(handlerFactory.completable((rc) -> deleteDevice(rc)));
     }
 
-    public Completable deleteDevice(RoutingContext routingContext){
-        Device device = readMyDevice(routingContext).blockingGet();
-        return deviceFacade.deleteDevice(device.getId());
+    public Completable deleteDevice(RoutingContext routingContext) {
+        return readMyDevice(routingContext).flatMapCompletable(device ->
+                deviceFacade.deleteDevice(device.getId()).andThen(invalidateGlobalIdCookie(routingContext)));
     }
 
     public Single<Device> createGlobalId(RoutingContext rc) {
@@ -130,6 +130,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
         query.setGlobalId(deviceId);
 
         return deviceFacade.read(query);
+
     }
 
     public Observable<Device> filterDevice(RoutingContext routingContext) {
@@ -204,6 +205,16 @@ public class DeviceRoutingProvider implements RoutingProvider {
         device.setGlobalId(null);
 
         return device;
+    }
+
+    private Completable invalidateGlobalIdCookie(RoutingContext routingContext) {
+        Cookie cookie = new CookieImpl(RequestReader.DEVICE_ID, "removed")
+                .setMaxAge(0)
+                .setPath("/");
+
+        routingContext.addCookie(cookie);
+
+        return Completable.complete();
     }
 
     private DeviceQuery buildQuery(RoutingContext routingContext) {
