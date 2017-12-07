@@ -304,7 +304,7 @@ public class DeviceTestUtil {
         requestFactory
                 .request()
                 .headers(headers)
-                .url("/1/device/")
+                .url("/1/mydevice/")
                 .method(Method.DELETE)
                 .execute()
                 .statusCode(200)
