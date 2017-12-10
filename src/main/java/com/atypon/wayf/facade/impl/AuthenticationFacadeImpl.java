@@ -122,6 +122,11 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
                 return null;
             }
 
+            if (credentials instanceof CachedAuthorizationToken) {
+                authenticatedEntity.setAuthenticatedUntil(((CachedAuthorizationToken) credentials).getValidUntil());
+            }
+
+
             return authenticatedEntity;
         } catch (Exception e) {
             throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Could not authenticate credentials", e);
