@@ -157,6 +157,7 @@ CREATE TABLE `publisher` (
   `name` varchar(45) NOT NULL,
   `code` varchar(50) NOT NULL,
   `widget_location` varchar(255) NULL,
+  `url` varchar(255) NULL,
   `salt` varchar(30) NOT NULL,
   `status` varchar(15) NOT NULL,
   `contact_id` int(11) NULL,
@@ -173,6 +174,7 @@ DROP TABLE IF EXISTS `publisher_registration`;
 CREATE TABLE `publisher_registration` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `publisher_name` varchar(45) NOT NULL,
+  `url` varchar(255) NULL,
   `status` varchar(15) NOT NULL,
   `contact_id` int(11) NULL,
   `application_date` timestamp NOT NULL,

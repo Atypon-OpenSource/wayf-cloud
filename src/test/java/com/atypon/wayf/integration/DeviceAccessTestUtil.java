@@ -182,6 +182,7 @@ public class DeviceAccessTestUtil {
                 "$[*].publisher.name",
                 "$[*].publisher.contact",
                 "$[*].publisher.createdDate",
+                "$[*].publisher.url",
                 "$[*].createdDate"
         };
 
