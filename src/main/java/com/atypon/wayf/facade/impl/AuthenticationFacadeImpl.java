@@ -117,7 +117,9 @@ public class AuthenticationFacadeImpl implements AuthenticationFacade {
             }
 
             if (!isStillValid(authenticatedEntity)) {
-                throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Expired credentials");
+                //throw new ServiceException(HttpStatus.SC_UNAUTHORIZED, "Expired credentials");
+                //The token has been expired (Ignore it)
+                return null;
             }
 
             return authenticatedEntity;
