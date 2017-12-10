@@ -238,6 +238,7 @@ public class DeviceTestUtil {
                 "$.activity[*].publisher.code",
                 "$.activity[*].publisher.contact.id",
                 "$.activity[*].publisher.createdDate",
+                "$.activity[*].publisher.url",
                 "$.activity[*].identityProvider.id",
                 "$.activity[*].identityProvider.createdDate",
                 "$.activity[*].createdDate",
