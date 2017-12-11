@@ -47,7 +47,8 @@ public class DeviceDaoDbImpl implements DeviceDao {
     @Named("device.dao.db.create")
     private String createSql;
 
-    @Inject@Named("device.dao.db.read")
+    @Inject
+    @Named("device.dao.db.read")
     private String readSql;
 
     @Inject
@@ -73,6 +74,10 @@ public class DeviceDaoDbImpl implements DeviceDao {
     @Inject
     @Named("device.dao.db.delete-publisher-local-id-xref")
     private String deletePublisherLocalIdXrefSql;
+
+    @Inject
+    @Named("device.dao.db.update-device-info")
+    private String updateInfoSql;
 
     @Inject
     private DbExecutor dbExecutor;
@@ -149,5 +154,10 @@ public class DeviceDaoDbImpl implements DeviceDao {
         return Maybe.just(args)
                 .compose((maybe) -> DaoPolicies.applyMaybe(maybe))
                 .flatMap((_args) -> dbExecutor.executeSelectFirst(readByPublisherLocalIdSql, args, Device.class));
+    }
+
+    @Override
+    public Single<Integer> updateDeviceInfo(Device device) {
+        return dbExecutor.executeUpdateRowCount(updateInfoSql, device).compose(DaoPolicies::applySingle);
     }
 }

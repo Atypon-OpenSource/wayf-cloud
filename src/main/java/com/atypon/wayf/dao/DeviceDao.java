@@ -34,4 +34,6 @@ public interface DeviceDao {
     Completable registerLocalId(Long publisherId, String localId);
 
     Maybe<Device> readByPublisherLocalId(Long publisherId, String localId);
+
+    Single<Integer> updateDeviceInfo(Device device);
 }

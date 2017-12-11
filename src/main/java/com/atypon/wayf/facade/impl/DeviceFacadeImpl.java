@@ -34,12 +34,14 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -94,7 +96,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
         LOG.debug("Reading device with query [{}]", query);
 
         return singleOrException(deviceDao.read(query), HttpStatus.SC_NOT_FOUND, "Invalid Global ID")
-                .flatMap((device) -> populate(device, query).toSingle(() -> device));
+                .flatMap((device) -> populate(device, query).toSingle(() -> device)).flatMap((device -> updateDeviceInfo(device)));
     }
 
     @Override
@@ -162,6 +164,24 @@ public class DeviceFacadeImpl implements DeviceFacade {
         );
     }
 
+    private Single<Device> updateDeviceInfo(Device device) {
+
+        String deviceUserAgent = device.getInfo().getUserAgent();
+        String requestUserAgent = RequestContextAccessor.get().getUserAgent();
+
+        if (!requestUserAgent.equalsIgnoreCase(deviceUserAgent)) {
+            device.getInfo().setUserAgent(requestUserAgent);
+            device.setModifiedDate(new Date());
+            return deviceDao.updateDeviceInfo(device).map((numAffectedRows) -> {
+                if (numAffectedRows != 1) {
+                    throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not device");
+                }
+                return device;
+            });
+        }
+        return Single.just(device);
+    }
+
 
     private Completable inflateActivity(Device device, DeviceQuery query) {
         // Return as complete if authenticatedBy is not a requested field
@@ -192,7 +212,7 @@ public class DeviceFacadeImpl implements DeviceFacade {
     }
 
     @Override
-    public Completable deleteDevice(Long deviceId){
+    public Completable deleteDevice(Long deviceId) {
         return deviceDao.delete(deviceId)
                 .compose((completable) -> FacadePolicies.applyCompletable(completable))
                 .andThen(deviceAccessFacade.delete(deviceId))
