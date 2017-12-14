@@ -37,9 +37,6 @@ public class Mail {
         try {
             InternetAddress internetAddress = new InternetAddress(address, name);
             internetAddress.validate();
-            if(EmailUtil.IsValidEmailAddress(address)){
-                throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "Not an Email Address");
-            }
             message.addRecipient(type, internetAddress);
         } catch (AddressException | UnsupportedEncodingException e) {
 
