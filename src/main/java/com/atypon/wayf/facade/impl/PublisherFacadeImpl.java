@@ -92,6 +92,7 @@ public class PublisherFacadeImpl implements PublisherFacade {
         User admin = AuthenticatedEntity.authenticatedAsAdmin(RequestContextAccessor.get().getAuthenticated());
 
         return userFacade.create(publisher.getContact()) // Create the contact user
+                .onErrorReturnItem(new User())
                 .flatMap((contact) -> {
                     // Set the newly created contact on the publisher
                     publisher.setContact(contact);
