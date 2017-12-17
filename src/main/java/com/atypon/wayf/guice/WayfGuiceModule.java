@@ -36,11 +36,10 @@ import com.atypon.wayf.database.BeanFactory;
 import com.atypon.wayf.database.DbExecutor;
 import com.atypon.wayf.facade.*;
 import com.atypon.wayf.facade.impl.*;
+import com.atypon.wayf.mail.DefaultMailMessageSender;
+import com.atypon.wayf.mail.MailMessageSender;
 import com.google.common.cache.CacheBuilder;
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
+import com.google.inject.*;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.apache.commons.dbcp.BasicDataSource;
@@ -137,6 +136,9 @@ public class WayfGuiceModule extends AbstractModule {
             bind(DeviceIdentityProviderBlacklistDao.class).to(DeviceIdentityProviderBlacklistDaoDbImpl.class);
 
             bind(ClientJsFacade.class).to(ClientJsFacadeImpl.class);
+
+            bind(MailMessageSender.class).to(DefaultMailMessageSender.class);
+
         } catch (Exception e) {
             LOG.error("Error initializing Guice", e);
             throw new RuntimeException(e);

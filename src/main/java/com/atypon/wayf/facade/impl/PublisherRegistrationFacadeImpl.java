@@ -23,8 +23,12 @@ import com.atypon.wayf.data.publisher.registration.PublisherRegistration;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistrationQuery;
 import com.atypon.wayf.data.publisher.registration.PublisherRegistrationStatus;
 import com.atypon.wayf.data.user.UserQuery;
+import com.atypon.wayf.facade.PasswordCredentialsFacade;
 import com.atypon.wayf.facade.PublisherRegistrationFacade;
 import com.atypon.wayf.facade.UserFacade;
+import com.atypon.wayf.mail.Mail;
+import com.atypon.wayf.mail.MailMessageSender;
+import com.atypon.wayf.mail.notification.RegistrationNotificationBuilder;
 import com.atypon.wayf.reactivex.FacadePolicies;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.Lists;
@@ -37,10 +41,8 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.mail.MessagingException;
+import java.util.*;
 
 @Singleton
 public class PublisherRegistrationFacadeImpl implements PublisherRegistrationFacade {
@@ -50,6 +52,11 @@ public class PublisherRegistrationFacadeImpl implements PublisherRegistrationFac
     private UserFacade userFacade;
     @Inject
     private PublisherRegistrationDao publisherRegistrationDao;
+    @Inject
+    private PasswordCredentialsFacade credentialsFacade;
+
+    @Inject
+    private MailMessageSender mailSender;
 
     public PublisherRegistrationFacadeImpl() {
     }
@@ -69,10 +76,27 @@ public class PublisherRegistrationFacadeImpl implements PublisherRegistrationFac
                     publisherRegistration.setContact(contactUser);
                     return publisherRegistration;
                 })
-                .compose((single) -> FacadePolicies.applySingle(single))
+                .compose(FacadePolicies::applySingle)
                 .flatMap((_publisherRegistration) -> publisherRegistrationDao.create(_publisherRegistration))
+                .flatMap(this::sendNotification)
                 .flatMap((_publisherRegistration) -> populate(query, Lists.newArrayList(_publisherRegistration)).toSingle(() -> _publisherRegistration));
 
+    }
+
+
+    private Single<PublisherRegistration> sendNotification(PublisherRegistration publisherRegistration) {
+
+        try {
+            Mail mail = new RegistrationNotificationBuilder(mailSender)
+                    .addRecipients(getAdminEmails())
+                    .addPublisherRegistration(publisherRegistration)
+                    .build();
+            mail.send();
+        } catch (MessagingException e) {
+            LOG.error(e.getMessage(), e);
+        }
+
+        return Single.just(publisherRegistration);
     }
 
     @Override
@@ -141,4 +165,9 @@ public class PublisherRegistrationFacadeImpl implements PublisherRegistrationFac
 
     }
 
+    private List<String> getAdminEmails() {
+        return credentialsFacade.getAllAdminEmails()
+                .collectInto(new ArrayList<String>(), (list, credential) -> list.add(credential.getEmailAddress()))
+                .blockingGet();
+    }
 }
