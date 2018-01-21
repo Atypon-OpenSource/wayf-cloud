@@ -73,7 +73,5 @@ function readCookieValue(cookieName) {
     return null;
 }
 
-window.onload = function() {
-    var localId = readLocalId();
-    registerLocalId(localId);
-}
+var localId = readLocalId();
+registerLocalId(localId);
