@@ -38,7 +38,6 @@ public class DeviceTestUtil {
     public String relateDeviceToPublisherError(int statusCode, String localId, String publisherCode, String globalId, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateJwtTokenHeaderValue(publisherCode));
-        headers.put("User-Agent", "Test-Agent");
         headers.put("Origin", "test-origin.com");
 
         Cookie cookie = null;
@@ -72,7 +71,6 @@ public class DeviceTestUtil {
     public void registerLocalId(String localId, AuthorizationToken publisherToken) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
-        headers.put("User-Agent", "Test-Agent");
 
         ExtractableResponse relateResponse = requestFactory
                 .request()
@@ -87,7 +85,6 @@ public class DeviceTestUtil {
     public String relateDeviceToPublisher(String localId, String publisherCode, String globalId, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateJwtTokenHeaderValue(publisherCode));
-        headers.put("User-Agent", "Test-Agent");
         headers.put("Origin", "test-origin.com");
 
         Cookie cookie = null;
@@ -123,7 +120,6 @@ public class DeviceTestUtil {
     public void deviceQueryBadPublisherToken(String localId, AuthorizationToken publisherToken, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
-        headers.put("User-Agent", "Test-Agent");
 
         ExtractableResponse relateBadTokenResponse = requestFactory
                 .request()
@@ -250,7 +246,6 @@ public class DeviceTestUtil {
 
     public void createDevice(String expectedResponseJson, String origin) {
         Map<String, String> headers = new HashMap<>();
-        headers.put("User-Agent", "Test-Agent");
 
         if(origin != null){
             headers.put("Origin", origin);
@@ -286,7 +281,6 @@ public class DeviceTestUtil {
 
     public void CreateAndDeleteDevice() {
         Map<String, String> headers = new HashMap<>();
-        headers.put("User-Agent", "Test-Agent");
 
         ExtractableResponse relateResponse = requestFactory
                 .request()

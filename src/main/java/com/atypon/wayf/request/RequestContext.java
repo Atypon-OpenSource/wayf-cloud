@@ -139,14 +139,6 @@ public class RequestContext {
         return this;
     }
 
-    public String getUserAgent() {
-        return userAgent;
-    }
-
-    public RequestContext setUserAgent(String userAgent) {
-        this.userAgent = userAgent;
-        return this;
-    }
 
     public AuthenticatedEntity getAuthenticated() {
         return authenticated;
