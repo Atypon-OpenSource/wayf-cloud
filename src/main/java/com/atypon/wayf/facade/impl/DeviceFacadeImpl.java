@@ -31,6 +31,7 @@ import com.atypon.wayf.facade.*;
 import com.atypon.wayf.reactivex.FacadePolicies;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Completable;
@@ -40,6 +41,7 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,10 +76,15 @@ public class DeviceFacadeImpl implements DeviceFacade {
         device.setStatus(DeviceStatus.ACTIVE);
 
         // Generate a global ID
-        device.setGlobalId(UUID.randomUUID().toString());
+        String globalId = UUID.randomUUID().toString();
+        String hashedGlobalId = hashGlobalId(globalId);
+        device.setGlobalId(hashedGlobalId);
 
         // Create the device
-        return deviceDao.create(device);
+        return deviceDao.create(device).map(device1 -> {
+            device1.setGlobalId(globalId);
+            return device1;
+        });
     }
 
     @Override
@@ -123,10 +130,11 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
     private Single<Device> resolveFromRequest(Publisher publisher, String localId) {
         String deviceGlobalId = RequestContextAccessor.get().getDeviceId();
+        String hashedDeviceId = hashGlobalId(deviceGlobalId);
 
         LOG.debug("Found global ID from client [{}]", deviceGlobalId);
         if (deviceGlobalId != null) {
-            return read(new DeviceQuery().setGlobalId(deviceGlobalId));
+            return read(new DeviceQuery().setGlobalId(hashedDeviceId));
         }
 
         // If the localId has already been used, return the device associated with it. Otherwise, create a new Device
@@ -185,8 +193,13 @@ public class DeviceFacadeImpl implements DeviceFacade {
     @Override
     public Completable deleteDevice(Long deviceId){
         return deviceDao.delete(deviceId)
-                .compose((completable) -> FacadePolicies.applyCompletable(completable))
+                .compose(FacadePolicies::applyCompletable)
                 .andThen(deviceAccessFacade.delete(deviceId))
-                .compose((completable) -> FacadePolicies.applyCompletable(completable));
+                .compose(FacadePolicies::applyCompletable);
+    }
+
+    @Override
+    public String hashGlobalId(String globalId) {
+        return globalId == null ? null : Hashing.sha256().hashString(globalId, StandardCharsets.UTF_8).toString();
     }
 }

@@ -71,7 +71,7 @@ public class DeviceAccessRouting implements RoutingProvider {
 
         String globalId = RequestReader.getCookieValue(routingContext, RequestReader.DEVICE_ID);
 
-        Device device = deviceFacade.read(new DeviceQuery().setGlobalId(globalId)).blockingGet();
+        Device device = deviceFacade.read(new DeviceQuery().setGlobalId(deviceFacade.hashGlobalId(globalId))).blockingGet();
 
         DeviceAccessQuery deviceAccessQuery = new DeviceAccessQuery().setDeviceIds(Lists.newArrayList(device.getId()));
 

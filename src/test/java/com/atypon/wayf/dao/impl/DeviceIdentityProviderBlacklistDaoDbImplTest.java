@@ -25,11 +25,13 @@ import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.RequestContext;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.Sets;
+import com.google.common.hash.Hashing;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -53,8 +55,9 @@ public class DeviceIdentityProviderBlacklistDaoDbImplTest {
     @Test
     public void testAdd() {
         Device device = new Device();
-        device.setGlobalId(UUID.randomUUID().toString());
-
+        String globalId = UUID.randomUUID().toString();
+        String hashedGlobalId = Hashing.sha256().hashString(globalId, StandardCharsets.UTF_8).toString();
+        device.setGlobalId(hashedGlobalId);
         IdentityProvider idp = new SamlEntity();
         idp.setId(123L);
 
@@ -69,7 +72,9 @@ public class DeviceIdentityProviderBlacklistDaoDbImplTest {
     @Test
     public void testRemove() {
         Device device = new Device();
-        device.setGlobalId(UUID.randomUUID().toString());
+        String globalId = UUID.randomUUID().toString();
+        String hashedGlobalId = Hashing.sha256().hashString(globalId, StandardCharsets.UTF_8).toString();
+        device.setGlobalId(hashedGlobalId);
 
         IdentityProvider idp = new SamlEntity();
         idp.setId(123L);
@@ -90,8 +95,9 @@ public class DeviceIdentityProviderBlacklistDaoDbImplTest {
     @Test
     public void testFilter() {
         Device device = new Device();
-        device.setGlobalId(UUID.randomUUID().toString());
-
+        String globalId = UUID.randomUUID().toString();
+        String hashedGlobalId = Hashing.sha256().hashString(globalId, StandardCharsets.UTF_8).toString();
+        device.setGlobalId(hashedGlobalId);
         IdentityProvider idp1 = new SamlEntity();
         idp1.setId(123L);
 
