@@ -27,8 +27,6 @@ public class Device {
     private String globalId;
     private DeviceStatus status;
 
-    private DeviceInfo info;
-
     private List<IdentityProviderUsage> history;
     private List<DeviceAccess> activity;
 
@@ -60,14 +58,6 @@ public class Device {
 
     public void setStatus(DeviceStatus status) {
         this.status = status;
-    }
-
-    public DeviceInfo getInfo() {
-        return info;
-    }
-
-    public void setInfo(DeviceInfo info) {
-        this.info = info;
     }
 
     public List<IdentityProviderUsage> getHistory() {

@@ -606,8 +606,6 @@ definitions:
         description: Device Status
         enum:
           - ACTIVE
-      info:
-        $ref: '#/definitions/DeviceInfo'
       history:
         type: array
         items:
@@ -626,13 +624,6 @@ definitions:
         readOnly: true
     xml:
       name: Device
-  DeviceInfo:
-    type: object
-    properties:
-      userAgent:
-        type: string
-    xml:
-      name: DeviceInfo
   DeviceAccess:
     type: object
     properties:

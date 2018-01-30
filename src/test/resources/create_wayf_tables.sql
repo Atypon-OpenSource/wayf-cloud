@@ -26,7 +26,6 @@ CREATE TABLE `device` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `global_id` varchar(36) NOT NULL,
   `status` varchar(15) NOT NULL,
-  `user_agent` varchar(250) NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),

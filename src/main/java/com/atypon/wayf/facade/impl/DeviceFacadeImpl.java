@@ -20,7 +20,6 @@ import com.atypon.wayf.dao.DeviceDao;
 import com.atypon.wayf.data.ServiceException;
 import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.device.Device;
-import com.atypon.wayf.data.device.DeviceInfo;
 import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.device.DeviceStatus;
 import com.atypon.wayf.data.device.access.DeviceAccess;
@@ -76,15 +75,6 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
         // Generate a global ID
         device.setGlobalId(UUID.randomUUID().toString());
-
-        DeviceInfo info = device.getInfo();
-        if (info == null) {
-            info = new DeviceInfo();
-            device.setInfo(info);
-        }
-
-        // Set the user to that of the request
-        info.setUserAgent(RequestContextAccessor.get().getUserAgent());
 
         // Create the device
         return deviceDao.create(device);
