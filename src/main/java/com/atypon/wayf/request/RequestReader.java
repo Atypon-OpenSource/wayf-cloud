@@ -39,7 +39,6 @@ public class RequestReader {
 
     public static final String DEVICE_ID = "deviceId";
     public static final String AUTHORIZATION_HEADER = "Authorization";
-    public static final String USER_AGENT_HEADER = "User-Agent";
 
     private static <B> B _readRequestBody(RoutingContext routingContext, Class<B> bodyClass) {
         LOG.debug("Reading request body of type [{}] from request", bodyClass);

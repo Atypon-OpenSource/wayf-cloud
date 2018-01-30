@@ -39,7 +39,6 @@ public class RequestContextFactory {
     public RequestContext fromRoutingContext(RoutingContext routingContext) {
         RequestContext requestContext = new RequestContext();
 
-        requestContext.setUserAgent(RequestReader.getHeaderValue(routingContext, RequestReader.USER_AGENT_HEADER));
         requestContext.setRequestUri(routingContext.request().uri());
         requestContext.setRequestUrl(routingContext.request().absoluteURI());
         requestContext.setRequestBody(routingContext.getBodyAsString());
