@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS `device`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `device` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `global_id` varchar(36) NOT NULL,
+  `global_id` varchar(250) NOT NULL,
   `status` varchar(15) NOT NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -93,7 +93,7 @@ DROP TABLE IF EXISTS `device_idp_blacklist`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `device_idp_blacklist` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `device_id` varchar(36) NOT NULL,
+  `device_id` varchar(250) NOT NULL,
   `idp_id` int(11) NOT NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,

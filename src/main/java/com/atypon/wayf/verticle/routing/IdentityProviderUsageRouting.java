@@ -58,8 +58,8 @@ public class IdentityProviderUsageRouting implements RoutingProvider {
     }
 
     public void addRoutings(Router router) {
-        router.get(READ_DEVICE_RECENT_HISTORY).handler(handlerFactory.observable((rc) -> readDeviceLocalHistory(rc)));
-        router.get(READ_MY_DEVICE_RECENT_HISTORY).handler(handlerFactory.observable((rc) -> readMyDeviceLocalHistory(rc)));
+        router.get(READ_DEVICE_RECENT_HISTORY).handler(handlerFactory.observable(this::readDeviceLocalHistory));
+        router.get(READ_MY_DEVICE_RECENT_HISTORY).handler(handlerFactory.observable(this::readMyDeviceLocalHistory));
     }
 
     public Observable<IdentityProviderUsage> readDeviceLocalHistory(RoutingContext routingContext) {
@@ -77,7 +77,7 @@ public class IdentityProviderUsageRouting implements RoutingProvider {
         LOG.debug("Received create IdentityProvider request");
 
         String globalId = RequestReader.getCookieValue(routingContext, RequestReader.DEVICE_ID);
-        Device device = deviceFacade.read(new DeviceQuery().setGlobalId(globalId)).blockingGet();
+        Device device = deviceFacade.read(new DeviceQuery().setGlobalId(deviceFacade.hashGlobalId(globalId))).blockingGet();
 
         return Observable.fromIterable(identityProviderUsageFacade.buildRecentHistory(device));
     }

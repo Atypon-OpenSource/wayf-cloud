@@ -22,10 +22,12 @@ import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.integration.HttpTestUtil;
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.routing.BaseHttpTest;
+import com.google.common.hash.Hashing;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.UUID;
 
@@ -98,6 +100,8 @@ public class PublisherIntegrationTest extends BaseHttpTest {
 
         // Create device
         String globalIdPublisherA = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+        String hashedGlobalId = Hashing.sha256().hashString(globalIdPublisherA, StandardCharsets.UTF_8).toString();
+
 
         globalId = globalIdPublisherA;
 
@@ -125,7 +129,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         deviceTestUtil.registerLocalId(publisherBLocalId, publisherB.getToken());
         String globalIdPublisherB = deviceTestUtil.relateDeviceToPublisher(publisherBLocalId, publisherB.getCode(), globalIdPublisherA, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
-        assertEquals(globalIdPublisherA, globalIdPublisherB);
+        assertEquals(hashedGlobalId, globalIdPublisherB);
 
         // Get the usage history for publisher B
         String deviceHistoryFromPublisherB = deviceAccessTestUtil.testDeviceHistory(publisherBLocalId, publisherB.getToken(), INITIAL_ADD_IDP_DEVICE_HISTORY_RESPONSE_JSON);
@@ -187,6 +191,8 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         // Register the local ID and create a device for it
         deviceTestUtil.registerLocalId(publisherALocalId1, publisherA.getToken());
         String globalIdPublisherAFirstCall = deviceTestUtil.relateDeviceToPublisher(publisherALocalId1, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+        String hashedGlobalId = Hashing.sha256().hashString(globalIdPublisherAFirstCall, StandardCharsets.UTF_8).toString();
+
 
         String publisherALocalId2 = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
@@ -195,7 +201,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         String globalIdPublisherASecondCall = deviceTestUtil.relateDeviceToPublisher(publisherALocalId2, publisherA.getCode(), globalIdPublisherAFirstCall, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Ensure the same device is stored against both local IDs
-        assertEquals(globalIdPublisherAFirstCall, globalIdPublisherASecondCall);
+        assertEquals(hashedGlobalId, globalIdPublisherASecondCall);
 
         // Ensure that we can still resolve the device
         deviceAccessTestUtil.testDeviceHistory(publisherALocalId1, publisherA.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);
@@ -209,6 +215,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
 
         // Create device
         String firstGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherAFirstLocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+        String hashedGlobalId = Hashing.sha256().hashString(firstGlobalId, StandardCharsets.UTF_8).toString();
 
         String publisherASecondLocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
 
@@ -217,7 +224,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         deviceTestUtil.registerLocalId(publisherASecondLocalId, publisherA.getToken());
         String secondGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherASecondLocalId, publisherA.getCode(), firstGlobalId, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
-        assertEquals(firstGlobalId, secondGlobalId);
+        assertEquals(hashedGlobalId, secondGlobalId);
     }
 
     @Test
@@ -227,12 +234,14 @@ public class PublisherIntegrationTest extends BaseHttpTest {
 
         // Create device for local ID
         String firstGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+        String hashedGlobalId = Hashing.sha256().hashString(firstGlobalId, StandardCharsets.UTF_8).toString();
 
         // Create device again for same local ID but do not pass in global ID
+        //should return hashed globalID
         String secondGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Ensure the system resolved to the same global ID each time
-        assertEquals(firstGlobalId, secondGlobalId);
+        assertEquals(hashedGlobalId, secondGlobalId);
 
         // Try passing in the same local ID but this time with a different publisher without registering it
         deviceTestUtil.relateDeviceToPublisherError(HttpStatus.SC_NOT_FOUND, publisherALocalId, publisherB.getCode(), null, ERROR_404_LOCAL_ID_NOT_FOUND_RESPONSE_JSON);
@@ -251,6 +260,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         String publisherALocalId = "local-id-publisher-a-" + UUID.randomUUID().toString();
         deviceTestUtil.registerLocalId(publisherALocalId, publisherA.getToken());
         String deviceXGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+        String hashedGlobalId = Hashing.sha256().hashString(deviceXGlobalId, StandardCharsets.UTF_8).toString();
 
         // Link Device X to Publisher B
         String publisherBDeviceXLocalId = "local-id-publisher-b-" + UUID.randomUUID().toString();
@@ -258,7 +268,7 @@ public class PublisherIntegrationTest extends BaseHttpTest {
         String deviceXGlobalIdPublisherB = deviceTestUtil.relateDeviceToPublisher(publisherBDeviceXLocalId, publisherB.getCode(), deviceXGlobalId, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Ensure same global ID
-        assertEquals(deviceXGlobalId, deviceXGlobalIdPublisherB);
+        assertEquals(hashedGlobalId, deviceXGlobalIdPublisherB);
 
         // Assert an empty history
         deviceAccessTestUtil.testDeviceHistory(publisherALocalId, publisherA.getToken(), NEW_DEVICE_HISTORY_RESPONSE_JSON);

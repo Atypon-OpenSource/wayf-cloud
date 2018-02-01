@@ -368,7 +368,7 @@ public class WayfGuiceModule extends AbstractModule {
 
         LoadingCacheGuavaImpl<String, String> l1Cache = new LoadingCacheGuavaImpl<>();
         l1Cache.setGuavaCache(CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build());
-        l1Cache.setCacheLoader((key) -> l2Cache.get(key));
+        l1Cache.setCacheLoader(l2Cache::get);
 
         cacheManager.registerCacheGroup(passwordSaltCacheGroup, l1Cache, l2Cache);
 

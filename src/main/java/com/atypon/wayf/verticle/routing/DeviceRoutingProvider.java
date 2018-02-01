@@ -91,13 +91,13 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
     public void addRoutings(Router router) {
         router.route("/1/device*").handler(BodyHandler.create());
-        router.get(READ_DEVICE).handler(handlerFactory.single((rc) -> readDevice(rc)));
-        router.get(READ_MY_DEVICE).handler(handlerFactory.single((rc) -> readMyDevice(rc)));
-        router.get(FILTER_DEVICE).handler(handlerFactory.observable((rc) -> filterDevice(rc)));
-        router.post(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.completable((rc) -> registerLocalId(rc)));
-        router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.cookieSingle((rc) -> createPublisherDeviceRelationship(rc)));
-        router.post(CREATE_GLOBAL_ID).handler(handlerFactory.cookieSingle(rc -> createGlobalId(rc)));
-        router.delete(DELETE_GLOBAL_ID).handler(handlerFactory.cookieSingle((rc) -> deleteDevice(rc)));
+        router.get(READ_DEVICE).handler(handlerFactory.single(this::readDevice));
+        router.get(READ_MY_DEVICE).handler(handlerFactory.single(this::readMyDevice));
+        router.get(FILTER_DEVICE).handler(handlerFactory.observable(this::filterDevice));
+        router.post(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.completable(this::registerLocalId));
+        router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.cookieSingle(this::createPublisherDeviceRelationship));
+        router.post(CREATE_GLOBAL_ID).handler(handlerFactory.cookieSingle(this::createGlobalId));
+        router.delete(DELETE_GLOBAL_ID).handler(handlerFactory.cookieSingle(this::deleteDevice));
     }
 
     public Single deleteDevice(RoutingContext routingContext) {
@@ -116,7 +116,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
         DeviceQuery query = buildQuery(routingContext);
 
         String globalIdParam = RequestReader.readRequiredPathParameter(routingContext, DEVICE_ID_PARAM_NAME, "Global ID");
-        query.setGlobalId(globalIdParam);
+        query.setGlobalId(deviceFacade.hashGlobalId(globalIdParam));
 
         return deviceFacade.read(query);
     }
@@ -127,7 +127,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
         DeviceQuery query = buildQuery(routingContext);
 
         String deviceId = RequestReader.getCookieValue(routingContext, RequestReader.DEVICE_ID);
-        query.setGlobalId(deviceId);
+        query.setGlobalId(deviceFacade.hashGlobalId(deviceId));
 
         return deviceFacade.read(query);
 
@@ -226,6 +226,18 @@ public class DeviceRoutingProvider implements RoutingProvider {
         }
 
         RequestParamMapper.mapParams(routingContext, query);
+
+        if(query.getGlobalId() != null){
+            query.setGlobalId(deviceFacade.hashGlobalId(query.getGlobalId()));
+        }
+
+        if(query.getGlobalIds() != null){
+            String[] hashedGlobalIds = new String[query.getGlobalIds().length];
+            for (int i=0; i< query.getGlobalIds().length; i++) {
+                hashedGlobalIds[i] = deviceFacade.hashGlobalId(query.getGlobalIds()[i]);
+            }
+            query.setGlobalIds(hashedGlobalIds);
+        }
 
         return query;
 

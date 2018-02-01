@@ -145,10 +145,11 @@ public class IdentityProviderRouting implements RoutingProvider {
         LOG.debug("Received request to add IDP to device");
 
         String globalId = RequestReader.getCookieValue(routingContext, RequestReader.DEVICE_ID);
+        String hashedGlobalId = deviceFacade.hashGlobalId(globalId);
 
         Long idpId = Long.valueOf(RequestReader.readRequiredPathParameter(routingContext, IDP_ID_PARAM_NAME, IDP_ID_ARG_DESCRIPTION));
 
-        return identityProviderFacade.blockIdentityProviderForGlobalId(globalId, idpId);
+        return identityProviderFacade.blockIdentityProviderForGlobalId(hashedGlobalId, idpId);
     }
 
     public Single<IdentityProvider> addExternalId(RoutingContext routingContext) {

@@ -38,4 +38,6 @@ public interface DeviceFacade {
     String encryptLocalId(Long publisherId, String localId);
 
     Completable deleteDevice(Long deviceId);
+
+    String hashGlobalId(String globalId);
 }

@@ -23,11 +23,13 @@ import com.atypon.wayf.guice.WayfGuiceModule;
 import com.atypon.wayf.reactivex.WayfReactivexConfig;
 import com.atypon.wayf.request.RequestContext;
 import com.atypon.wayf.request.RequestContextAccessor;
+import com.google.common.hash.Hashing;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -50,7 +52,9 @@ public class DeviceDaoDbImplTest {
     @Test
     public void testCreate() {
         Device device = new Device();
-        device.setGlobalId(UUID.randomUUID().toString());
+        String globalId = UUID.randomUUID().toString();
+        String hashedGlobalId = Hashing.sha256().hashString(globalId, StandardCharsets.UTF_8).toString();
+        device.setGlobalId(hashedGlobalId);
         device.setStatus(DeviceStatus.ACTIVE);
 
         Device createdDevice = dao.create(device).blockingGet();
@@ -65,7 +69,9 @@ public class DeviceDaoDbImplTest {
     @Test
     public void testRead() {
         Device device = new Device();
-        device.setGlobalId(UUID.randomUUID().toString());
+        String globalId = UUID.randomUUID().toString();
+        String hashedGlobalId = Hashing.sha256().hashString(globalId, StandardCharsets.UTF_8).toString();
+        device.setGlobalId(hashedGlobalId);
         device.setStatus(DeviceStatus.ACTIVE);
 
         Device createdDevice = dao.create(device).blockingGet();
@@ -81,7 +87,9 @@ public class DeviceDaoDbImplTest {
     @Test
     public void testXref() {
         Device device = new Device();
-        device.setGlobalId(UUID.randomUUID().toString());
+        String globalId = UUID.randomUUID().toString();
+        String hashedGlobalId = Hashing.sha256().hashString(globalId, StandardCharsets.UTF_8).toString();
+        device.setGlobalId(hashedGlobalId);
         device.setStatus(DeviceStatus.ACTIVE);
 
         Device createdDevice = dao.create(device).blockingGet();
