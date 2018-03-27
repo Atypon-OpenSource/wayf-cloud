@@ -134,7 +134,10 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
         LOG.debug("Found global ID from client [{}]", deviceGlobalId);
         if (deviceGlobalId != null) {
-            return read(new DeviceQuery().setGlobalId(hashedDeviceId));
+            return read(new DeviceQuery().setGlobalId(hashedDeviceId)).flatMap(device -> {
+                device.setGlobalId(deviceGlobalId);
+                return Single.just(device);
+            });
         }
 
         // If the localId has already been used, return the device associated with it. Otherwise, create a new Device

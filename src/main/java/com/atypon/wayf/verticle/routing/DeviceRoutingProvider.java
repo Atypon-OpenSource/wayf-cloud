@@ -118,7 +118,10 @@ public class DeviceRoutingProvider implements RoutingProvider {
         String globalIdParam = RequestReader.readRequiredPathParameter(routingContext, DEVICE_ID_PARAM_NAME, "Global ID");
         query.setGlobalId(deviceFacade.hashGlobalId(globalIdParam));
 
-        return deviceFacade.read(query);
+        return deviceFacade.read(query).flatMap(device -> {
+            device.setGlobalId(globalIdParam);
+            return Single.just(device);
+        });
     }
 
     public Single<Device> readMyDevice(RoutingContext routingContext) {
@@ -129,7 +132,10 @@ public class DeviceRoutingProvider implements RoutingProvider {
         String deviceId = RequestReader.getCookieValue(routingContext, RequestReader.DEVICE_ID);
         query.setGlobalId(deviceFacade.hashGlobalId(deviceId));
 
-        return deviceFacade.read(query);
+        return deviceFacade.read(query).flatMap(device -> {
+            device.setGlobalId(deviceId);
+            return Single.just(device);
+        });
 
     }
 
