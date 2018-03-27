@@ -16,6 +16,7 @@
 
 package com.atypon.wayf.facade.impl;
 
+import com.atypon.ringgoldClient.client.RinggoldClient;
 import com.atypon.wayf.dao.IdentityProviderDao;
 import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.ServiceException;
@@ -24,6 +25,7 @@ import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessType;
 import com.atypon.wayf.data.identity.*;
+import com.atypon.wayf.data.identity.external.ExternalProvider;
 import com.atypon.wayf.data.identity.external.IdPExternalId;
 import com.atypon.wayf.data.identity.external.IdpExternalIdQuery;
 import com.atypon.wayf.data.publisher.Publisher;
@@ -66,6 +68,10 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
     @Inject
     private DeviceIdentityProviderBlacklistFacade blacklistFacade;
 
+    @Inject
+    @Named("ringgold.license.id")
+    private String ringgoldLicenseId;
+
     public IdentityProviderFacadeImpl() {
     }
 
@@ -77,6 +83,22 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
             throw new ServiceException(HttpStatus.SC_BAD_REQUEST, "IdentityProvider of type [" + identityProvider.getType() + "] not supported");
         }
 
+        if(identityProvider.getExternalIds() != null) {
+            IdPExternalId ringgoldProvider = identityProvider.getExternalIds().stream().
+                    filter(exId -> exId.getProvider() == ExternalProvider.RINGGOLD).findFirst().orElse(null);
+
+            if (ringgoldProvider != null) {
+                int ringgoldId = Integer.parseInt(ringgoldProvider.getExternalId());
+                try {
+                    String institutionName = RinggoldClient.getIntsitution(ringgoldLicenseId, ringgoldId).getName();
+                    if(institutionName!= null && !institutionName.isEmpty()){
+                        identityProvider.setName(institutionName);
+                    }
+                } catch (Exception e) {
+                    LOG.error("Can't get Instituion Name from ringgold", e);
+                }
+            }
+        }
         return dao.create(identityProvider);
     }
 
@@ -200,6 +222,7 @@ public class IdentityProviderFacadeImpl implements IdentityProviderFacade {
                         )
                 );
     }
+
 
     @Override
     public Observable<IdentityProvider> filter(IdentityProviderQuery query) {

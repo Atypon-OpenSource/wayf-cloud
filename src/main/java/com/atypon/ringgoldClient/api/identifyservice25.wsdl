@@ -1,0 +1,162 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<definitions 
+name="identifyservice25" 
+targetNamespace="https://idproduction.ringgold.com/identifyservice25.wsdl"
+xmlns:this="https://idproduction.ringgold.com/identifyservice25.wsdl"
+xmlns:typens="https://idproduction.ringgold.com/identifyservice25.xsd" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
+xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+xmlns="http://schemas.xmlsoap.org/wsdl/">
+	<types>
+		<xsd:schema targetNamespace="https://idproduction.ringgold.com/identifyservice25.wsdl">
+			<xsd:import namespace="https://idproduction.ringgold.com/identifyservice25.xsd"
+            schemaLocation= "identifyservice25.xsd"/>
+		</xsd:schema>
+		<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+			<xsd:import
+				namespace="https://idproduction.ringgold.com/identifyservice25.xsd"
+				schemaLocation="identifyservice25.xsd">
+			</xsd:import>
+		</xsd:schema>
+	</types>
+	
+	<wsdl:message name="getInstitutionRequest">
+        <wsdl:part name="getInstitutionRequest"
+        	element="typens:getInstitutionRequest">
+        </wsdl:part>
+	</wsdl:message>
+	
+	<wsdl:message name="getInstitutionResponse">
+		<wsdl:part name="getInstitutionResponse" 
+			xsd:element="typens:getInstitutionResponse" 
+			element="typens:getInstitutionResponse">
+		</wsdl:part>
+	</wsdl:message>
+	
+	<wsdl:message name="findInstitutionsRequest">
+        <wsdl:part name="findInstitutionsRequest" 
+        	element="typens:findInstitutionsRequest">
+       	</wsdl:part>
+	</wsdl:message>
+    
+    <wsdl:message name="findInstitutionsResponse">
+        <wsdl:part name="findInstitutionsResponse"
+        	xsd:element="typens:findInstitutionsResponse"
+        	element="typens:findInstitutionsResponse">
+        </wsdl:part>
+    </wsdl:message>
+	
+	<wsdl:message name="findInstitutionsByKeywordsRequest">
+        <wsdl:part name="findInstitutionsByKeywordsRequest" 
+        	element="typens:findInstitutionsByKeywordsRequest">
+       	</wsdl:part>
+	</wsdl:message>
+    
+    <wsdl:message name="findInstitutionsByKeywordsResponse">
+        <wsdl:part name="findInstitutionsByKeywordsResponse"
+        	xsd:element="typens:findInstitutionsByKeywordsResponse"
+        	element="typens:findInstitutionsByKeywordsResponse">
+        </wsdl:part>
+    </wsdl:message>
+    
+    <wsdl:message name="getInstitutionFamilyRequest">
+        <wsdl:part name="getInstitutionFamilyRequest" 
+        	element="typens:getInstitutionFamilyRequest">
+       	</wsdl:part>
+    </wsdl:message>
+
+    <wsdl:message name="getInstitutionFamilyResponse">
+        <wsdl:part name="getInstitutionFamilyResponse" 
+        	xsd:element="typens:getInstitutionFamilyResponse" 
+        	element="typens:getInstitutionFamilyResponse">
+       	</wsdl:part>
+    </wsdl:message>
+
+    <portType name="IdentifyPortType">
+		<wsdl:operation name="getInstitution">
+			<wsdl:input message="this:getInstitutionRequest"></wsdl:input>
+			<wsdl:output message="this:getInstitutionResponse"></wsdl:output>
+		</wsdl:operation>
+        <wsdl:operation name="findInstitutions">
+            <wsdl:input message="this:findInstitutionsRequest"></wsdl:input>
+            <wsdl:output message="this:findInstitutionsResponse"></wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="findInstitutionsByKeywords">
+            <wsdl:input message="this:findInstitutionsByKeywordsRequest"></wsdl:input>
+            <wsdl:output message="this:findInstitutionsByKeywordsResponse"></wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="getInstitutionFamily">
+            <wsdl:input message="this:getInstitutionFamilyRequest"></wsdl:input>
+            <wsdl:output message="this:getInstitutionFamilyResponse"></wsdl:output>
+        </wsdl:operation>
+    </portType>
+	
+	<binding name="IdentifyBinding" type="this:IdentifyPortType">
+		<soap:binding style="rpc"
+			transport="http://schemas.xmlsoap.org/soap/http" />
+		<wsdl:operation name="getInstitution">
+			<soap:operation
+				soapAction="https://idproduction.ringgold.com/identifyservice25.wsdl/getInstitution" />
+			<wsdl:input>
+				<soap:body use="encoded"
+					namespace="https://idproduction.ringgold.com/identifyservice25.wsdl"
+					encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="encoded"
+					namespace="https://idproduction.ringgold.com/identifyservice25.wsdl"
+					encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="findInstitutions">
+            <soap:operation
+                soapAction="https://idproduction.ringgold.com/identifyservice25.wsdl/findInstitutions" />
+            <wsdl:input>
+                <soap:body use="encoded"
+                    namespace="https://idproduction.ringgold.com/identifyservice25.wsdl"
+                    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="encoded"
+                    namespace="https://idproduction.ringgold.com/identifyservice25.wsdl"
+                    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+            </wsdl:output>
+        </wsdl:operation>
+		<wsdl:operation name="findInstitutionsByKeywords">
+            <soap:operation
+                soapAction="https://idproduction.ringgold.com/identifyservice25.wsdl/findInstitutionsByKeywords" />
+            <wsdl:input>
+                <soap:body use="encoded"
+                    namespace="https://idproduction.ringgold.com/identifyservice25.wsdl"
+                    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="encoded"
+                    namespace="https://idproduction.ringgold.com/identifyservice25.wsdl"
+                    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="getInstitutionFamily">
+            <soap:operation
+                soapAction="https://idproduction.ringgold.com/identifyservice25.wsdl/getInstitutionFamily" />
+            <wsdl:input>
+                <soap:body use="encoded"
+                    namespace="https://idproduction.ringgold.com/identifyservice25.wsdl"
+                    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="encoded"
+                    namespace="https://idproduction.ringgold.com/identifyservice25.wsdl"
+                    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+            </wsdl:output>
+        </wsdl:operation>
+	</binding>
+
+	<service name="identifyservice25Service">
+		<port name="IdentifyPort" binding="this:IdentifyBinding">
+			<soap:address location="https://idproduction.ringgold.com/identifyservice25.php"/>
+		</port>
+	</service>
+</definitions>
