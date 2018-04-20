@@ -36,4 +36,8 @@ public interface DeviceFacade {
     Single<Device> readByLocalId(String localId);
 
     String encryptLocalId(Long publisherId, String localId);
+
+    Completable deleteDevice(Long deviceId);
+
+    String hashGlobalId(String globalId);
 }

@@ -17,19 +17,21 @@
 package com.atypon.wayf.facade.impl;
 
 import com.atypon.wayf.dao.DeviceDao;
-import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.ServiceException;
+import com.atypon.wayf.data.authentication.AuthenticatedEntity;
 import com.atypon.wayf.data.device.Device;
-import com.atypon.wayf.data.device.DeviceInfo;
 import com.atypon.wayf.data.device.DeviceQuery;
 import com.atypon.wayf.data.device.DeviceStatus;
 import com.atypon.wayf.data.device.access.DeviceAccess;
 import com.atypon.wayf.data.device.access.DeviceAccessQuery;
+import com.atypon.wayf.data.device.access.DeviceAccessType;
 import com.atypon.wayf.data.identity.IdentityProviderUsage;
 import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.facade.*;
+import com.atypon.wayf.reactivex.FacadePolicies;
 import com.atypon.wayf.request.RequestContextAccessor;
 import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.reactivex.Completable;
@@ -39,6 +41,7 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -73,19 +76,15 @@ public class DeviceFacadeImpl implements DeviceFacade {
         device.setStatus(DeviceStatus.ACTIVE);
 
         // Generate a global ID
-        device.setGlobalId(UUID.randomUUID().toString());
-
-        DeviceInfo info = device.getInfo();
-        if (info == null) {
-            info = new DeviceInfo();
-            device.setInfo(info);
-        }
-
-        // Set the user to that of the request
-        info.setUserAgent(RequestContextAccessor.get().getUserAgent());
+        String globalId = UUID.randomUUID().toString();
+        String hashedGlobalId = hashGlobalId(globalId);
+        device.setGlobalId(hashedGlobalId);
 
         // Create the device
-        return deviceDao.create(device);
+        return deviceDao.create(device).map(device1 -> {
+            device1.setGlobalId(globalId);
+            return device1;
+        });
     }
 
     @Override
@@ -109,18 +108,18 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
                 // Create a DeviceAccess object to store the resolved Device and Publisher. This may be
                 // a little clunky but the alternative would be to create a new type to wrap the two
-                .map((device) -> new DeviceAccess.Builder().device(device).publisher(publisher).build())
+                .map((device) -> new DeviceAccess.Builder().device(device).publisher(publisher).type(DeviceAccessType.CREATE_IDP).build())
 
                 .flatMap((deviceAccess) ->
                     // Now that all the required data is available, point the local ID at the device
-                    deviceDao.updateDevicePublisherLocalIdXref(deviceAccess.getDevice().getId(), deviceAccess.getPublisher().getId(), localId)
+                   deviceAccessFacade.create(deviceAccess).flatMap(deviceAccess1 -> deviceDao.updateDevicePublisherLocalIdXref(deviceAccess.getDevice().getId(), deviceAccess.getPublisher().getId(), localId)
                             .map((numAffectedRows) -> {
                                 if (numAffectedRows != 1) {
                                     throw new ServiceException(HttpStatus.SC_NOT_FOUND, "Could not find local ID");
                                 }
 
                                 return deviceAccess.getDevice();
-                            })
+                            }))
                 );
     }
 
@@ -131,10 +130,14 @@ public class DeviceFacadeImpl implements DeviceFacade {
 
     private Single<Device> resolveFromRequest(Publisher publisher, String localId) {
         String deviceGlobalId = RequestContextAccessor.get().getDeviceId();
+        String hashedDeviceId = hashGlobalId(deviceGlobalId);
 
         LOG.debug("Found global ID from client [{}]", deviceGlobalId);
         if (deviceGlobalId != null) {
-            return read(new DeviceQuery().setGlobalId(deviceGlobalId));
+            return read(new DeviceQuery().setGlobalId(hashedDeviceId)).flatMap(device -> {
+                device.setGlobalId(deviceGlobalId);
+                return Single.just(device);
+            });
         }
 
         // If the localId has already been used, return the device associated with it. Otherwise, create a new Device
@@ -188,5 +191,18 @@ public class DeviceFacadeImpl implements DeviceFacade {
     @Override
     public String encryptLocalId(Long publisherId, String localId) {
         return cryptFacade.encrypt(publisherFacade.getPublishersSalt(publisherId), localId);
+    }
+
+    @Override
+    public Completable deleteDevice(Long deviceId){
+        return deviceDao.delete(deviceId)
+                .compose(FacadePolicies::applyCompletable)
+                .andThen(deviceAccessFacade.delete(deviceId))
+                .compose(FacadePolicies::applyCompletable);
+    }
+
+    @Override
+    public String hashGlobalId(String globalId) {
+        return globalId == null ? null : Hashing.sha256().hashString(globalId, StandardCharsets.UTF_8).toString();
     }
 }

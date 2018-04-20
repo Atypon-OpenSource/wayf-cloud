@@ -1,8 +1,5 @@
 {
   "status":"ACTIVE",
-  "info":{
-    "userAgent":"Test-Agent"
-  },
   "history":[
     {
       "frequency":58.82,
@@ -35,10 +32,7 @@
   "activity":[
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "publisher":{
         "status":"ACTIVE",
@@ -51,10 +45,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "publisher":{
         "status":"ACTIVE",
@@ -67,10 +58,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"SAML",
@@ -89,10 +77,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"SAML",
@@ -111,10 +96,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"SAML",
@@ -133,10 +115,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"SAML",
@@ -155,10 +134,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"SAML",
@@ -177,10 +153,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "publisher":{
         "status":"ACTIVE",
@@ -193,10 +166,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "publisher":{
         "status":"ACTIVE",
@@ -209,10 +179,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"SAML",
@@ -231,10 +198,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "publisher":{
         "status":"ACTIVE",
@@ -246,11 +210,19 @@
       "type":"READ_IDP_HISTORY"
     },
     {
+      "device": {
+        "status": "ACTIVE"
+      },
+      "publisher": {
+        "status": "ACTIVE",
+        "name": "Publisher B",
+        "contact": {}
+      },
+      "type": "CREATE_IDP"
+    },
+    {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "publisher":{
         "status":"ACTIVE",
@@ -263,10 +235,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"OAUTH",
@@ -284,10 +253,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"OAUTH",
@@ -305,10 +271,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"OAUTH",
@@ -326,10 +289,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"OPEN_ATHENS",
@@ -349,10 +309,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"OPEN_ATHENS",
@@ -372,10 +329,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"OPEN_ATHENS",
@@ -395,10 +349,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"OPEN_ATHENS",
@@ -418,10 +369,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"SAML",
@@ -440,10 +388,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"SAML",
@@ -462,10 +407,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"SAML",
@@ -484,10 +426,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"SAML",
@@ -506,10 +445,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "identityProvider":{
         "type":"SAML",
@@ -528,10 +464,7 @@
     },
     {
       "device":{
-        "status":"ACTIVE",
-        "info":{
-          "userAgent":"Test-Agent"
-        }
+        "status":"ACTIVE"
       },
       "publisher":{
         "status":"ACTIVE",
@@ -541,6 +474,17 @@
         }
       },
       "type":"READ_IDP_HISTORY"
+    },
+    {
+      "device": {
+        "status": "ACTIVE"
+      },
+      "publisher": {
+        "status": "ACTIVE",
+        "name": "Publisher A",
+        "contact": {}
+      },
+      "type": "CREATE_IDP"
     }
   ]
 }

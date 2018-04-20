@@ -38,7 +38,6 @@ public class DeviceTestUtil {
     public String relateDeviceToPublisherError(int statusCode, String localId, String publisherCode, String globalId, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateJwtTokenHeaderValue(publisherCode));
-        headers.put("User-Agent", "Test-Agent");
         headers.put("Origin", "test-origin.com");
 
         Cookie cookie = null;
@@ -72,7 +71,6 @@ public class DeviceTestUtil {
     public void registerLocalId(String localId, AuthorizationToken publisherToken) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
-        headers.put("User-Agent", "Test-Agent");
 
         ExtractableResponse relateResponse = requestFactory
                 .request()
@@ -87,7 +85,6 @@ public class DeviceTestUtil {
     public String relateDeviceToPublisher(String localId, String publisherCode, String globalId, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateJwtTokenHeaderValue(publisherCode));
-        headers.put("User-Agent", "Test-Agent");
         headers.put("Origin", "test-origin.com");
 
         Cookie cookie = null;
@@ -123,7 +120,6 @@ public class DeviceTestUtil {
     public void deviceQueryBadPublisherToken(String localId, AuthorizationToken publisherToken, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
-        headers.put("User-Agent", "Test-Agent");
 
         ExtractableResponse relateBadTokenResponse = requestFactory
                 .request()
@@ -238,6 +234,7 @@ public class DeviceTestUtil {
                 "$.activity[*].publisher.code",
                 "$.activity[*].publisher.contact.id",
                 "$.activity[*].publisher.createdDate",
+                "$.activity[*].publisher.url",
                 "$.activity[*].identityProvider.id",
                 "$.activity[*].identityProvider.createdDate",
                 "$.activity[*].createdDate",
@@ -245,5 +242,67 @@ public class DeviceTestUtil {
         };
 
         assertJsonEquals(expectedResponseJson, deviceBody, relateResponseGeneratedFields);
+    }
+
+    public void createDevice(String expectedResponseJson, String origin) {
+        Map<String, String> headers = new HashMap<>();
+
+        if(origin != null){
+            headers.put("Origin", origin);
+        }
+
+
+        ExtractableResponse relateResponse = requestFactory
+                .request()
+                .headers(headers)
+                .url("/1/device/")
+                .method(Method.POST)
+                .execute()
+                .statusCode(200)
+                .extract();
+
+        String deviceIdHeader = relateResponse.cookie("deviceId");
+        assertNotNull(deviceIdHeader);
+
+        if(origin != null){
+            String accessControlHeader = relateResponse.header("Access-Control-Allow-Origin");
+            assertNotNull(accessControlHeader);
+        }
+
+        String deviceBody = relateResponse.response().body().asString();
+
+        String[] relateResponseGeneratedFields = {
+                "$.id",
+                "$.createdDate"
+        };
+        assertJsonEquals(expectedResponseJson, deviceBody, relateResponseGeneratedFields);
+
+    }
+
+    public void CreateAndDeleteDevice() {
+        Map<String, String> headers = new HashMap<>();
+
+        ExtractableResponse relateResponse = requestFactory
+                .request()
+                .headers(headers)
+                .url("/1/device/")
+                .method(Method.POST)
+                .execute()
+                .statusCode(200)
+                .extract();
+
+        String deviceIdHeader = relateResponse.cookie("deviceId");
+        assertNotNull(deviceIdHeader);
+
+        headers.clear();
+        headers.put("Cookie", "deviceId=" + deviceIdHeader);
+        requestFactory
+                .request()
+                .headers(headers)
+                .url("/1/mydevice/")
+                .method(Method.DELETE)
+                .execute()
+                .statusCode(200)
+                .extract().response();
     }
 }

@@ -22,10 +22,12 @@ import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.integration.HttpTestUtil;
 import com.atypon.wayf.request.ResponseWriter;
 import com.atypon.wayf.verticle.routing.BaseHttpTest;
+import com.google.common.hash.Hashing;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.UUID;
 
@@ -227,12 +229,14 @@ public class PublisherIntegrationTest extends BaseHttpTest {
 
         // Create device for local ID
         String firstGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+        String hashedGlobalId = Hashing.sha256().hashString(firstGlobalId, StandardCharsets.UTF_8).toString();
 
         // Create device again for same local ID but do not pass in global ID
+        //should return hashed globalID
         String secondGlobalId = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
 
         // Ensure the system resolved to the same global ID each time
-        assertEquals(firstGlobalId, secondGlobalId);
+        assertEquals(hashedGlobalId, secondGlobalId);
 
         // Try passing in the same local ID but this time with a different publisher without registering it
         deviceTestUtil.relateDeviceToPublisherError(HttpStatus.SC_NOT_FOUND, publisherALocalId, publisherB.getCode(), null, ERROR_404_LOCAL_ID_NOT_FOUND_RESPONSE_JSON);

@@ -24,9 +24,8 @@ DROP TABLE IF EXISTS `device`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `device` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `global_id` varchar(36) NOT NULL,
+  `global_id` varchar(250) NOT NULL,
   `status` varchar(15) NOT NULL,
-  `user_agent` varchar(250) NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -94,7 +93,7 @@ DROP TABLE IF EXISTS `device_idp_blacklist`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `device_idp_blacklist` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `device_id` varchar(36) NOT NULL,
+  `device_id` varchar(250) NOT NULL,
   `idp_id` int(11) NOT NULL,
   `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_date` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -156,6 +155,8 @@ CREATE TABLE `publisher` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
   `code` varchar(50) NOT NULL,
+  `widget_location` varchar(255) NULL,
+  `url` varchar(255) NULL,
   `salt` varchar(30) NOT NULL,
   `status` varchar(15) NOT NULL,
   `contact_id` int(11) NULL,
@@ -172,6 +173,7 @@ DROP TABLE IF EXISTS `publisher_registration`;
 CREATE TABLE `publisher_registration` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `publisher_name` varchar(45) NOT NULL,
+  `url` varchar(255) NULL,
   `status` varchar(15) NOT NULL,
   `contact_id` int(11) NULL,
   `application_date` timestamp NOT NULL,
@@ -247,6 +249,17 @@ CREATE TABLE `error_log` (
   `modified_date` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
 UNIQUE KEY `id_UNIQUE` (`id`)
+);
+
+DROP TABLE IF EXISTS `idp_external_id`;
+
+CREATE TABLE `idp_external_id` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `idp_id` int (11) NOT NULL,
+  `provider` VARCHAR(45) NOT NULL,
+  `external_id` VARCHAR(250) NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idp_external_UNIQUE` (`idp_id`, `provider`)
 );
 
 

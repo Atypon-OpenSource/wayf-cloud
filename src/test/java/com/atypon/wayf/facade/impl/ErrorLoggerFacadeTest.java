@@ -67,7 +67,6 @@ public class ErrorLoggerFacadeTest {
         String globalId = "test-global-id";
         String httpMethod = HttpMethod.POST.toString();
         String requestBody = "{ \"body\" : \"end\" }";
-        String userAgent = "test-user-agent";
 
         AuthorizationToken token = new AuthorizationToken();
         token.setType(AuthorizationTokenType.API_TOKEN);
@@ -81,7 +80,6 @@ public class ErrorLoggerFacadeTest {
         headers.put("Authentication", Lists.newArrayList(AuthorizationTokenTestUtil.generateApiTokenHeaderValue(token)));
         headers.put("X-Forwarded-For", Lists.newArrayList(forwardedFor));
         headers.put("X-Device-Id", Lists.newArrayList(globalId));
-        headers.put("User-Agent", Lists.newArrayList(userAgent));
 
         ServiceException exception = new ServiceException(statusCode, errorMessage);
 
@@ -92,7 +90,6 @@ public class ErrorLoggerFacadeTest {
                 .setAuthorizationToken(token)
                 .setAuthenticated(authenticatedEntity)
                 .setHttpMethod(httpMethod)
-                .setUserAgent(userAgent)
                 .setRequestBody(requestBody);
 
         RequestContextAccessor.set(requestContext);
