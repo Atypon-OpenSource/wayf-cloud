@@ -20,8 +20,10 @@ import com.atypon.wayf.data.publisher.Publisher;
 import com.atypon.wayf.integration.HttpTestUtil;
 import com.atypon.wayf.verticle.routing.BaseHttpTest;
 import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -99,6 +101,10 @@ public class DeviceAdminIntegrationTest extends BaseHttpTest {
 
         // Create device
         globalId = deviceTestUtil.relateDeviceToPublisher(publisherALocalId, publisherA.getCode(), null, RELATE_NEW_DEVICE_PUBLISHER_A_RESPONSE_JSON);
+
+        String responseGlobal = deviceTestUtil.readGlobalId(publisherALocalId, publisherA.getToken());
+
+        assertEquals(deviceTestUtil.hashGlobalId(globalId), responseGlobal);
 
         // Add the IDPs to the device multiple times and validate the IDP's ID is the same each time
         Long samlId = identityProviderTestUtil.testAddIdpToDeviceAndIdpResolution(5, publisherALocalId, publisherA.getToken(), CREATE_SAML_IDP_WITH_EXTERNAL_ID_REQUEST, CREATE_SAML_IDP_WITH_EXTERNAL_ID_RESPONSE);

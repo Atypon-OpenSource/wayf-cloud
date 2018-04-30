@@ -18,14 +18,18 @@ package com.atypon.wayf.integration;
 
 import com.atypon.wayf.data.authentication.AuthorizationToken;
 import com.atypon.wayf.verticle.routing.LoggingHttpRequestFactory;
+import com.google.common.hash.Hashing;
 import io.restassured.http.Cookie;
 import io.restassured.http.Method;
 import io.restassured.response.ExtractableResponse;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.atypon.wayf.integration.HttpTestUtil.assertJsonEquals;
+import static com.atypon.wayf.integration.HttpTestUtil.readField;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class DeviceTestUtil {
@@ -161,6 +165,7 @@ public class DeviceTestUtil {
 
         assertJsonEquals(expectedResponseJson, deviceBody, relateResponseGeneratedFields);
     }
+
     public void readDevices(String[] globalIds, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
 
@@ -192,11 +197,12 @@ public class DeviceTestUtil {
 
         assertJsonEquals(expectedResponseJson, devicesBody, relateResponseGeneratedFields);
     }
+
     public void readDevice(String globalId, String[] fields, String expectedResponseJson) {
         Map<String, String> headers = new HashMap<>();
 
         String fieldsParam = "";
-        if(fields != null && fields.length > 0) {
+        if (fields != null && fields.length > 0) {
             StringBuilder builder = new StringBuilder();
             for (String field : fields) {
                 builder.append(field);
@@ -247,7 +253,7 @@ public class DeviceTestUtil {
     public void createDevice(String expectedResponseJson, String origin) {
         Map<String, String> headers = new HashMap<>();
 
-        if(origin != null){
+        if (origin != null) {
             headers.put("Origin", origin);
         }
 
@@ -264,7 +270,7 @@ public class DeviceTestUtil {
         String deviceIdHeader = relateResponse.cookie("deviceId");
         assertNotNull(deviceIdHeader);
 
-        if(origin != null){
+        if (origin != null) {
             String accessControlHeader = relateResponse.header("Access-Control-Allow-Origin");
             assertNotNull(accessControlHeader);
         }
@@ -304,5 +310,27 @@ public class DeviceTestUtil {
                 .execute()
                 .statusCode(200)
                 .extract().response();
+    }
+
+    public String readGlobalId(String localId, AuthorizationToken publisherToken) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", AuthorizationTokenTestUtil.generateApiTokenHeaderValue(publisherToken));
+
+        String response = requestFactory
+                .request()
+                .headers(headers)
+                .url("/1/device/" + localId + "/id")
+                .method(Method.GET)
+                .execute()
+                .statusCode(200)
+                .extract().response().asString();
+
+        String globalId = readField(response, "$.globalId");
+        return globalId;
+
+    }
+
+    public String hashGlobalId(String globalId) {
+        return Hashing.sha256().hashString(globalId, StandardCharsets.UTF_8).toString();
     }
 }
