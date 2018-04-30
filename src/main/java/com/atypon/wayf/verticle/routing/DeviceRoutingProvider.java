@@ -60,6 +60,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
     private static final String READ_MY_DEVICE = "/1/mydevice";
     private static final String FILTER_DEVICE = "/1/devices";
     private static final String ADD_DEVICE_PUBLISHER_RELATIONSHIP = "/1/device/:localId";
+    private static final String READ_GLOBAL_ID = "/1/device/:localId/id";
     private static final String CREATE_GLOBAL_ID = "/1/device/";
     private static final String DELETE_GLOBAL_ID = "/1/mydevice/";
 
@@ -98,6 +99,7 @@ public class DeviceRoutingProvider implements RoutingProvider {
         router.patch(ADD_DEVICE_PUBLISHER_RELATIONSHIP).handler(handlerFactory.cookieSingle(this::createPublisherDeviceRelationship));
         router.post(CREATE_GLOBAL_ID).handler(handlerFactory.cookieSingle(this::createGlobalId));
         router.delete(DELETE_GLOBAL_ID).handler(handlerFactory.cookieSingle(this::deleteDevice));
+        router.get(READ_GLOBAL_ID).handler(handlerFactory.single(this::readGlobalId));
     }
 
     public Single deleteDevice(RoutingContext routingContext) {
@@ -233,13 +235,13 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
         RequestParamMapper.mapParams(routingContext, query);
 
-        if(query.getGlobalId() != null){
+        if (query.getGlobalId() != null) {
             query.setGlobalId(deviceFacade.hashGlobalId(query.getGlobalId()));
         }
 
-        if(query.getGlobalIds() != null){
+        if (query.getGlobalIds() != null) {
             String[] hashedGlobalIds = new String[query.getGlobalIds().length];
-            for (int i=0; i< query.getGlobalIds().length; i++) {
+            for (int i = 0; i < query.getGlobalIds().length; i++) {
                 hashedGlobalIds[i] = deviceFacade.hashGlobalId(query.getGlobalIds()[i]);
             }
             query.setGlobalIds(hashedGlobalIds);
@@ -247,6 +249,18 @@ public class DeviceRoutingProvider implements RoutingProvider {
 
         return query;
 
+    }
+
+    //This method returns the hashed globalID
+    private Single readGlobalId(RoutingContext context) {
+        String localId = RequestReader.readPathArgument(context, LOCAL_ID_PARAM);
+        Publisher publisher = AuthenticatedEntity.authenticatedAsPublisher(RequestContextAccessor.get().getAuthenticated());
+        String hashedLocalId = deviceFacade.encryptLocalId(publisher.getId(), localId);
+        return deviceFacade.readByLocalId(hashedLocalId).flatMap(device -> {
+            Device result = new Device();
+            result.setGlobalId(device.getGlobalId());
+            return Single.just(result);
+        });
     }
 
 }
